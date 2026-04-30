@@ -30,6 +30,7 @@ model Employee {
 
   reviewsAsReviewee   ReviewAssignment[] @relation("AssignmentReviewee")
   reviewsAsReviewer   ReviewAssignment[] @relation("AssignmentReviewer")
+  responsesReceived   ReviewResponse[]
 
   @@map("employees")
 }
@@ -68,6 +69,8 @@ model ReviewAssignment {
   reviewer Employee    @relation("AssignmentReviewer", fields: [reviewerId], references: [id])
 
   @@unique([cycleId, revieweeId, reviewerId])
+  @@index([cycleId, revieweeId])
+  @@index([reviewerId])
   @@map("review_assignments")
 }
 
@@ -88,8 +91,11 @@ model ReviewResponse {
   createdAt       DateTime     @default(now()) @map("created_at")
 
   cycle    ReviewCycle @relation(fields: [cycleId], references: [id])
+  reviewee Employee    @relation(fields: [revieweeId], references: [id])
   question Question    @relation(fields: [questionId], references: [id])
 
+  @@index([cycleId, revieweeId])
+  @@index([revieweeId])
   @@map("review_responses")
 }
 
