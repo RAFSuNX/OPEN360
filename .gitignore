@@ -10,10 +10,21 @@
 
 # env files - NEVER commit these
 .env
+.env.*
 .env.local
+.env.production
+.env.staging
 .env.development.local
 .env.test.local
 .env.production.local
+
+# OS
+.DS_Store
+*.swp
+
+# IDE
+.idea/
+.vscode/
 
 # debug
 npm-debug.log*
