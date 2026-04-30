@@ -7,6 +7,7 @@ describe('email templates', () => {
       revieweeName: 'Bob',
       cycleTitle: 'Q1 2025 Review',
       appUrl: 'https://app.example.com',
+      assignmentId: 'test-assignment-id',
     }
 
     it('includes cycle title in subject', () => {
@@ -36,6 +37,7 @@ describe('email templates', () => {
       cycleTitle: 'Q1 2025 Review',
       endDate: '2025-03-31',
       appUrl: 'https://app.example.com',
+      assignmentId: 'test-assignment-id',
     }
 
     it('includes "reminder" in subject', () => {
