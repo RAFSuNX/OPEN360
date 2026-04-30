@@ -3,6 +3,7 @@ import { getCycle } from '@/lib/services/cycles'
 import { buildResults } from '@/lib/services/results'
 import { db } from '@/lib/db'
 import MyResults from '@/components/dashboard/MyResults'
+import { ExportButton } from '@/components/admin/ExportButton'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 
@@ -39,6 +40,7 @@ export default async function AdminResultsPage({
           <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>{employee.email}</p>
         </div>
         <span className="badge" style={{ marginLeft: 'auto' }}>{cycle.title}</span>
+        <ExportButton cycleId={cycleId} employeeId={employeeId} />
       </div>
       <MyResults results={results} />
     </div>
