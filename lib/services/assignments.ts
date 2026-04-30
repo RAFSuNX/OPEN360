@@ -53,6 +53,7 @@ export async function sendCycleEmails(cycleId: string) {
       revieweeName: a.reviewee.name,
       cycleTitle: a.cycle.title,
       appUrl,
+      assignmentId: a.id,
     })
     await sendEmail({ to: a.reviewer.email, subject, html })
   }

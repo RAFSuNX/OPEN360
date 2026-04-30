@@ -29,6 +29,7 @@ export async function POST(req: NextRequest) {
         cycleTitle: cycle.title,
         endDate: cycle.endDate.toISOString().slice(0, 10),
         appUrl: process.env.NEXTAUTH_URL ?? 'http://localhost:3000',
+        assignmentId: assignment.id,
       })
       await sendEmail({ to: assignment.reviewer.email, subject, html })
       sent++

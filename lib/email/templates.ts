@@ -8,14 +8,18 @@ export function buildReviewInviteEmail(params: {
   revieweeName: string
   cycleTitle: string
   appUrl: string
+  assignmentId: string
 }): EmailContent {
-  const { reviewerName, revieweeName, cycleTitle, appUrl } = params
+  const { reviewerName, revieweeName, cycleTitle, appUrl, assignmentId } = params
+  const url = `${appUrl}/dashboard/review/${assignmentId}`
   return {
-    subject: `You have been invited to review for ${cycleTitle}`,
+    subject: `Review request: ${revieweeName} — ${cycleTitle}`,
     html: `
       <p>Hi ${reviewerName},</p>
-      <p>You have been asked to provide a review for <strong>${revieweeName}</strong> as part of the <strong>${cycleTitle}</strong> cycle.</p>
-      <p><a href="${appUrl}">Click here to complete your review</a></p>
+      <p>You have been asked to provide a review for <strong>${revieweeName}</strong> as part of <strong>${cycleTitle}</strong>.</p>
+      <p>Your responses are completely anonymous.</p>
+      <p><a href="${url}">Complete your review</a></p>
+      <p style="font-size:12px;color:#807d72;">Or copy this link: ${url}</p>
     `,
   }
 }
@@ -25,14 +29,17 @@ export function buildReminderEmail(params: {
   cycleTitle: string
   endDate: string
   appUrl: string
+  assignmentId: string
 }): EmailContent {
-  const { reviewerName, cycleTitle, endDate, appUrl } = params
+  const { reviewerName, cycleTitle, endDate, appUrl, assignmentId } = params
+  const url = `${appUrl}/dashboard/review/${assignmentId}`
   return {
-    subject: `Reminder: ${cycleTitle} review deadline approaching`,
+    subject: `Reminder: complete your review for ${cycleTitle}`,
     html: `
       <p>Hi ${reviewerName},</p>
-      <p>This is a reminder that the <strong>${cycleTitle}</strong> review cycle ends on <strong>${endDate}</strong>.</p>
-      <p><a href="${appUrl}">Complete your review now</a></p>
+      <p>This is a reminder that the <strong>${cycleTitle}</strong> review closes on <strong>${endDate}</strong>.</p>
+      <p><a href="${url}">Complete your review now</a></p>
+      <p style="font-size:12px;color:#807d72;">Or copy this link: ${url}</p>
     `,
   }
 }
@@ -44,11 +51,11 @@ export function buildResultsReadyEmail(params: {
 }): EmailContent {
   const { employeeName, cycleTitle, appUrl } = params
   return {
-    subject: `Your results for ${cycleTitle} are ready`,
+    subject: `Your review results are ready — ${cycleTitle}`,
     html: `
       <p>Hi ${employeeName},</p>
-      <p>Your review results for the <strong>${cycleTitle}</strong> cycle are now available.</p>
-      <p><a href="${appUrl}">View your results</a></p>
+      <p>Your review results for <strong>${cycleTitle}</strong> are now available.</p>
+      <p><a href="${appUrl}/dashboard">View your results</a></p>
     `,
   }
 }

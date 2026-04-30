@@ -83,6 +83,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       revieweeName: a.reviewee.name,
       cycleTitle: cycle.title,
       appUrl,
+      assignmentId: a.id,
     })
     await sendEmail({ to: a.reviewer.email, subject, html })
     sent++
