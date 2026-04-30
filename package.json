@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p ${PORT:-3000}",
     "lint": "eslint",
     "test": "jest",
     "db:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' -r dotenv/config prisma/seed.ts dotenv_config_path=.env.local",
