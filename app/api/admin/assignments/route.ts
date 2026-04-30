@@ -49,6 +49,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ emailsSent })
   }
 
+  if (action === 're-open') {
+    await updateCycleStatus(cycleId, CycleStatus.ACTIVE)
+    return NextResponse.json({ ok: true })
+  }
+
   return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
 }
 
