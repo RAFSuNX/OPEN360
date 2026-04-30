@@ -8,7 +8,10 @@ export default async function DashboardPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) redirect('/login')
 
-  const employee = await db.employee.findUnique({ where: { email: session.user.email } })
+  const employee = await db.employee.findUnique({
+    where: { email: session.user.email },
+    include: { manager: { select: { name: true, role: true } } },
+  })
   if (!employee) {
     return (
       <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
@@ -33,11 +36,34 @@ export default async function DashboardPage() {
 
   return (
     <div>
-      <div style={{ marginBottom: '32px' }}>
-        <p className="section-label" style={{ marginBottom: '8px' }}>My workspace</p>
-        <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: 0 }}>
-          {employee.name}
-        </h1>
+      {/* Profile card */}
+      <div className="card" style={{ marginBottom: '32px', padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap' as const, gap: '16px' }}>
+          <div>
+            <p className="section-label" style={{ marginBottom: '6px' }}>My Profile</p>
+            <p style={{ fontSize: '22px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: '0 0 4px' }}>
+              {employee.name}
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>{employee.role ?? 'No role assigned'}</p>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 32px' }}>
+            {[
+              { label: 'Employee ID', value: employee.employeeId, mono: true },
+              { label: 'Department', value: employee.department },
+              { label: 'Email', value: employee.email, mono: true },
+              { label: 'Manager', value: employee.manager?.name ?? null },
+            ].map(({ label, value, mono }) => (
+              <div key={label}>
+                <p className="section-label" style={{ marginBottom: '2px', fontSize: '10px' }}>{label}</p>
+                <p style={{
+                  fontSize: '13px', margin: 0,
+                  color: value ? 'var(--ink)' : 'var(--muted)',
+                  fontFamily: mono ? "'JetBrains Mono', monospace" : 'inherit',
+                }}>{value ?? '—'}</p>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       <section style={{ marginBottom: '40px' }}>
