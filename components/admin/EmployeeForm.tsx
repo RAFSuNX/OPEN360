@@ -4,6 +4,12 @@ import { useState } from 'react'
 interface Manager { id: string; name: string }
 interface Props { managers: Manager[]; onSuccess: () => void }
 
+const inputStyle = {
+  width: '100%', background: 'var(--surface-card)', color: 'var(--ink)',
+  border: '1px solid var(--hairline-strong)', borderRadius: '8px',
+  padding: '9px 12px', fontSize: '13px', fontFamily: 'inherit', outline: 'none',
+}
+
 export function EmployeeForm({ managers, onSuccess }: Props) {
   const [form, setForm] = useState({ name: '', email: '', employeeId: '', department: '', role: '', managerId: '' })
   const [error, setError] = useState('')
@@ -33,34 +39,29 @@ export function EmployeeForm({ managers, onSuccess }: Props) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 bg-white p-4 border rounded-lg">
-      <h2 className="font-semibold text-sm">Add Employee</h2>
-      {error && <p className="text-red-500 text-xs">{error}</p>}
-      <input required placeholder="Full name" value={form.name}
-        onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-        className="w-full border rounded p-2 text-sm" />
-      <input required type="email" placeholder="Email" value={form.email}
-        onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-        className="w-full border rounded p-2 text-sm" />
-      <input placeholder="Employee ID (e.g. EMP001)" value={form.employeeId}
-        onChange={e => setForm(f => ({ ...f, employeeId: e.target.value }))}
-        className="w-full border rounded p-2 text-sm" />
-      <input placeholder="Department" value={form.department}
-        onChange={e => setForm(f => ({ ...f, department: e.target.value }))}
-        className="w-full border rounded p-2 text-sm" />
-      <input placeholder="Role/Title" value={form.role}
-        onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-        className="w-full border rounded p-2 text-sm" />
-      <select value={form.managerId}
-        onChange={e => setForm(f => ({ ...f, managerId: e.target.value }))}
-        className="w-full border rounded p-2 text-sm">
-        <option value="">No manager</option>
-        {managers.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-      </select>
-      <button type="submit" disabled={loading}
-        className="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 disabled:opacity-50">
-        {loading ? 'Adding...' : 'Add Employee'}
-      </button>
+    <form onSubmit={handleSubmit} className="card" style={{ padding: '20px', minWidth: '280px' }}>
+      <p className="section-label" style={{ marginBottom: '16px' }}>Add Employee</p>
+      {error && <p className="text-error" style={{ marginBottom: '12px' }}>{error}</p>}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <input required placeholder="Full name" value={form.name}
+          onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={inputStyle} />
+        <input required type="email" placeholder="Email address" value={form.email}
+          onChange={e => setForm(f => ({ ...f, email: e.target.value }))} style={inputStyle} />
+        <input placeholder="Employee ID (e.g. EMP001)" value={form.employeeId}
+          onChange={e => setForm(f => ({ ...f, employeeId: e.target.value }))} style={inputStyle} />
+        <input placeholder="Department" value={form.department}
+          onChange={e => setForm(f => ({ ...f, department: e.target.value }))} style={inputStyle} />
+        <input placeholder="Role / Title" value={form.role}
+          onChange={e => setForm(f => ({ ...f, role: e.target.value }))} style={inputStyle} />
+        <select value={form.managerId}
+          onChange={e => setForm(f => ({ ...f, managerId: e.target.value }))} style={inputStyle}>
+          <option value="">No manager</option>
+          {managers.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+        </select>
+        <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: '4px' }}>
+          {loading ? 'Adding...' : 'Add Employee'}
+        </button>
+      </div>
     </form>
   )
 }

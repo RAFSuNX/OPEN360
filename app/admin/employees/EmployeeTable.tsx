@@ -19,9 +19,7 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
     try {
       const res = await fetch('/api/admin/employees')
       if (res.ok) setEmployees(await res.json())
-    } catch {
-      // silently keep stale data - user can reload
-    }
+    } catch { /* keep stale */ }
   }
 
   async function saveManager(id: string) {
@@ -35,53 +33,83 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
 
   return (
     <div>
-      <div className="flex gap-4 mb-6 flex-wrap">
+      <div style={{ marginBottom: '32px' }}>
+        <p className="section-label" style={{ marginBottom: '8px' }}>People</p>
+        <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: 0 }}>
+          Employees
+        </h1>
+      </div>
+
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', flexWrap: 'wrap' as const, alignItems: 'flex-start' }}>
         <EmployeeForm managers={employees} onSuccess={refresh} />
         <CsvImport onSuccess={refresh} />
       </div>
-      <table className="w-full bg-white border rounded-lg text-sm">
-        <thead className="bg-gray-50 border-b">
-          <tr>
-            {['ID','Name','Email','Department','Role','Manager',''].map(h => (
-              <th key={h} className="text-left p-3 font-medium text-gray-600">{h}</th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {employees.map(emp => (
-            <tr key={emp.id} className="border-b hover:bg-gray-50">
-              <td className="p-3 text-gray-400 text-xs">{emp.employeeId ?? '-'}</td>
-              <td className="p-3 font-medium">{emp.name}</td>
-              <td className="p-3 text-gray-500">{emp.email}</td>
-              <td className="p-3">{emp.department ?? '-'}</td>
-              <td className="p-3">{emp.role ?? '-'}</td>
-              <td className="p-3">
-                {editingManager === emp.id ? (
-                  <div className="flex gap-1 items-center">
-                    <select value={selectedManager} onChange={e => setSelectedManager(e.target.value)}
-                      className="border rounded p-1 text-xs">
-                      <option value="">No manager</option>
-                      {employees.filter(e => e.id !== emp.id).map(m => (
-                        <option key={m.id} value={m.id}>{m.name}</option>
-                      ))}
-                    </select>
-                    <button onClick={() => saveManager(emp.id)} className="text-xs text-green-600 hover:text-green-800">Save</button>
-                    <button onClick={() => setEditingManager(null)} className="text-xs text-gray-400 hover:text-gray-600">Cancel</button>
-                  </div>
-                ) : (
-                  <span>{emp.manager?.name ?? '-'}</span>
-                )}
-              </td>
-              <td className="p-3">
-                <button onClick={() => { setEditingManager(emp.id); setSelectedManager(emp.manager?.id ?? '') }}
-                  className="text-xs text-blue-500 hover:text-blue-700">Edit manager</button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {employees.length === 0 && (
-        <p className="text-center text-gray-400 text-sm py-8">No employees yet. Add one above.</p>
+
+      {employees.length === 0 ? (
+        <div className="card" style={{ textAlign: 'center', padding: '48px', color: 'var(--muted)' }}>
+          <p style={{ fontSize: '14px' }}>No employees yet. Add one above or import from CSV.</p>
+        </div>
+      ) : (
+        <div style={{ overflowX: 'auto' as const }}>
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Role</th>
+                <th>Manager</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {employees.map(emp => (
+                <tr key={emp.id}>
+                  <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--muted)' }}>
+                    {emp.employeeId ?? '—'}
+                  </td>
+                  <td style={{ fontWeight: '500', color: 'var(--ink)' }}>{emp.name}</td>
+                  <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>{emp.email}</td>
+                  <td>{emp.department ?? '—'}</td>
+                  <td>{emp.role ?? '—'}</td>
+                  <td>
+                    {editingManager === emp.id ? (
+                      <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                        <select value={selectedManager} onChange={e => setSelectedManager(e.target.value)}
+                          style={{ fontSize: '12px', padding: '4px 8px', border: '1px solid var(--hairline-strong)', borderRadius: '6px', background: 'var(--surface-card)', color: 'var(--ink)', fontFamily: 'inherit' }}>
+                          <option value="">No manager</option>
+                          {employees.filter(e => e.id !== emp.id).map(m => (
+                            <option key={m.id} value={m.id}>{m.name}</option>
+                          ))}
+                        </select>
+                        <button onClick={() => saveManager(emp.id)}
+                          style={{ fontSize: '12px', color: 'var(--semantic-success)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          Save
+                        </button>
+                        <button onClick={() => setEditingManager(null)}
+                          style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <span style={{ color: emp.manager ? 'var(--body)' : 'var(--muted)' }}>
+                        {emp.manager?.name ?? '—'}
+                      </span>
+                    )}
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => { setEditingManager(emp.id); setSelectedManager(emp.manager?.id ?? '') }}
+                      style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

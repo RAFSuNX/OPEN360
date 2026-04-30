@@ -11,8 +11,8 @@ export default async function DashboardPage() {
   const employee = await db.employee.findUnique({ where: { email: session.user.email } })
   if (!employee) {
     return (
-      <div className="text-gray-500 text-sm">
-        Your profile is not set up yet. Contact your admin.
+      <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
+        <p style={{ fontSize: '14px', color: 'var(--muted)' }}>Your profile is not set up yet. Contact your admin.</p>
       </div>
     )
   }
@@ -26,31 +26,56 @@ export default async function DashboardPage() {
       },
     }),
     db.reviewCycle.findMany({
-      where: {
-        status: 'CLOSED',
-        assignments: { some: { revieweeId: employee.id } },
-      },
+      where: { status: 'CLOSED', assignments: { some: { revieweeId: employee.id } } },
       orderBy: { endDate: 'desc' },
     }),
   ])
 
   return (
-    <div className="max-w-2xl">
-      <h1 className="text-2xl font-bold mb-6">My Dashboard</h1>
+    <div>
+      <div style={{ marginBottom: '32px' }}>
+        <p className="section-label" style={{ marginBottom: '8px' }}>My workspace</p>
+        <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: 0 }}>
+          {employee.name}
+        </h1>
+      </div>
 
-      <section className="mb-8">
-        <h2 className="text-lg font-semibold mb-3">Pending Reviews ({pending.length})</h2>
+      <section style={{ marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
+          <p className="section-label">Pending reviews</p>
+          {pending.length > 0 && (
+            <span style={{
+              background: 'var(--primary)', color: 'var(--on-primary)',
+              borderRadius: '9999px', padding: '1px 7px', fontSize: '11px', fontWeight: '600',
+            }}>{pending.length}</span>
+          )}
+        </div>
         {pending.length === 0 ? (
-          <p className="text-gray-400 text-sm">No pending reviews.</p>
+          <p style={{ fontSize: '14px', color: 'var(--muted)' }}>No pending reviews. You are all caught up.</p>
         ) : (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {pending.map(a => (
-              <Link key={a.id} href={`/dashboard/review/${a.id}`}
-                className="block bg-white border rounded-lg p-4 hover:bg-blue-50 transition">
-                <p className="font-medium">Review for {a.reviewee.name}</p>
-                <p className="text-sm text-gray-500">
-                  {a.cycle.title} - due {new Date(a.cycle.endDate).toLocaleDateString()}
-                </p>
+              <Link key={a.id} href={`/dashboard/review/${a.id}`} style={{ textDecoration: 'none' }}>
+                <div className="card" style={{
+                  padding: '16px 20px', cursor: 'pointer',
+                  transition: 'border-color 0.15s',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <div>
+                    <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--ink)', margin: 0 }}>
+                      Review for {a.reviewee.name}
+                    </p>
+                    <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '2px' }}>
+                      {a.cycle.title}
+                    </p>
+                  </div>
+                  <div style={{ textAlign: 'right' as const }}>
+                    <p style={{ fontSize: '11px', color: 'var(--muted)' }}>Due</p>
+                    <p style={{ fontSize: '12px', fontFamily: "'JetBrains Mono', monospace", color: 'var(--body)' }}>
+                      {new Date(a.cycle.endDate).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
               </Link>
             ))}
           </div>
@@ -58,16 +83,23 @@ export default async function DashboardPage() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold mb-3">My Results</h2>
+        <p className="section-label" style={{ marginBottom: '16px' }}>My results</p>
         {closedCycles.length === 0 ? (
-          <p className="text-gray-400 text-sm">No completed cycles yet.</p>
+          <p style={{ fontSize: '14px', color: 'var(--muted)' }}>No completed cycles yet.</p>
         ) : (
-          <div className="space-y-2">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {closedCycles.map(c => (
-              <Link key={c.id} href={`/dashboard/results/${c.id}`}
-                className="block bg-white border rounded-lg p-4 hover:bg-blue-50 transition">
-                <p className="font-medium">{c.title}</p>
-                <p className="text-sm text-gray-500">Closed {new Date(c.endDate).toLocaleDateString()}</p>
+              <Link key={c.id} href={`/dashboard/results/${c.id}`} style={{ textDecoration: 'none' }}>
+                <div className="card" style={{
+                  padding: '16px 20px', cursor: 'pointer',
+                  transition: 'border-color 0.15s',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                }}>
+                  <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--ink)', margin: 0 }}>{c.title}</p>
+                  <p style={{ fontSize: '12px', fontFamily: "'JetBrains Mono', monospace", color: 'var(--muted)' }}>
+                    {new Date(c.endDate).toLocaleDateString()}
+                  </p>
+                </div>
               </Link>
             ))}
           </div>

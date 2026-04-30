@@ -26,15 +26,31 @@ export function CsvImport({ onSuccess }: Props) {
   }
 
   return (
-    <div className="bg-white p-4 border rounded-lg">
-      <h2 className="font-semibold text-sm mb-1">Bulk Import CSV</h2>
-      <p className="text-xs text-gray-400 mb-3">Columns: name, email, manager_email, department, role</p>
-      <input ref={inputRef} type="file" accept=".csv" onChange={handleUpload} disabled={loading} className="text-sm" />
-      {loading && <p className="text-xs text-gray-500 mt-2">Importing...</p>}
+    <div className="card" style={{ padding: '20px', minWidth: '260px' }}>
+      <p className="section-label" style={{ marginBottom: '8px' }}>Bulk Import</p>
+      <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '14px', lineHeight: '1.4' }}>
+        CSV columns: name, email,<br />manager_email, department, role
+      </p>
+      <label style={{
+        display: 'inline-flex', alignItems: 'center', gap: '8px',
+        background: 'var(--surface-card)', color: 'var(--ink)',
+        border: '1px solid var(--hairline-strong)', borderRadius: '8px',
+        padding: '8px 14px', fontSize: '13px', fontWeight: '500',
+        cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.5 : 1,
+      }}>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+        </svg>
+        {loading ? 'Importing...' : 'Upload CSV'}
+        <input ref={inputRef} type="file" accept=".csv" onChange={handleUpload}
+          disabled={loading} style={{ display: 'none' }} />
+      </label>
       {result && (
-        <div className="mt-2 text-xs">
-          <p className="text-green-600">{result.imported} employees imported.</p>
-          {result.errors.map((err, i) => <p key={i} className="text-red-500">{err}</p>)}
+        <div style={{ marginTop: '12px' }}>
+          <p style={{ fontSize: '12px', color: 'var(--semantic-success)' }}>{result.imported} imported</p>
+          {result.errors.map((err, i) => (
+            <p key={i} style={{ fontSize: '11px', color: 'var(--semantic-error)', marginTop: '2px' }}>{err}</p>
+          ))}
         </div>
       )}
     </div>

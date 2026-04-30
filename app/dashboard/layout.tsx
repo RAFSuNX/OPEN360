@@ -8,15 +8,35 @@ export default async function DashboardLayout({ children }: { children: React.Re
   if (!session?.user) redirect('/login')
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b px-6 py-3 flex items-center justify-between">
-        <span className="font-bold text-lg">OPEN360</span>
+    <div style={{ minHeight: '100vh', background: 'var(--canvas)' }}>
+      <nav style={{
+        background: 'var(--canvas)',
+        borderBottom: '1px solid var(--hairline)',
+        height: '56px',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 24px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+          <div style={{ width: '20px', height: '20px', background: 'var(--primary)', borderRadius: '5px', flexShrink: 0 }} />
+          <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>OPEN360</span>
+        </div>
         {session.user.isAdmin && (
-          <Link href="/admin" className="text-sm text-blue-600 hover:underline">Admin Panel</Link>
+          <Link href="/admin" style={{
+            fontSize: '13px', fontWeight: '500', color: 'var(--primary)',
+            textDecoration: 'none', marginRight: '16px',
+          }}>Admin Panel</Link>
         )}
-        <span className="text-sm text-gray-500">{session.user.email}</span>
+        <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+          {session.user.email}
+        </span>
       </nav>
-      <main className="p-6">{children}</main>
+      <main style={{ padding: '32px 24px', maxWidth: '900px', margin: '0 auto' }}>
+        {children}
+      </main>
     </div>
   )
 }
