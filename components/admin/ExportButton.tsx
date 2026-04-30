@@ -43,122 +43,285 @@ export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', c
       if (!res.ok) { alert('Export failed'); return }
       const results: Record<string, { relationship: string; visible: boolean; reason?: string; questions: { text: string; type: string; category: string; average?: number; answers?: string[] }[] }> = await res.json()
 
-      // Dynamic import jspdf to avoid SSR issues
       const { jsPDF } = await import('jspdf')
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
 
-      const pageW = doc.internal.pageSize.getWidth()
-      const pageH = doc.internal.pageSize.getHeight()
-      const margin = 18
-      const contentW = pageW - margin * 2
-      let y = margin
+      const W = doc.internal.pageSize.getWidth()   // 210
+      const H = doc.internal.pageSize.getHeight()  // 297
+      const ML = 20   // left margin
+      const MR = 20   // right margin
+      const CW = W - ML - MR
+      const FOOTER_H = 14
+      let y = 0
 
-      function checkPage(needed = 10) {
-        if (y + needed > pageH - margin) { doc.addPage(); y = margin }
+      // Colors
+      const INK    = [38, 37, 30]   as [number,number,number]
+      const BODY   = [90, 88, 82]   as [number,number,number]
+      const MUTED  = [128, 125, 114] as [number,number,number]
+      const HAIR   = [230, 229, 224] as [number,number,number]
+      const CANVAS = [247, 247, 244] as [number,number,number]
+      const ORANGE = [245, 78, 0]   as [number,number,number]
+      const WHITE  = [255, 255, 255] as [number,number,number]
+
+      function addPageHeader() {
+        // Thin orange top strip
+        doc.setFillColor(...ORANGE)
+        doc.rect(0, 0, W, 5, 'F')
+        // Warm canvas bg strip
+        doc.setFillColor(...CANVAS)
+        doc.rect(0, 5, W, 14, 'F')
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(...MUTED)
+        doc.text('OPEN360  360-DEGREE REVIEW', ML, 14)
+        doc.setFont('helvetica', 'normal')
+        doc.text(employeeName.toUpperCase(), W - MR, 14, { align: 'right' })
+        // hairline below header
+        doc.setDrawColor(...HAIR)
+        doc.line(ML, 19, W - MR, 19)
+        y = 26
       }
 
-      // Header
-      doc.setFillColor(245, 78, 0) // primary orange
-      doc.rect(0, 0, pageW, 14, 'F')
-      doc.setTextColor(255, 255, 255)
-      doc.setFontSize(11)
-      doc.setFont('helvetica', 'bold')
-      doc.text('OPEN360 - 360-Degree Review Results', margin, 9.5)
-      y = 22
+      function addPageFooter(page: number, total: number) {
+        doc.setDrawColor(...HAIR)
+        doc.line(ML, H - FOOTER_H + 2, W - MR, H - FOOTER_H + 2)
+        doc.setFontSize(7.5)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(...MUTED)
+        doc.text('Confidential - For internal HR use only', ML, H - 7)
+        doc.text(`Page ${page} of ${total}`, W - MR, H - 7, { align: 'right' })
+      }
 
-      doc.setTextColor(38, 37, 30)
-      doc.setFontSize(18)
-      doc.setFont('helvetica', 'bold')
-      doc.text(employeeName, margin, y)
-      y += 8
+      function checkPage(needed = 12) {
+        if (y + needed > H - FOOTER_H - 4) {
+          doc.addPage()
+          addPageHeader()
+        }
+      }
 
-      doc.setFontSize(11)
+      // ─── COVER PAGE ────────────────────────────────────────────────────────
+      // Large orange block top half
+      doc.setFillColor(...ORANGE)
+      doc.rect(0, 0, W, H * 0.42, 'F')
+
+      // Org/brand wordmark
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...WHITE)
+      doc.text('OPEN360', ML, 18)
+
+      // Big name
+      doc.setFontSize(32)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...WHITE)
+      const nameLines = doc.splitTextToSize(employeeName, CW) as string[]
+      doc.text(nameLines, ML, 60)
+
+      // Subtitle
+      doc.setFontSize(13)
       doc.setFont('helvetica', 'normal')
-      doc.setTextColor(90, 88, 82)
-      doc.text(cycleTitle, margin, y)
-      y += 6
-      doc.text(`Generated ${new Date().toLocaleDateString()}`, margin, y)
-      y += 10
+      doc.setTextColor(255, 200, 170)
+      doc.text('360-Degree Performance Review', ML, 60 + nameLines.length * 14 + 4)
 
-      // Hairline
-      doc.setDrawColor(230, 229, 224)
-      doc.line(margin, y, pageW - margin, y)
-      y += 8
+      // Cycle pill
+      const pillY = H * 0.42 - 18
+      doc.setFillColor(255, 255, 255, 0.15)
+      doc.setFontSize(9)
+      doc.setFont('helvetica', 'bold')
+      doc.setTextColor(...WHITE)
+      doc.text(cycleTitle, ML, pillY)
 
+      // Lower half meta cards
+      const cardTop = H * 0.42 + 10
+      const cardH = 22
+
+      const metaItems = [
+        { label: 'GENERATED', value: new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) },
+        { label: 'CLASSIFICATION', value: 'Confidential' },
+        { label: 'RESPONDENT GROUPS', value: ['Self', 'Manager', 'Peers', 'Direct Reports'].filter(r => results[r.replace(' ', '_').toUpperCase()]?.visible).join(', ') || 'See report' },
+      ]
+
+      metaItems.forEach((item, i) => {
+        const cx = ML + i * (CW / 3 + 2)
+        doc.setFillColor(...CANVAS)
+        doc.roundedRect(cx, cardTop, CW / 3 - 2, cardH, 2, 2, 'F')
+        doc.setFontSize(7)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(...MUTED)
+        doc.text(item.label, cx + 5, cardTop + 7)
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'normal')
+        doc.setTextColor(...INK)
+        const vLines = doc.splitTextToSize(item.value, CW / 3 - 12) as string[]
+        doc.text(vLines, cx + 5, cardTop + 14)
+      })
+
+      // Summary ratings strip
+      const ratingQs = Object.values(results).flatMap(s =>
+        s.visible ? s.questions.filter(q => q.type === 'RATING' && q.average !== undefined) : []
+      )
+      if (ratingQs.length > 0) {
+        const stripY = cardTop + cardH + 14
+        doc.setFontSize(9)
+        doc.setFont('helvetica', 'bold')
+        doc.setTextColor(...INK)
+        doc.text('OVERALL SCORES AT A GLANCE', ML, stripY)
+        doc.setDrawColor(...HAIR)
+        doc.line(ML, stripY + 3, W - MR, stripY + 3)
+
+        let sx = ML
+        const itemW = CW / Math.min(ratingQs.length, 4)
+        ratingQs.slice(0, 4).forEach(q => {
+          const scoreY = stripY + 18
+          // Score
+          doc.setFontSize(26)
+          doc.setFont('helvetica', 'bold')
+          doc.setTextColor(...ORANGE)
+          doc.text(String(q.average), sx, scoreY)
+          doc.setFontSize(10)
+          doc.setTextColor(...MUTED)
+          doc.text('/5', sx + 14, scoreY)
+          // Category
+          doc.setFontSize(7.5)
+          doc.setFont('helvetica', 'normal')
+          doc.setTextColor(...MUTED)
+          const catLines = doc.splitTextToSize(q.category, itemW - 4) as string[]
+          doc.text(catLines, sx, scoreY + 5)
+          // Rating bar
+          const barY = scoreY + 10
+          const barW = itemW - 8
+          doc.setFillColor(...HAIR)
+          doc.roundedRect(sx, barY, barW, 2.5, 1, 1, 'F')
+          doc.setFillColor(...ORANGE)
+          doc.roundedRect(sx, barY, barW * ((q.average ?? 0) / 5), 2.5, 1, 1, 'F')
+          sx += itemW
+        })
+      }
+
+      // ─── CONTENT PAGES ─────────────────────────────────────────────────────
       const relOrder = ['SELF', 'MANAGER', 'PEER', 'DIRECT_REPORT']
+
       for (const rel of relOrder) {
         const section = results[rel]
         if (!section) continue
 
-        checkPage(20)
+        doc.addPage()
+        addPageHeader()
 
-        // Section header
-        doc.setFillColor(247, 247, 244)
-        doc.rect(margin, y - 4, contentW, 10, 'F')
-        doc.setFontSize(9)
+        // Section title band
+        doc.setFillColor(...INK)
+        doc.rect(ML, y - 4, CW, 12, 'F')
+        doc.setFontSize(10)
         doc.setFont('helvetica', 'bold')
-        doc.setTextColor(128, 125, 114)
-        doc.text((REL_LABELS[rel] ?? rel).toUpperCase(), margin + 3, y + 2.5)
-        y += 10
+        doc.setTextColor(...WHITE)
+        doc.text((REL_LABELS[rel] ?? rel).toUpperCase(), ML + 5, y + 4)
+        y += 14
 
         if (!section.visible) {
           doc.setFontSize(10)
           doc.setFont('helvetica', 'italic')
-          doc.setTextColor(160, 156, 146)
-          doc.text(section.reason ?? 'Not enough responses', margin + 3, y)
-          y += 10
+          doc.setTextColor(...MUTED)
+          doc.text(section.reason ?? 'Insufficient responses for anonymous display', ML, y + 6)
           continue
         }
 
         for (const q of section.questions) {
-          checkPage(16)
+          checkPage(q.type === 'RATING' ? 30 : 24)
+
+          // Question card background
+          const startY = y
+          // Question text
           doc.setFontSize(10)
           doc.setFont('helvetica', 'bold')
-          doc.setTextColor(38, 37, 30)
-          const lines = doc.splitTextToSize(q.text, contentW - 6) as string[]
-          doc.text(lines, margin + 3, y)
-          y += lines.length * 5 + 2
+          doc.setTextColor(...INK)
+          const qLines = doc.splitTextToSize(q.text, CW - 4) as string[]
+          doc.text(qLines, ML, y)
+          y += qLines.length * 5.5
+
+          // Category badge
+          doc.setFontSize(7)
+          doc.setFont('helvetica', 'bold')
+          doc.setTextColor(...MUTED)
+          const badgeW = doc.getTextWidth(q.category) + 6
+          doc.setFillColor(...CANVAS)
+          doc.roundedRect(ML, y + 1, badgeW, 5, 1, 1, 'F')
+          doc.setTextColor(...MUTED)
+          doc.text(q.category, ML + 3, y + 4.5)
+          y += 9
 
           if (q.type === 'RATING' && q.average !== undefined) {
-            doc.setFontSize(22)
+            checkPage(20)
+            // Score + bar
+            doc.setFontSize(28)
             doc.setFont('helvetica', 'bold')
-            doc.setTextColor(245, 78, 0)
-            doc.text(String(q.average), margin + 3, y + 6)
-            doc.setFontSize(11)
-            doc.setTextColor(128, 125, 114)
-            doc.text('/ 5', margin + 18, y + 6)
-            y += 14
+            doc.setTextColor(...ORANGE)
+            doc.text(String(q.average), ML, y + 8)
+            doc.setFontSize(12)
+            doc.setTextColor(...MUTED)
+            doc.text('out of 5', ML + 18, y + 8)
+
+            // Visual bar
+            const barX = ML + 45
+            const barW = CW - 45
+            const barH2 = 5
+            const barY2 = y + 3
+            doc.setFillColor(...HAIR)
+            doc.roundedRect(barX, barY2, barW, barH2, 2, 2, 'F')
+            doc.setFillColor(...ORANGE)
+            doc.roundedRect(barX, barY2, barW * ((q.average) / 5), barH2, 2, 2, 'F')
+            // Tick marks at 1-5
+            for (let t = 1; t <= 5; t++) {
+              const tx = barX + barW * (t / 5)
+              doc.setDrawColor(...WHITE)
+              doc.setLineWidth(0.4)
+              doc.line(tx, barY2, tx, barY2 + barH2)
+            }
+            doc.setLineWidth(0.2)
+            y += 16
           }
 
-          if (q.type === 'OPEN_TEXT' && q.answers?.length) {
-            doc.setFontSize(10)
-            doc.setFont('helvetica', 'normal')
-            doc.setTextColor(90, 88, 82)
-            for (const ans of q.answers) {
-              checkPage(8)
-              const ansLines = doc.splitTextToSize(`• ${ans}`, contentW - 10) as string[]
-              doc.text(ansLines, margin + 6, y)
-              y += ansLines.length * 5 + 2
+          if (q.type === 'OPEN_TEXT') {
+            const answers = q.answers ?? []
+            if (answers.length === 0) {
+              doc.setFontSize(9)
+              doc.setFont('helvetica', 'italic')
+              doc.setTextColor(...MUTED)
+              doc.text('No responses submitted', ML, y)
+              y += 8
+            } else {
+              for (const ans of answers) {
+                checkPage(14)
+                // Quote block
+                doc.setFillColor(...CANVAS)
+                const ansLines = doc.splitTextToSize(ans, CW - 12) as string[]
+                const blockH = ansLines.length * 5 + 8
+                doc.roundedRect(ML, y, CW, blockH, 2, 2, 'F')
+                // Orange left accent
+                doc.setFillColor(...ORANGE)
+                doc.roundedRect(ML, y, 2.5, blockH, 1, 1, 'F')
+                doc.setFontSize(9.5)
+                doc.setFont('helvetica', 'normal')
+                doc.setTextColor(...BODY)
+                doc.text(ansLines, ML + 7, y + 6)
+                y += blockH + 4
+              }
             }
           }
 
+          // Divider
           y += 4
-          doc.setDrawColor(239, 238, 232)
-          doc.line(margin + 3, y, pageW - margin - 3, y)
-          y += 6
+          doc.setDrawColor(...HAIR)
+          doc.setLineWidth(0.3)
+          doc.line(ML, y, W - MR, y)
+          y += 7
         }
-        y += 4
       }
 
-      // Footer on each page
+      // Add footers to all pages (skip cover)
       const totalPages = doc.getNumberOfPages()
-      for (let p = 1; p <= totalPages; p++) {
+      for (let p = 2; p <= totalPages; p++) {
         doc.setPage(p)
-        doc.setFontSize(8)
-        doc.setTextColor(160, 156, 146)
-        doc.setFont('helvetica', 'normal')
-        doc.text(`OPEN360 · Confidential · Page ${p} of ${totalPages}`, margin, pageH - 8)
-        doc.text(new Date().toLocaleDateString(), pageW - margin, pageH - 8, { align: 'right' })
+        addPageFooter(p - 1, totalPages - 1)
       }
 
       doc.save(`${employeeName}-${cycleTitle}.pdf`.replace(/\s+/g, '-'))
