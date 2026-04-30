@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getOrgSettings } from '@/lib/org'
-import Link from 'next/link'
+import NavLink from '@/components/NavLink'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
@@ -14,7 +14,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const logoUrl = org.org_logo_url
 
   const navItems = [
-    { href: '/admin', label: 'Overview' },
+    { href: '/admin', label: 'Overview', exact: true },
     { href: '/admin/employees', label: 'Employees' },
     { href: '/admin/cycles', label: 'Cycles' },
     { href: '/admin/questions', label: 'Questions' },
@@ -33,8 +33,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         position: 'sticky',
         top: 0,
         zIndex: 10,
+        backdropFilter: 'blur(8px)',
+        background: 'rgba(247,247,244,0.92)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '32px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '28px' }}>
           {logoUrl
             ? <img src={logoUrl} alt={displayName} style={{ height: '24px', maxWidth: '80px', objectFit: 'contain' }} />
             : <div style={{ width: '20px', height: '20px', background: 'var(--primary)', borderRadius: '5px', flexShrink: 0 }} />
@@ -42,10 +44,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>{displayName}</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
-          {navItems.map(({ href, label }) => (
-            <Link key={href} href={href} className="nav-link" style={{ padding: '6px 10px', borderRadius: '6px' }}>
-              {label}
-            </Link>
+          {navItems.map(({ href, label, exact }) => (
+            <NavLink key={href} href={href} exact={exact}>{label}</NavLink>
           ))}
         </div>
         <div style={{ textAlign: 'right' as const }}>

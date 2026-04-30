@@ -3,6 +3,7 @@ import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getOrgSettings } from '@/lib/org'
 import Link from 'next/link'
+import NavLink from '@/components/NavLink'
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
@@ -15,7 +16,6 @@ export default async function DashboardLayout({ children }: { children: React.Re
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)' }}>
       <nav style={{
-        background: 'var(--canvas)',
         borderBottom: '1px solid var(--hairline)',
         height: '56px',
         display: 'flex',
@@ -24,6 +24,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
         position: 'sticky',
         top: 0,
         zIndex: 10,
+        backdropFilter: 'blur(8px)',
+        background: 'rgba(247,247,244,0.92)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
           {logoUrl
@@ -32,15 +34,23 @@ export default async function DashboardLayout({ children }: { children: React.Re
           }
           <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>{displayName}</span>
         </div>
-        {session.user.isAdmin && (
-          <Link href="/admin" style={{
-            fontSize: '13px', fontWeight: '500', color: 'var(--primary)',
-            textDecoration: 'none', marginRight: '16px',
-          }}>Admin Panel</Link>
-        )}
-        <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>
-          {session.user.email}
-        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <NavLink href="/dashboard" exact>My Reviews</NavLink>
+          {session.user.isAdmin && (
+            <Link href="/admin" style={{
+              fontSize: '13px', fontWeight: '500', color: 'var(--primary)',
+              textDecoration: 'none',
+              padding: '5px 10px', borderRadius: '6px',
+              border: '1px solid rgba(245,78,0,0.2)',
+              transition: 'background 0.12s',
+            }}>
+              Admin Panel
+            </Link>
+          )}
+          <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+            {session.user.email}
+          </span>
+        </div>
       </nav>
       <main style={{ padding: '32px 24px', maxWidth: '900px', margin: '0 auto' }}>
         {children}
