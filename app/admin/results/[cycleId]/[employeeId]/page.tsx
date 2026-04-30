@@ -17,7 +17,7 @@ export default async function AdminResultsPage({
 
   const [cycle, employee] = await Promise.all([
     getCycle(cycleId),
-    db.employee.findUnique({ where: { id: employeeId }, select: { id: true, name: true, email: true, role: true } }),
+    db.employee.findUnique({ where: { id: employeeId }, select: { id: true, name: true, email: true, role: true, employeeId: true, department: true } }),
   ])
 
   if (!cycle || !employee) notFound()
@@ -40,7 +40,14 @@ export default async function AdminResultsPage({
           <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>{employee.email}</p>
         </div>
         <span className="badge" style={{ marginLeft: 'auto' }}>{cycle.title}</span>
-        <ExportButton cycleId={cycleId} employeeId={employeeId} employeeName={employee.name} cycleTitle={cycle.title} />
+        <ExportButton
+          cycleId={cycleId} employeeId={employeeId}
+          employeeName={employee.name} cycleTitle={cycle.title}
+          employeeEmail={employee.email}
+          employeeIdCode={employee.employeeId ?? undefined}
+          employeeRole={employee.role ?? undefined}
+          employeeDepartment={employee.department ?? undefined}
+        />
       </div>
       <MyResults results={results} />
     </div>

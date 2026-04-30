@@ -6,6 +6,10 @@ interface ExportButtonProps {
   employeeId: string
   employeeName?: string
   cycleTitle?: string
+  employeeEmail?: string
+  employeeIdCode?: string
+  employeeRole?: string
+  employeeDepartment?: string
 }
 
 const REL_LABELS: Record<string, string> = {
@@ -15,7 +19,7 @@ const REL_LABELS: Record<string, string> = {
   DIRECT_REPORT: 'Direct Reports',
 }
 
-export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', cycleTitle = 'Review' }: ExportButtonProps) {
+export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', cycleTitle = 'Review', employeeEmail, employeeIdCode, employeeRole, employeeDepartment }: ExportButtonProps) {
   const [loadingCsv, setLoadingCsv] = useState(false)
   const [loadingPdf, setLoadingPdf] = useState(false)
 
@@ -123,9 +127,22 @@ export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', c
       doc.setTextColor(255, 200, 170)
       doc.text('360-Degree Performance Review', ML, 60 + nameLines.length * 14 + 4)
 
+      // Employee details below name
+      const detailY = 60 + nameLines.length * 14 + 18
+      const details = [
+        employeeIdCode ? `ID: ${employeeIdCode}` : null,
+        employeeRole ?? null,
+        employeeDepartment ?? null,
+        employeeEmail ?? null,
+      ].filter(Boolean) as string[]
+
+      doc.setFontSize(10)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(255, 200, 170)
+      doc.text(details.join('  |  '), ML, detailY)
+
       // Cycle pill
       const pillY = H * 0.42 - 18
-      doc.setFillColor(255, 255, 255, 0.15)
       doc.setFontSize(9)
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(...WHITE)
