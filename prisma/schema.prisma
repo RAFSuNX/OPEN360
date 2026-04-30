@@ -105,7 +105,7 @@ model Question {
   type        QuestionType
   ratingScale Int?         @map("rating_scale")
   category    String
-  sortOrder   Int          @default(0) @map("sort_order")
+  sortOrder   Int          @unique @default(0) @map("sort_order")
   isActive    Boolean      @default(true) @map("is_active")
 
   responses ReviewResponse[]
