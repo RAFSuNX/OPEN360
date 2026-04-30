@@ -6,8 +6,16 @@ export async function listCycles() {
 }
 
 export async function createCycle(data: { title: string; startDate: string; endDate: string }) {
+  const start = new Date(data.startDate)
+  const end = new Date(data.endDate)
+
+  // [P3] Validate dates before persisting
+  if (isNaN(start.getTime())) throw new Error('Invalid start date')
+  if (isNaN(end.getTime())) throw new Error('Invalid end date')
+  if (end <= start) throw new Error('End date must be after start date')
+
   return db.reviewCycle.create({
-    data: { title: data.title, startDate: new Date(data.startDate), endDate: new Date(data.endDate) },
+    data: { title: data.title, startDate: start, endDate: end },
   })
 }
 

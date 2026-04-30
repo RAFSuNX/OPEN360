@@ -5,7 +5,10 @@ import { Relationship } from '@prisma/client'
 async function getAnonymityThreshold(): Promise<number> {
   try {
     const setting = await db.setting.findUnique({ where: { key: 'anonymity_threshold' } })
-    return setting ? parseInt(setting.value, 10) : 1
+    if (!setting) return 1
+    const parsed = parseInt(setting.value, 10)
+    // [P2] Guard against NaN/invalid values - default to 1
+    return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1
   } catch {
     return 1
   }
@@ -66,7 +69,10 @@ export async function buildResults(cycleId: string, revieweeId: string, forAdmin
 
     const questionResults = questions.map(q => {
       const qResponses = relResponses.filter(r => r.questionId === q.id)
-      const decrypted = qResponses.map(r => decrypt(r.answerEncrypted))
+      // [P2] Wrap decrypt in try/catch - one corrupted ciphertext must not break the whole results page
+      const decrypted = qResponses.map(r => {
+        try { return decrypt(r.answerEncrypted) } catch { return null }
+      }).filter(Boolean) as string[]
 
       if (q.type === 'RATING') {
         const nums = decrypted.map(Number).filter(n => !isNaN(n) && n > 0)

@@ -11,6 +11,12 @@ export async function GET(
   if (!session?.user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
+
+  // [P1] IDOR fix: employees can only view their own profile; admins can view any
+  if (!session.user.isAdmin && session.user.id !== id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
+
   const employee = await db.employee.findUnique({
     where: { id },
     select: {

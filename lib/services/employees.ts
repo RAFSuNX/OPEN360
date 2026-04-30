@@ -24,13 +24,17 @@ export async function createEmployee(data: {
   role?: string
   managerId?: string
 }) {
-  await db.allowlist.upsert({
-    where: { email: data.email },
-    update: {},
-    create: { email: data.email },
-  })
+  // [P2] Wrap in transaction so allowlist and employee are always in sync.
+  // If employee creation fails, the allowlist entry is rolled back too.
   try {
-    return await db.employee.create({ data })
+    return await db.$transaction(async tx => {
+      await tx.allowlist.upsert({
+        where: { email: data.email },
+        update: {},
+        create: { email: data.email },
+      })
+      return tx.employee.create({ data })
+    })
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
       throw new EmployeeExistsError(data.email)
