@@ -49,7 +49,8 @@ export async function sendCycleEmails(cycleId: string) {
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   const orgSettings = await getOrgSettings()
-  const org = { orgName: orgSettings.org_name, orgLogoUrl: orgSettings.org_logo_email || orgSettings.org_logo_url, orgTagline: orgSettings.org_tagline }
+  const logoEmailUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
+  const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
   for (const a of assignments) {
     const { subject, html } = buildReviewInviteEmail({
       reviewerName: a.reviewer.name,
@@ -76,7 +77,8 @@ export async function sendResultsEmails(cycleId: string) {
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   const orgSettings = await getOrgSettings()
-  const org = { orgName: orgSettings.org_name, orgLogoUrl: orgSettings.org_logo_email || orgSettings.org_logo_url, orgTagline: orgSettings.org_tagline }
+  const logoEmailUrl2 = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
+  const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl2, orgTagline: orgSettings.org_tagline }
   for (const r of reviewees) {
     const { subject, html } = buildResultsReadyEmail({
       employeeName: r.reviewee.name,

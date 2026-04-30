@@ -27,7 +27,8 @@ export async function POST(req: NextRequest) {
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   const orgSettings = await getOrgSettings()
-  const org = { orgName: orgSettings.org_name, orgLogoUrl: orgSettings.org_logo_email || orgSettings.org_logo_url, orgTagline: orgSettings.org_tagline }
+  const logoUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
+  const org = { orgName: orgSettings.org_name, orgLogoUrl: logoUrl, orgTagline: orgSettings.org_tagline }
 
   const { subject, html } = buildReviewInviteEmail({
     reviewerName: assignment.reviewer.name,

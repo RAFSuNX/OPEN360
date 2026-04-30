@@ -11,10 +11,8 @@ export interface OrgBranding {
 
 function emailHeader(org: OrgBranding): string {
   const name = org.orgName || 'OPEN360'
-  // Skip base64 logos in email - they balloon email size past Gmail's 102KB clip limit.
-  // Only use the logo if it's a remote URL (http/https).
-  const isRemoteUrl = org.orgLogoUrl?.startsWith('http')
-  const logo = isRemoteUrl
+  // Use HTTP logo URL (served via /api/logo) - Gmail blocks data: URIs in images
+  const logo = org.orgLogoUrl?.startsWith('http')
     ? `<img src="${org.orgLogoUrl}" alt="${name}" style="height:36px;max-width:160px;object-fit:contain;display:block;" />`
     : `<span style="font-size:18px;font-weight:600;color:#26251e;">${name}</span>`
   return `
