@@ -255,7 +255,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
         </p>
       )}
 
-      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div style={{ overflowX: 'auto' }}>
       <table className="data-table">
         <thead>
           <tr>
