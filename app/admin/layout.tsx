@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)' }}>
       <nav style={{
-        background: 'var(--canvas)',
+        background: 'rgba(247,247,244,0.92)',
         borderBottom: '1px solid var(--hairline)',
         minHeight: '56px',
         height: 'auto',
@@ -37,7 +37,6 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         top: 0,
         zIndex: 10,
         backdropFilter: 'blur(8px)',
-        background: 'rgba(247,247,244,0.92)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '28px' }}>
           {logoUrl
