@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
 
-# Cancel previous in-progress builds on the same branch
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: true
@@ -17,14 +16,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
       packages: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -40,7 +37,6 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push multi-arch image
-        id: build
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -51,17 +47,3 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-      - name: Update image tag in deployment manifest
-        run: |
-          sed -i "s|image: .*rafsunx/open360.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}|g" k8s/deployment.yaml
-
-      - name: Commit updated manifest
-        run: |
-          git config user.name "rafsunx"
-          git config user.email "git@rafsunx.com"
-          git add k8s/deployment.yaml
-          git diff --staged --quiet && echo "No changes to commit" && exit 0
-          git commit -m "ci: update image to ${{ github.sha }}"
-          git pull --rebase origin main
-          git push
