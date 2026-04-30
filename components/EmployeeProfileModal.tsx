@@ -74,7 +74,7 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
 
             {profile.directReports.length > 0 && (
               <div style={{ paddingTop: '12px', borderTop: '1px solid var(--hairline-soft)' }}>
-                <p className="section-label" style={{ marginBottom: '8px' }}>Direct Reports ({profile.directReports.length})</p>
+                <p className="section-label" style={{ marginBottom: '8px' }}>People who report to {profile.name.split(' ')[0]} ({profile.directReports.length})</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {profile.directReports.map(r => (
                     <div key={r.id} style={{ display: 'flex', justifyContent: 'space-between' }}>
