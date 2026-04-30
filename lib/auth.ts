@@ -1,6 +1,7 @@
 import { NextAuthOptions, getServerSession } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import { JWT } from 'next-auth/jwt'
+import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 
 export const authOptions: NextAuthOptions = {
@@ -47,12 +48,13 @@ export const authOptions: NextAuthOptions = {
 
 export async function requireAdmin() {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) throw new Error('Unauthorized')
+  if (!session?.user) redirect('/login')
+  if (!session.user.isAdmin) redirect('/dashboard')
   return session
 }
 
 export async function requireAuth() {
   const session = await getServerSession(authOptions)
-  if (!session?.user) throw new Error('Unauthorized')
+  if (!session?.user) redirect('/login')
   return session
 }
