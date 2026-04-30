@@ -121,7 +121,9 @@ export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', c
               reader.onload = () => resolve(reader.result as string)
               reader.readAsDataURL(logoBlob)
             })
-            doc.addImage(logoDataUrl, 'JPEG', ML, 10, 30, 10, undefined, 'FAST')
+            // Derive format from data URL mime type, not hardcoded JPEG
+            const imgFormat = logoBlob.type.includes('png') ? 'PNG' : logoBlob.type.includes('webp') ? 'WEBP' : 'JPEG'
+            doc.addImage(logoDataUrl, imgFormat, ML, 10, 30, 10, undefined, 'FAST')
           }
         } catch { /* skip logo if fetch fails */ }
       }

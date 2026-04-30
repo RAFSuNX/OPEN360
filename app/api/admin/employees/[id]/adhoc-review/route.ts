@@ -26,7 +26,12 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   let reviewerAssignments: { reviewerId: string; relationship: Relationship }[]
 
   if (reviewerIds && reviewerIds.length > 0) {
-    // Manual selection - determine relationship from org tree
+    // [P1] Validate all reviewer IDs exist and are active before creating anything
+    const validIds = new Set(allEmployees.map(e => e.id))
+    const invalid = (reviewerIds as string[]).filter(rid => !validIds.has(rid))
+    if (invalid.length > 0) {
+      return NextResponse.json({ error: `Invalid reviewer IDs: ${invalid.join(', ')}` }, { status: 400 })
+    }
     const orgMap = mapAssignments(id, allEmployees)
     reviewerAssignments = (reviewerIds as string[]).map((rid: string) => {
       const found = orgMap.find(a => a.reviewerId === rid)
@@ -41,15 +46,15 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'No reviewers found. Assign a manager or peers first.' }, { status: 400 })
   }
 
-  // Create a dedicated cycle for this employee
-  const cycleTitle = title || `Ad-hoc: ${reviewee.name} - ${new Date().toLocaleDateString()}`
+  // [P2] Validate end date before creating the cycle
+  const now = new Date()
+  const parsedEnd = endDate ? new Date(endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+  if (isNaN(parsedEnd.getTime())) return NextResponse.json({ error: 'Invalid end date' }, { status: 400 })
+  if (parsedEnd <= now) return NextResponse.json({ error: 'End date must be in the future' }, { status: 400 })
+
+  const cycleTitle = title || `Ad-hoc: ${reviewee.name} - ${now.toLocaleDateString()}`
   const cycle = await db.reviewCycle.create({
-    data: {
-      title: cycleTitle,
-      startDate: new Date(),
-      endDate: endDate ? new Date(endDate) : new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      status: 'ACTIVE',
-    },
+    data: { title: cycleTitle, startDate: now, endDate: parsedEnd, status: 'ACTIVE' },
   })
 
   // Create assignments

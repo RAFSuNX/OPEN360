@@ -40,26 +40,30 @@ export function OnboardingFlow() {
   async function finish() {
     if (!orgName.trim()) { setError('Organization name is required'); return }
     setSaving(true); setError('')
-    // Compress logo for email use (avoids Gmail clipping)
-    const emailLogoUrl = logoUrl && logoUrl.startsWith('data:')
-      ? await compressLogoForEmail(logoUrl)
-      : logoUrl
-    const res = await fetch('/api/admin/settings', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        org_name: orgName.trim(),
-        org_tagline: orgTagline.trim(),
-        org_logo_url: logoUrl,
-        org_logo_email: emailLogoUrl,
-        onboarding_complete: 'true',
-      }),
-    })
-    if (res.ok) {
-      router.push('/admin')
-      router.refresh()
-    } else {
-      setError('Failed to save. Please try again.')
+    try {
+      const emailLogoUrl = logoUrl && logoUrl.startsWith('data:')
+        ? await compressLogoForEmail(logoUrl)
+        : logoUrl
+      const res = await fetch('/api/admin/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          org_name: orgName.trim(),
+          org_tagline: orgTagline.trim(),
+          org_logo_url: logoUrl,
+          org_logo_email: emailLogoUrl,
+          onboarding_complete: 'true',
+        }),
+      })
+      if (res.ok) {
+        router.push('/admin')
+        router.refresh()
+      } else {
+        setError('Failed to save. Please try again.')
+      }
+    } catch {
+      setError('Network error. Please check your connection and try again.')
+    } finally {
       setSaving(false)
     }
   }
