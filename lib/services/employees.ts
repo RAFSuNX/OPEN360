@@ -84,6 +84,12 @@ export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResu
   return { imported, errors }
 }
 
-export async function updateEmployeeManager(id: string, managerId: string | null) {
-  return db.employee.update({ where: { id }, data: { managerId } })
+export async function updateEmployee(id: string, data: {
+  name?: string
+  employeeId?: string | null
+  department?: string | null
+  role?: string | null
+  managerId?: string | null
+}) {
+  return db.employee.update({ where: { id }, data })
 }

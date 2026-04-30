@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { listEmployees, createEmployee, updateEmployeeManager, EmployeeExistsError } from '@/lib/services/employees'
+import { listEmployees, createEmployee, updateEmployee, EmployeeExistsError } from '@/lib/services/employees'
 
 export async function GET() {
   const session = await getServerSession(authOptions)
@@ -31,9 +31,15 @@ export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id, managerId } = await req.json()
+  const { id, name, employeeId, department, role, managerId } = await req.json()
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  const employee = await updateEmployeeManager(id, managerId ?? null)
+  const employee = await updateEmployee(id, {
+    name: name ?? undefined,
+    employeeId: employeeId ?? null,
+    department: department ?? null,
+    role: role ?? null,
+    managerId: managerId ?? null,
+  })
   return NextResponse.json(employee)
 }
