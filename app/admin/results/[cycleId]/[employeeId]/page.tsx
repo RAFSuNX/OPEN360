@@ -40,7 +40,7 @@ export default async function AdminResultsPage({
           <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>{employee.email}</p>
         </div>
         <span className="badge" style={{ marginLeft: 'auto' }}>{cycle.title}</span>
-        <ExportButton cycleId={cycleId} employeeId={employeeId} />
+        <ExportButton cycleId={cycleId} employeeId={employeeId} employeeName={employee.name} cycleTitle={cycle.title} />
       </div>
       <MyResults results={results} />
     </div>
