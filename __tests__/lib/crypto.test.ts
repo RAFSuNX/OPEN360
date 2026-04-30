@@ -22,8 +22,11 @@ describe('crypto', () => {
 
   it('throws if ENCRYPTION_KEY is wrong length', () => {
     const original = process.env.ENCRYPTION_KEY
-    process.env.ENCRYPTION_KEY = 'tooshort'
-    expect(() => encrypt('test')).toThrow('ENCRYPTION_KEY must be 64 hex chars')
-    process.env.ENCRYPTION_KEY = original
+    try {
+      process.env.ENCRYPTION_KEY = 'tooshort'
+      expect(() => encrypt('test')).toThrow('ENCRYPTION_KEY must be 64 hex chars')
+    } finally {
+      process.env.ENCRYPTION_KEY = original
+    }
   })
 })

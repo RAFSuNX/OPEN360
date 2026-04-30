@@ -17,7 +17,9 @@ export function encrypt(text: string): string {
 }
 
 export function decrypt(payload: string): string {
-  const [ivHex, encryptedHex] = payload.split(':')
+  const colonIdx = payload.indexOf(':')
+  const ivHex = payload.slice(0, colonIdx)
+  const encryptedHex = payload.slice(colonIdx + 1)
   const iv = Buffer.from(ivHex, 'hex')
   const encryptedText = Buffer.from(encryptedHex, 'hex')
   const decipher = createDecipheriv(ALGORITHM, getKey(), iv)
