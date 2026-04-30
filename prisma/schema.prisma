@@ -27,26 +27,75 @@ model Employee {
   managerId  String?  @map("manager_id")
   createdAt  DateTime @default(now()) @map("created_at")
 
-  manager        Employee?  @relation("EmployeeManager", fields: [managerId], references: [id])
-  directReports  Employee[] @relation("EmployeeManager")
+  manager       Employee?  @relation("EmployeeManager", fields: [managerId], references: [id])
+  directReports Employee[] @relation("EmployeeManager")
 
-  reviewsAsReviewee   ReviewAssignment[] @relation("AssignmentReviewee")
-  reviewsAsReviewer   ReviewAssignment[] @relation("AssignmentReviewer")
-  responsesReceived   ReviewResponse[]
+  reviewsAsReviewee ReviewAssignment[] @relation("AssignmentReviewee")
+  reviewsAsReviewer ReviewAssignment[] @relation("AssignmentReviewer")
+  responsesReceived ReviewResponse[]
 
   @@map("employees")
 }
 
-model ReviewCycle {
-  id        String      @id @default(uuid())
-  title     String
-  startDate DateTime    @map("start_date")
-  endDate   DateTime    @map("end_date")
-  status    CycleStatus @default(DRAFT)
-  createdAt DateTime    @default(now()) @map("created_at")
+model QuestionTemplate {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
 
-  assignments ReviewAssignment[]
-  responses   ReviewResponse[]
+  items  QuestionTemplateItem[]
+  cycles ReviewCycle[]
+
+  @@map("question_templates")
+}
+
+model QuestionTemplateItem {
+  id          String       @id @default(uuid())
+  templateId  String       @map("template_id")
+  text        String
+  type        QuestionType
+  ratingScale Int?         @map("rating_scale")
+  category    String
+  sortOrder   Int          @map("sort_order")
+
+  template       QuestionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  cycleQuestions CycleQuestion[]
+
+  @@map("question_template_items")
+}
+
+model CycleQuestion {
+  id                   String       @id @default(uuid())
+  cycleId              String       @map("cycle_id")
+  sourceTemplateItemId String?      @map("source_template_item_id")
+  text                 String
+  type                 QuestionType
+  ratingScale          Int?         @map("rating_scale")
+  category             String
+  sortOrder            Int          @map("sort_order")
+
+  cycle              ReviewCycle           @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  sourceTemplateItem QuestionTemplateItem? @relation(fields: [sourceTemplateItemId], references: [id], onDelete: SetNull)
+  responses          ReviewResponse[]
+
+  @@index([cycleId])
+  @@map("cycle_questions")
+}
+
+model ReviewCycle {
+  id         String      @id @default(uuid())
+  title      String
+  startDate  DateTime    @map("start_date")
+  endDate    DateTime    @map("end_date")
+  status     CycleStatus @default(DRAFT)
+  templateId String?     @map("template_id")
+  createdAt  DateTime    @default(now()) @map("created_at")
+
+  template       QuestionTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  assignments    ReviewAssignment[]
+  responses      ReviewResponse[]
+  cycleQuestions CycleQuestion[]
 
   @@map("review_cycles")
 }
@@ -87,14 +136,16 @@ model ReviewResponse {
   id              String       @id @default(uuid())
   cycleId         String       @map("cycle_id")
   revieweeId      String       @map("reviewee_id")
-  questionId      String       @map("question_id")
+  questionId      String?      @map("question_id")
+  cycleQuestionId String?      @map("cycle_question_id")
   answerEncrypted String       @map("answer_encrypted")
   relationship    Relationship
   createdAt       DateTime     @default(now()) @map("created_at")
 
-  cycle    ReviewCycle @relation(fields: [cycleId], references: [id])
-  reviewee Employee    @relation(fields: [revieweeId], references: [id])
-  question Question    @relation(fields: [questionId], references: [id])
+  cycle         ReviewCycle    @relation(fields: [cycleId], references: [id])
+  reviewee      Employee       @relation(fields: [revieweeId], references: [id])
+  question      Question?      @relation(fields: [questionId], references: [id])
+  cycleQuestion CycleQuestion? @relation(fields: [cycleQuestionId], references: [id])
 
   @@index([cycleId, revieweeId])
   @@index([revieweeId])
