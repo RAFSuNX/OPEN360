@@ -1,5 +1,6 @@
 import { db } from '@/lib/db'
 import { encrypt } from '@/lib/crypto'
+import { notifyAdminIfCycleComplete } from '@/lib/services/notifications'
 
 export async function getPendingReviews(employeeId: string) {
   return db.reviewAssignment.findMany({
@@ -71,4 +72,7 @@ export async function submitReview(
       })),
     })
   })
+
+  // Fire-and-forget: notify admins if all non-self reviews are now complete
+  notifyAdminIfCycleComplete(assignment.cycleId).catch(() => {})
 }
