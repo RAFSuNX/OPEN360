@@ -158,8 +158,9 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
               <input placeholder="Employee ID (e.g. EMP001)" value={editForm.employeeId} onChange={e => setEditForm(f => ({ ...f, employeeId: e.target.value }))} style={inputStyle} />
               <input placeholder="Department" value={editForm.department} onChange={e => setEditForm(f => ({ ...f, department: e.target.value }))} style={inputStyle} />
               <input placeholder="Role / Title" value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))} style={inputStyle} />
+              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px', marginTop: '4px' }}>Reports to</label>
               <select value={editForm.managerId} onChange={e => setEditForm(f => ({ ...f, managerId: e.target.value }))} style={inputStyle}>
-                <option value="">No manager</option>
+                <option value="">- None -</option>
                 {employees.filter(e => e.id !== editing.id).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
               {editing.id !== currentUserId && (

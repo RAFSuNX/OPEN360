@@ -53,9 +53,10 @@ export function EmployeeForm({ managers, onSuccess }: Props) {
           onChange={e => setForm(f => ({ ...f, department: e.target.value }))} style={inputStyle} />
         <input placeholder="Role / Title" value={form.role}
           onChange={e => setForm(f => ({ ...f, role: e.target.value }))} style={inputStyle} />
+        <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px' }}>Reports to</label>
         <select value={form.managerId}
           onChange={e => setForm(f => ({ ...f, managerId: e.target.value }))} style={inputStyle}>
-          <option value="">No manager</option>
+          <option value="">- None -</option>
           {managers.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
         </select>
         <button type="submit" disabled={loading} className="btn-primary" style={{ marginTop: '4px' }}>
