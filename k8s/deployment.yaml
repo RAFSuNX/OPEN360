@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: open360
+  namespace: open360
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: open360
+  template:
+    metadata:
+      labels:
+        app: open360
+    spec:
+      containers:
+        - name: open360
+          image: ghcr.io/rafsunx/open360:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: open360-secrets
+          resources:
+            requests:
+              memory: 256Mi
+              cpu: 100m
+            limits:
+              memory: 512Mi
+              cpu: 500m
+          readinessProbe:
+            httpGet:
+              path: /login
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 5
