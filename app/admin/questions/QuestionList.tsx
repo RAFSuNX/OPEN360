@@ -14,14 +14,48 @@ const inputStyle = {
 
 const CATEGORY_SUGGESTIONS = ['Communication', 'Collaboration', 'Leadership', 'Problem Solving', 'Growth', 'Technical Skills', 'Attitude', 'Delivery']
 
+function TypeCards({ value, onChange }: { value: 'RATING' | 'OPEN_TEXT'; onChange: (v: 'RATING' | 'OPEN_TEXT') => void }) {
+  return (
+    <div style={{ display: 'flex', gap: '10px' }}>
+      {([
+        { value: 'RATING', label: 'Rating 1-5', desc: 'Numeric score, averaged across reviewers' },
+        { value: 'OPEN_TEXT', label: 'Written response', desc: 'Free text, shown as anonymous quotes' },
+      ] as const).map(opt => (
+        <label key={opt.value} style={{
+          flex: 1, padding: '10px 12px', borderRadius: '8px', cursor: 'pointer',
+          border: `1px solid ${value === opt.value ? 'var(--primary)' : 'var(--hairline-strong)'}`,
+          background: value === opt.value ? '#fef0eb' : 'var(--surface-card)',
+          transition: 'border-color 0.15s, background 0.15s',
+        }}>
+          <input type="radio" name={`type-${opt.value}`} value={opt.value} checked={value === opt.value}
+            onChange={() => onChange(opt.value)} style={{ display: 'none' }} />
+          <p style={{ fontSize: '13px', fontWeight: '600', color: value === opt.value ? 'var(--primary)' : 'var(--ink)', margin: '0 0 2px' }}>{opt.label}</p>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>{opt.desc}</p>
+        </label>
+      ))}
+    </div>
+  )
+}
+
 export function QuestionList({ initialQuestions }: { initialQuestions: Question[] }) {
   const [questions, setQuestions] = useState(initialQuestions)
   const [showForm, setShowForm] = useState(false)
-  const [text, setText] = useState('')
-  const [type, setType] = useState<'RATING' | 'OPEN_TEXT'>('RATING')
-  const [category, setCategory] = useState('')
-  const [error, setError] = useState('')
+  const [editingId, setEditingId] = useState<string | null>(null)
+
+  // New question form state
+  const [newText, setNewText] = useState('')
+  const [newType, setNewType] = useState<'RATING' | 'OPEN_TEXT'>('RATING')
+  const [newCategory, setNewCategory] = useState('')
+  const [addError, setAddError] = useState('')
   const [submitting, setSubmitting] = useState(false)
+
+  // Edit form state
+  const [editText, setEditText] = useState('')
+  const [editType, setEditType] = useState<'RATING' | 'OPEN_TEXT'>('RATING')
+  const [editCategory, setEditCategory] = useState('')
+  const [editError, setEditError] = useState('')
+  const [editSaving, setEditSaving] = useState(false)
+
   const [toggleError, setToggleError] = useState('')
 
   async function refresh() {
@@ -33,20 +67,41 @@ export function QuestionList({ initialQuestions }: { initialQuestions: Question[
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault()
-    setError('')
-    if (!text.trim()) { setError('Question text is required.'); return }
-    if (!category.trim()) { setError('Category is required.'); return }
+    setAddError('')
+    if (!newText.trim()) { setAddError('Question text is required.'); return }
+    if (!newCategory.trim()) { setAddError('Category is required.'); return }
     setSubmitting(true)
     try {
       const res = await fetch('/api/admin/questions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text: text.trim(), type, category: category.trim() }),
+        body: JSON.stringify({ text: newText.trim(), type: newType, category: newCategory.trim() }),
       })
-      if (!res.ok) { const d = await res.json(); setError(d.error ?? 'Failed to create question.'); return }
-      setText(''); setCategory(''); setType('RATING'); setShowForm(false)
+      if (!res.ok) { const d = await res.json(); setAddError(d.error ?? 'Failed'); return }
+      setNewText(''); setNewCategory(''); setNewType('RATING'); setShowForm(false)
       await refresh()
     } finally { setSubmitting(false) }
+  }
+
+  function openEdit(q: Question) {
+    setEditingId(q.id); setEditText(q.text); setEditType(q.type); setEditCategory(q.category); setEditError('')
+  }
+
+  async function handleSaveEdit(id: string) {
+    setEditError('')
+    if (!editText.trim()) { setEditError('Question text is required.'); return }
+    if (!editCategory.trim()) { setEditError('Category is required.'); return }
+    setEditSaving(true)
+    try {
+      const res = await fetch('/api/admin/questions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, text: editText.trim(), type: editType, category: editCategory.trim() }),
+      })
+      if (!res.ok) { const d = await res.json(); setEditError(d.error ?? 'Failed'); return }
+      setEditingId(null)
+      await refresh()
+    } finally { setEditSaving(false) }
   }
 
   async function handleToggle(id: string, isActive: boolean) {
@@ -65,6 +120,89 @@ export function QuestionList({ initialQuestions }: { initialQuestions: Question[
   const active = questions.filter(q => q.isActive)
   const inactive = questions.filter(q => !q.isActive)
 
+  function QuestionCard({ q, index }: { q: Question; index?: number }) {
+    const isEditing = editingId === q.id
+
+    return (
+      <div key={q.id} className="card" style={{ padding: '16px 20px' }}>
+        {isEditing ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <p className="section-label" style={{ margin: 0 }}>Editing question</p>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--ink)', marginBottom: '4px' }}>Question text</label>
+              <textarea value={editText} onChange={e => setEditText(e.target.value)}
+                rows={3} style={{ ...inputStyle, resize: 'vertical' as const }} autoFocus />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--ink)', marginBottom: '6px' }}>Answer type</label>
+              <TypeCards value={editType} onChange={setEditType} />
+            </div>
+
+            <div>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: '500', color: 'var(--ink)', marginBottom: '4px' }}>Category</label>
+              <input value={editCategory} onChange={e => setEditCategory(e.target.value)}
+                placeholder="e.g. Communication" style={inputStyle} list="edit-category-suggestions" />
+              <datalist id="edit-category-suggestions">
+                {CATEGORY_SUGGESTIONS.map(s => <option key={s} value={s} />)}
+              </datalist>
+            </div>
+
+            {editError && <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: 0 }}>{editError}</p>}
+
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button onClick={() => handleSaveEdit(q.id)} disabled={editSaving} className="btn-primary" style={{ fontSize: '13px', padding: '8px 16px' }}>
+                {editSaving ? 'Saving...' : 'Save changes'}
+              </button>
+              <button onClick={() => setEditingId(null)} className="btn-secondary" style={{ fontSize: '13px', padding: '7px 16px' }}>
+                Cancel
+              </button>
+              <button onClick={() => handleToggle(q.id, !q.isActive)}
+                style={{ fontSize: '12px', color: q.isActive ? 'var(--muted)' : 'var(--semantic-success)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', marginLeft: 'auto' }}>
+                {q.isActive ? 'Deactivate' : 'Activate'}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            {index !== undefined && (
+              <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted-soft)', fontFamily: "'JetBrains Mono', monospace", minWidth: '24px', paddingTop: '2px' }}>
+                {String(index + 1).padStart(2, '0')}
+              </span>
+            )}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: '14px', color: 'var(--ink)', margin: '0 0 6px', lineHeight: '1.5' }}>{q.text}</p>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' as const }}>
+                <span className="badge">{q.category}</span>
+                <span className="badge" style={{ background: q.type === 'RATING' ? '#fef0eb' : '#f0f0ff', color: q.type === 'RATING' ? 'var(--primary)' : '#6b6b99' }}>
+                  {q.type === 'RATING' ? `Rating 1-${q.ratingScale ?? 5}` : 'Written'}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '10px', flexShrink: 0 }}>
+              <button onClick={() => openEdit(q)}
+                style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>
+                Edit
+              </button>
+              {q.isActive ? (
+                <button onClick={() => handleToggle(q.id, false)}
+                  style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  Deactivate
+                </button>
+              ) : (
+                <button onClick={() => handleToggle(q.id, true)}
+                  style={{ fontSize: '12px', color: 'var(--semantic-success)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>
+                  Activate
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
@@ -73,97 +211,51 @@ export function QuestionList({ initialQuestions }: { initialQuestions: Question[
           <div>
             <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: '0 0 4px' }}>Questions</h1>
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
-              {active.length} active question{active.length !== 1 ? 's' : ''} - shown to reviewers in every review cycle
+              {active.length} active question{active.length !== 1 ? 's' : ''} shown to reviewers in every cycle
             </p>
           </div>
-          <button onClick={() => { setShowForm(s => !s); setError('') }} className={showForm ? 'btn-secondary' : 'btn-primary'} style={{ flexShrink: 0 }}>
+          <button onClick={() => { setShowForm(s => !s); setAddError('') }} className={showForm ? 'btn-secondary' : 'btn-primary'} style={{ flexShrink: 0 }}>
             {showForm ? 'Cancel' : '+ Add Question'}
           </button>
         </div>
       </div>
 
-      {/* Add form - shown only when opened */}
+      {/* Add form */}
       {showForm && (
         <div className="card" style={{ padding: '24px', marginBottom: '32px', maxWidth: '600px' }}>
           <p style={{ fontSize: '15px', fontWeight: '600', color: 'var(--ink)', margin: '0 0 4px' }}>New question</p>
           <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 20px' }}>
-            Questions appear in all review cycles. Active questions are shown to every reviewer.
+            Active questions appear in all review cycles. Write in third person.
           </p>
-
-          <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-            {/* Question text */}
+          <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '5px' }}>
                 Question text <span style={{ color: 'var(--primary)' }}>*</span>
               </label>
-              <textarea
-                value={text}
-                onChange={e => setText(e.target.value)}
+              <textarea value={newText} onChange={e => setNewText(e.target.value)}
                 placeholder="e.g. How effectively does this person communicate ideas and updates?"
-                rows={3}
-                style={{ ...inputStyle, resize: 'vertical' as const }}
-                autoFocus
-              />
-              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                Write in third person - the reviewer reads this about the person being reviewed.
-              </p>
+                rows={3} style={{ ...inputStyle, resize: 'vertical' as const }} autoFocus />
             </div>
-
-            {/* Type */}
             <div>
-              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '8px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '6px' }}>
                 Answer type <span style={{ color: 'var(--primary)' }}>*</span>
               </label>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                {([
-                  { value: 'RATING', label: 'Rating 1-5', desc: 'Numeric score, averaged across reviewers' },
-                  { value: 'OPEN_TEXT', label: 'Written response', desc: 'Free text, shown as anonymous quotes' },
-                ] as const).map(opt => (
-                  <label key={opt.value} style={{
-                    flex: 1, padding: '12px 14px', borderRadius: '8px', cursor: 'pointer',
-                    border: `1px solid ${type === opt.value ? 'var(--primary)' : 'var(--hairline-strong)'}`,
-                    background: type === opt.value ? '#fef0eb' : 'var(--surface-card)',
-                    transition: 'border-color 0.15s, background 0.15s',
-                  }}>
-                    <input type="radio" name="type" value={opt.value} checked={type === opt.value}
-                      onChange={() => setType(opt.value)} style={{ display: 'none' }} />
-                    <p style={{ fontSize: '13px', fontWeight: '600', color: type === opt.value ? 'var(--primary)' : 'var(--ink)', margin: '0 0 3px' }}>{opt.label}</p>
-                    <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>{opt.desc}</p>
-                  </label>
-                ))}
-              </div>
+              <TypeCards value={newType} onChange={setNewType} />
             </div>
-
-            {/* Category */}
             <div>
               <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '5px' }}>
                 Category <span style={{ color: 'var(--primary)' }}>*</span>
               </label>
-              <input
-                value={category}
-                onChange={e => setCategory(e.target.value)}
-                placeholder="e.g. Communication"
-                style={inputStyle}
-                list="category-suggestions"
-              />
+              <input value={newCategory} onChange={e => setNewCategory(e.target.value)}
+                placeholder="e.g. Communication" style={inputStyle} list="category-suggestions" />
               <datalist id="category-suggestions">
                 {CATEGORY_SUGGESTIONS.map(s => <option key={s} value={s} />)}
               </datalist>
-              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                Groups related questions together in results. Use existing categories to keep things organized.
-              </p>
             </div>
-
-            {error && <p style={{ fontSize: '13px', color: 'var(--semantic-error)' }}>{error}</p>}
-
+            {addError && <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: 0 }}>{addError}</p>}
             <div style={{ display: 'flex', gap: '8px' }}>
-              <button type="submit" disabled={submitting} className="btn-primary">
-                {submitting ? 'Adding...' : 'Add question'}
-              </button>
-              <button type="button" onClick={() => { setShowForm(false); setError('') }} className="btn-secondary">
-                Cancel
-              </button>
+              <button type="submit" disabled={submitting} className="btn-primary">{submitting ? 'Adding...' : 'Add question'}</button>
+              <button type="button" onClick={() => { setShowForm(false); setAddError('') }} className="btn-secondary">Cancel</button>
             </div>
           </form>
         </div>
@@ -171,61 +263,31 @@ export function QuestionList({ initialQuestions }: { initialQuestions: Question[
 
       {toggleError && <p style={{ fontSize: '13px', color: 'var(--semantic-error)', marginBottom: '12px' }}>{toggleError}</p>}
 
-      {/* Active questions */}
       {active.length > 0 && (
         <div style={{ marginBottom: '32px' }}>
           <p className="section-label" style={{ marginBottom: '12px' }}>Active ({active.length})</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {active.map((q, i) => (
-              <div key={q.id} className="card" style={{ padding: '16px 20px', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted-soft)', fontFamily: "'JetBrains Mono', monospace", minWidth: '24px', paddingTop: '2px' }}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontSize: '14px', color: 'var(--ink)', margin: '0 0 6px', lineHeight: '1.5' }}>{q.text}</p>
-                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' as const }}>
-                    <span className="badge">{q.category}</span>
-                    <span className="badge" style={{ background: q.type === 'RATING' ? '#fef0eb' : '#f0f0ff', color: q.type === 'RATING' ? 'var(--primary)' : '#6b6b99' }}>
-                      {q.type === 'RATING' ? `Rating 1-${q.ratingScale ?? 5}` : 'Written'}
-                    </span>
-                  </div>
-                </div>
-                <button onClick={() => handleToggle(q.id, false)}
-                  style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, paddingTop: '2px' }}>
-                  Deactivate
-                </button>
-              </div>
-            ))}
+            {active.map((q, i) => <QuestionCard key={q.id} q={q} index={i} />)}
           </div>
         </div>
       )}
 
-      {/* Inactive questions */}
       {inactive.length > 0 && (
         <div>
-          <p className="section-label" style={{ marginBottom: '8px' }}>Inactive ({inactive.length})</p>
+          <p className="section-label" style={{ marginBottom: '6px' }}>Inactive ({inactive.length})</p>
           <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' }}>
-            These questions are hidden from reviewers. Activate them to include in future cycles.
+            Hidden from reviewers. Edit or activate to include in future cycles.
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            {inactive.map(q => (
-              <div key={q.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', background: 'var(--canvas-soft)', borderRadius: '8px', border: '1px solid var(--hairline-soft)', opacity: 0.7 }}>
-                <p style={{ fontSize: '13px', color: 'var(--body)', flex: 1, margin: 0 }}>{q.text}</p>
-                <span className="badge" style={{ fontSize: '10px' }}>{q.category}</span>
-                <button onClick={() => handleToggle(q.id, true)}
-                  style={{ fontSize: '12px', color: 'var(--semantic-success)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0, fontWeight: '500' }}>
-                  Activate
-                </button>
-              </div>
-            ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {inactive.map(q => <QuestionCard key={q.id} q={q} />)}
           </div>
         </div>
       )}
 
       {questions.length === 0 && (
         <div className="card" style={{ textAlign: 'center', padding: '48px' }}>
-          <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 12px' }}>No questions yet.</p>
-          <p style={{ fontSize: '12px', color: 'var(--muted-soft)', margin: 0 }}>Add your first question above to get started.</p>
+          <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 8px' }}>No questions yet.</p>
+          <p style={{ fontSize: '12px', color: 'var(--muted-soft)', margin: 0 }}>Click "+ Add Question" above to create your first one.</p>
         </div>
       )}
     </div>

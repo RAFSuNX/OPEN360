@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { listQuestions, createQuestion, toggleQuestionActive } from '@/lib/services/questions'
+import { listQuestions, createQuestion, toggleQuestionActive, updateQuestion } from '@/lib/services/questions'
 import { QuestionType } from '@prisma/client'
 
 export async function GET() {
@@ -32,11 +32,23 @@ export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id, isActive } = await req.json()
-  if (!id || typeof isActive !== 'boolean') {
-    return NextResponse.json({ error: 'id and isActive are required' }, { status: 400 })
+  const { id, isActive, text, type, category, ratingScale } = await req.json()
+  if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
+
+  // Full edit
+  if (text !== undefined || type !== undefined || category !== undefined || ratingScale !== undefined) {
+    const question = await updateQuestion(id, {
+      text: text ?? undefined,
+      type: type ?? undefined,
+      category: category ?? undefined,
+      ratingScale: type === 'OPEN_TEXT' ? null : (ratingScale ?? undefined),
+      ...(typeof isActive === 'boolean' ? { isActive } : {}),
+    })
+    return NextResponse.json(question)
   }
 
+  // Toggle only
+  if (typeof isActive !== 'boolean') return NextResponse.json({ error: 'isActive required' }, { status: 400 })
   const question = await toggleQuestionActive(id, isActive)
   return NextResponse.json(question)
 }

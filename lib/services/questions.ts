@@ -32,3 +32,13 @@ async function nextSortOrder(): Promise<number> {
 export async function toggleQuestionActive(id: string, isActive: boolean) {
   return db.question.update({ where: { id }, data: { isActive } })
 }
+
+export async function updateQuestion(id: string, data: {
+  text?: string
+  type?: 'RATING' | 'OPEN_TEXT'
+  category?: string
+  ratingScale?: number | null
+  isActive?: boolean
+}) {
+  return db.question.update({ where: { id }, data })
+}
