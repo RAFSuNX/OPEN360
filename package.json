@@ -8,13 +8,14 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "db:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
-    "bootstrap:admin": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/seed-admin.ts"
+    "db:seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' -r dotenv/config prisma/seed.ts dotenv_config_path=.env.local",
+    "bootstrap:admin": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' -r dotenv/config scripts/seed-admin.ts dotenv_config_path=.env.local"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "csv-parse": "^6.2.1",
+    "dotenv": "^17.4.2",
     "next": "16.2.4",
     "next-auth": "^4.24.14",
     "nodemailer": "^7.0.13",

@@ -1,6 +1,8 @@
 import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 const DEFAULT_QUESTIONS = [
   { text: 'How effectively does this person communicate ideas and updates?', type: 'RATING' as const, ratingScale: 5, category: 'Communication', sortOrder: 1 },
