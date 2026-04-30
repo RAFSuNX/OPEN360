@@ -14,16 +14,11 @@ const DEFAULT_QUESTIONS = [
 ]
 
 async function main() {
-  let upserted = 0
-  for (const q of DEFAULT_QUESTIONS) {
-    await prisma.question.upsert({
-      where: { sortOrder: q.sortOrder },
-      update: { text: q.text, type: q.type, category: q.category, ratingScale: q.ratingScale ?? null },
-      create: q,
-    })
-    upserted++
-  }
-  console.log(`Seeded/updated ${upserted} questions.`)
+  const result = await prisma.question.createMany({
+    data: DEFAULT_QUESTIONS,
+    skipDuplicates: true,
+  })
+  console.log(`Seeded ${result.count} new questions (existing skipped).`)
 }
 
 main()
