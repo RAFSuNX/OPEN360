@@ -19,6 +19,7 @@ export async function listEmployees() {
 export async function createEmployee(data: {
   name: string
   email: string
+  employeeId?: string
   department?: string
   role?: string
   managerId?: string
@@ -81,4 +82,8 @@ export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResu
   }
 
   return { imported, errors }
+}
+
+export async function updateEmployeeManager(id: string, managerId: string | null) {
+  return db.employee.update({ where: { id }, data: { managerId } })
 }

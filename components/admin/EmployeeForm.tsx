@@ -5,7 +5,7 @@ interface Manager { id: string; name: string }
 interface Props { managers: Manager[]; onSuccess: () => void }
 
 export function EmployeeForm({ managers, onSuccess }: Props) {
-  const [form, setForm] = useState({ name: '', email: '', department: '', role: '', managerId: '' })
+  const [form, setForm] = useState({ name: '', email: '', employeeId: '', department: '', role: '', managerId: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -19,7 +19,7 @@ export function EmployeeForm({ managers, onSuccess }: Props) {
         body: JSON.stringify(form),
       })
       if (res.ok) {
-        setForm({ name: '', email: '', department: '', role: '', managerId: '' })
+        setForm({ name: '', email: '', employeeId: '', department: '', role: '', managerId: '' })
         onSuccess()
       } else {
         const data = await res.json()
@@ -41,6 +41,9 @@ export function EmployeeForm({ managers, onSuccess }: Props) {
         className="w-full border rounded p-2 text-sm" />
       <input required type="email" placeholder="Email" value={form.email}
         onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+        className="w-full border rounded p-2 text-sm" />
+      <input placeholder="Employee ID (e.g. EMP001)" value={form.employeeId}
+        onChange={e => setForm(f => ({ ...f, employeeId: e.target.value }))}
         className="w-full border rounded p-2 text-sm" />
       <input placeholder="Department" value={form.department}
         onChange={e => setForm(f => ({ ...f, department: e.target.value }))}

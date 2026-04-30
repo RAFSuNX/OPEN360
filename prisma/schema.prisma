@@ -19,6 +19,7 @@ model Employee {
   id         String   @id @default(uuid())
   name       String
   email      String   @unique
+  employeeId String?  @unique @map("employee_id")
   department String?
   role       String?
   isAdmin    Boolean  @default(false) @map("is_admin")
