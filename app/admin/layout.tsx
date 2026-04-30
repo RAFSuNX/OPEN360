@@ -1,12 +1,17 @@
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
+import { getOrgSettings } from '@/lib/org'
 import Link from 'next/link'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
   if (!session.user.isAdmin) redirect('/dashboard')
+
+  const org = await getOrgSettings()
+  const displayName = org.org_name || 'OPEN360'
+  const logoUrl = org.org_logo_url
 
   const navItems = [
     { href: '/admin', label: 'Overview' },
@@ -29,9 +34,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         top: 0,
         zIndex: 10,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginRight: '32px' }}>
-          <div style={{ width: '20px', height: '20px', background: 'var(--primary)', borderRadius: '5px', flexShrink: 0 }} />
-          <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>OPEN360</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '32px' }}>
+          {logoUrl
+            ? <img src={logoUrl} alt={displayName} style={{ height: '24px', maxWidth: '80px', objectFit: 'contain' }} />
+            : <div style={{ width: '20px', height: '20px', background: 'var(--primary)', borderRadius: '5px', flexShrink: 0 }} />
+          }
+          <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>{displayName}</span>
           <span style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginLeft: '2px' }}>Admin</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
