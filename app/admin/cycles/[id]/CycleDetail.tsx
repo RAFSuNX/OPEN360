@@ -1,7 +1,8 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { CycleStatus, Relationship } from '@prisma/client'
+import { useToast } from '@/components/Toast'
 
 interface Cycle {
   id: string; title: string
@@ -21,8 +22,98 @@ const statusBadge: Record<CycleStatus, { bg: string; color: string }> = {
   CLOSED: { bg: 'var(--surface-strong)', color: 'var(--body)' },
 }
 
+function DeleteCycleButton({ cycleId, cycleTitle }: { cycleId: string; cycleTitle: string }) {
+  const router = useRouter()
+  const { toast } = useToast()
+  const [stage, setStage] = useState<0 | 1 | 2>(0)
+  const [deleting, setDeleting] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
+
+  function advance() {
+    if (stage === 0) {
+      setStage(1)
+      timerRef.current = setTimeout(() => setStage(0), 4000)
+    } else if (stage === 1) {
+      if (timerRef.current) clearTimeout(timerRef.current)
+      setStage(2)
+      timerRef.current = setTimeout(() => setStage(0), 4000)
+    } else {
+      handleDelete()
+    }
+  }
+
+  async function handleDelete() {
+    if (timerRef.current) clearTimeout(timerRef.current)
+    setDeleting(true)
+    try {
+      const res = await fetch('/api/admin/cycles', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: cycleId }),
+      })
+      if (!res.ok) {
+        const d = await res.json()
+        toast(d.error ?? 'Failed to delete cycle', 'error')
+        setStage(0)
+        return
+      }
+      toast(`"${cycleTitle}" deleted`, 'default')
+      router.push('/admin/cycles')
+    } catch {
+      toast('Delete failed. Please try again.', 'error')
+      setStage(0)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const labels = ['Delete Cycle', 'Are you sure?', 'Yes, delete permanently']
+  const isWarning = stage > 0
+
+  return (
+    <button
+      onClick={advance}
+      disabled={deleting}
+      style={{
+        background: isWarning ? '#fde8ec' : 'transparent',
+        border: `1px solid ${isWarning ? '#f5c0cb' : 'var(--hairline-strong)'}`,
+        color: deleting ? 'var(--muted)' : isWarning ? 'var(--semantic-error)' : 'var(--muted)',
+        borderRadius: '8px',
+        padding: '8px 14px',
+        fontSize: '13px',
+        fontWeight: '500',
+        fontFamily: 'inherit',
+        cursor: deleting ? 'not-allowed' : 'pointer',
+        transition: 'all 0.15s',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        whiteSpace: 'nowrap' as const,
+        minWidth: stage > 0 ? '180px' : 'auto',
+        justifyContent: 'center',
+      }}
+    >
+      {deleting ? (
+        <><span className="spinner-muted" style={{ width: '12px', height: '12px', borderWidth: '1.5px' }} />Deleting...</>
+      ) : (
+        <>
+          {stage === 0 && (
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          )}
+          {labels[stage]}
+        </>
+      )}
+    </button>
+  )
+}
+
 export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle: Cycle; initialAssignments: Assignment[] }) {
   const router = useRouter()
+  const { toast } = useToast()
   const [cycle, setCycle] = useState(initialCycle)
   const [assignments, setAssignments] = useState(initialAssignments)
   const [loading, setLoading] = useState(false)
@@ -44,10 +135,10 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
       })
       const data = await res.json()
       if (!res.ok) { setMessage({ text: data.error ?? 'Action failed', type: 'error' }); return }
-      if (action === 'auto-assign') { setMessage({ text: `Assigned ${data.assigned} reviewer pairs.`, type: 'success' }); await refreshAssignments() }
-      else if (action === 'activate') { setMessage({ text: `Cycle activated. ${data.emailsSent} invite emails sent.`, type: 'success' }); setCycle(c => ({ ...c, status: CycleStatus.ACTIVE })) }
-      else if (action === 'close') { setMessage({ text: `Cycle closed. ${data.emailsSent} result emails sent.`, type: 'success' }); setCycle(c => ({ ...c, status: CycleStatus.CLOSED })) }
-      else if (action === 're-open') { setMessage({ text: 'Cycle re-opened. Pending reviewers can now submit.', type: 'success' }); setCycle(c => ({ ...c, status: CycleStatus.ACTIVE })) }
+      if (action === 'auto-assign') { toast(`Assigned ${data.assigned} reviewer pairs.`, 'success'); await refreshAssignments() }
+      else if (action === 'activate') { toast(`Cycle activated. ${data.emailsSent} invite emails sent.`, 'success'); setCycle(c => ({ ...c, status: CycleStatus.ACTIVE })) }
+      else if (action === 'close') { toast(`Cycle closed. ${data.emailsSent} result emails sent.`, 'success'); setCycle(c => ({ ...c, status: CycleStatus.CLOSED })) }
+      else if (action === 're-open') { toast('Cycle re-opened. Pending reviewers can now submit.', 'success'); setCycle(c => ({ ...c, status: CycleStatus.ACTIVE })) }
     } finally { setLoading(false) }
   }
 
@@ -60,10 +151,8 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
         body: JSON.stringify({ assignmentId }),
       })
       const data = await res.json()
-      setMessage(res.ok
-        ? { text: `Reminder sent to ${reviewerEmail}`, type: 'success' }
-        : { text: data.error ?? 'Failed to send reminder', type: 'error' }
-      )
+      if (res.ok) toast(`Reminder sent to ${reviewerEmail}`, 'success')
+      else setMessage({ text: data.error ?? 'Failed to send reminder', type: 'error' })
     } finally { setRemindingId(null) }
   }
 
@@ -92,9 +181,12 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
               Ends {new Date(cycle.endDate).toLocaleDateString()}
             </p>
           </div>
-          <span style={{ background: badge.bg, color: badge.color, borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>
-            {cycle.status}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ background: badge.bg, color: badge.color, borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>
+              {cycle.status}
+            </span>
+            <DeleteCycleButton cycleId={cycle.id} cycleTitle={cycle.title} />
+          </div>
         </div>
       </div>
 

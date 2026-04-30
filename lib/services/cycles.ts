@@ -26,3 +26,11 @@ export async function updateCycleStatus(id: string, status: CycleStatus) {
 export async function getCycle(id: string) {
   return db.reviewCycle.findUnique({ where: { id } })
 }
+
+export async function deleteCycle(id: string) {
+  await db.$transaction([
+    db.reviewResponse.deleteMany({ where: { cycleId: id } }),
+    db.reviewAssignment.deleteMany({ where: { cycleId: id } }),
+    db.reviewCycle.delete({ where: { id } }),
+  ])
+}
