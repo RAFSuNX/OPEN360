@@ -2,6 +2,7 @@ import { requireAdmin } from '@/lib/auth'
 import { getCycle } from '@/lib/services/cycles'
 import { buildResults } from '@/lib/services/results'
 import { db } from '@/lib/db'
+import { getOrgSettings } from '@/lib/org'
 import MyResults from '@/components/dashboard/MyResults'
 import { ExportButton } from '@/components/admin/ExportButton'
 import { notFound } from 'next/navigation'
@@ -15,9 +16,10 @@ export default async function AdminResultsPage({
   await requireAdmin()
   const { cycleId, employeeId } = await params
 
-  const [cycle, employee] = await Promise.all([
+  const [cycle, employee, org] = await Promise.all([
     getCycle(cycleId),
     db.employee.findUnique({ where: { id: employeeId }, select: { id: true, name: true, email: true, role: true, employeeId: true, department: true } }),
+    getOrgSettings(),
   ])
 
   if (!cycle || !employee) notFound()
@@ -47,6 +49,8 @@ export default async function AdminResultsPage({
           employeeIdCode={employee.employeeId ?? undefined}
           employeeRole={employee.role ?? undefined}
           employeeDepartment={employee.department ?? undefined}
+          orgName={org.org_name || undefined}
+          orgLogoApiUrl={org.org_logo_email ? `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo` : undefined}
         />
       </div>
       <MyResults results={results} />

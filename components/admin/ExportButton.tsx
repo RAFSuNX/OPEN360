@@ -10,6 +10,8 @@ interface ExportButtonProps {
   employeeIdCode?: string
   employeeRole?: string
   employeeDepartment?: string
+  orgName?: string
+  orgLogoApiUrl?: string
 }
 
 const REL_LABELS: Record<string, string> = {
@@ -19,7 +21,7 @@ const REL_LABELS: Record<string, string> = {
   DIRECT_REPORT: 'Direct Reports',
 }
 
-export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', cycleTitle = 'Review', employeeEmail, employeeIdCode, employeeRole, employeeDepartment }: ExportButtonProps) {
+export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', cycleTitle = 'Review', employeeEmail, employeeIdCode, employeeRole, employeeDepartment, orgName, orgLogoApiUrl }: ExportButtonProps) {
   const [loadingCsv, setLoadingCsv] = useState(false)
   const [loadingPdf, setLoadingPdf] = useState(false)
 
@@ -77,7 +79,7 @@ export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', c
         doc.setFontSize(7.5)
         doc.setFont('helvetica', 'bold')
         doc.setTextColor(...MUTED)
-        doc.text('OPEN360  360-DEGREE REVIEW', ML, 14)
+        doc.text(`${orgName ? orgName.toUpperCase() + '  ' : ''}OPEN360  360-DEGREE REVIEW`, ML, 14)
         doc.setFont('helvetica', 'normal')
         doc.text(employeeName.toUpperCase(), W - MR, 14, { align: 'right' })
         // hairline below header
@@ -92,7 +94,7 @@ export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', c
         doc.setFontSize(7.5)
         doc.setFont('helvetica', 'normal')
         doc.setTextColor(...MUTED)
-        doc.text('Confidential - For internal HR use only', ML, H - 7)
+        doc.text(`${orgName || 'OPEN360'} - Confidential - For internal HR use only`, ML, H - 7)
         doc.text(`Page ${page} of ${total}`, W - MR, H - 7, { align: 'right' })
       }
 
@@ -108,11 +110,32 @@ export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', c
       doc.setFillColor(...ORANGE)
       doc.rect(0, 0, W, H * 0.42, 'F')
 
-      // Org/brand wordmark
-      doc.setFontSize(10)
+      // Org logo + name in top-left of cover
+      if (orgLogoApiUrl) {
+        try {
+          const logoRes = await fetch(orgLogoApiUrl)
+          if (logoRes.ok) {
+            const logoBlob = await logoRes.blob()
+            const logoDataUrl = await new Promise<string>(resolve => {
+              const reader = new FileReader()
+              reader.onload = () => resolve(reader.result as string)
+              reader.readAsDataURL(logoBlob)
+            })
+            doc.addImage(logoDataUrl, 'JPEG', ML, 10, 30, 10, undefined, 'FAST')
+          }
+        } catch { /* skip logo if fetch fails */ }
+      }
+
+      // Org name
+      doc.setFontSize(9)
       doc.setFont('helvetica', 'bold')
       doc.setTextColor(...WHITE)
-      doc.text('OPEN360', ML, 18)
+      const orgLabel = orgName || 'OPEN360'
+      doc.text(orgLogoApiUrl ? '' : orgLabel, ML, 18)
+      doc.setFont('helvetica', 'normal')
+      doc.setTextColor(255, 200, 170)
+      doc.setFontSize(8)
+      if (orgName) doc.text('Powered by OPEN360', W - MR, 15, { align: 'right' })
 
       // Big name
       doc.setFontSize(32)
