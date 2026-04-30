@@ -6,7 +6,6 @@ import { decrypt } from '@/lib/crypto'
 import { Relationship } from '@prisma/client'
 
 function csvEscape(value: string): string {
-  // [P1] Neutralize formula injection - prefix with tab if starts with =, +, -, @
   const safe = /^[=+\-@]/.test(value) ? `\t${value}` : value
   if (safe.includes(',') || safe.includes('"') || safe.includes('\n') || safe.includes('\t')) {
     return `"${safe.replace(/"/g, '""')}"`
@@ -27,9 +26,16 @@ export async function GET(
 
   const responses = await db.reviewResponse.findMany({
     where: { cycleId, revieweeId: employeeId },
-    include: { question: true },
-    orderBy: [{ relationship: 'asc' }, { question: { sortOrder: 'asc' } }],
+    include: { question: true, cycleQuestion: true },
   })
+
+  // Build a unified question lookup regardless of source
+  const getQ = (r: typeof responses[number]) => {
+    if (r.cycleQuestion) return { id: r.cycleQuestion.id, text: r.cycleQuestion.text, category: r.cycleQuestion.category, type: r.cycleQuestion.type }
+    if (r.question) return { id: r.question.id, text: r.question.text, category: r.question.category, type: r.question.type }
+    return null
+  }
+  const getQId = (r: typeof responses[number]) => r.cycleQuestionId ?? r.questionId
 
   const rows: string[] = [
     ['Question', 'Category', 'Type', 'Relationship', 'Answer/Average'].map(csvEscape).join(','),
@@ -40,23 +46,22 @@ export async function GET(
   for (const rel of relOrder) {
     const relResponses = responses.filter(r => r.relationship === rel)
 
-    const byQuestion = new Map<string, { question: typeof relResponses[0]['question']; answers: string[] }>()
+    const byQuestion = new Map<string, { question: ReturnType<typeof getQ>; answers: string[] }>()
     for (const r of relResponses) {
+      const qId = getQId(r)
+      if (!qId) continue
       let decrypted: string
-      try {
-        decrypted = decrypt(r.answerEncrypted)
-      } catch {
-        decrypted = '[decryption error]'
-      }
-      const existing = byQuestion.get(r.questionId)
+      try { decrypted = decrypt(r.answerEncrypted) } catch { decrypted = '[decryption error]' }
+      const existing = byQuestion.get(qId)
       if (existing) {
         existing.answers.push(decrypted)
       } else {
-        byQuestion.set(r.questionId, { question: r.question, answers: [decrypted] })
+        byQuestion.set(qId, { question: getQ(r), answers: [decrypted] })
       }
     }
 
     for (const { question, answers } of byQuestion.values()) {
+      if (!question) continue
       let answerCell: string
       if (question.type === 'RATING') {
         const nums = answers.map(Number).filter(n => !isNaN(n) && n > 0)
