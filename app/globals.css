@@ -77,11 +77,20 @@ input::placeholder, textarea::placeholder {
   font-weight: 500;
   line-height: 1;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
 }
 
-.btn-primary:hover { background: var(--primary-active); }
-.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary:hover {
+  background: var(--primary-active);
+  box-shadow: 0 2px 8px rgba(245, 78, 0, 0.25);
+}
+.btn-primary:active {
+  transform: scale(0.97);
+  box-shadow: none;
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
 /* Secondary button */
 .btn-secondary {
@@ -95,7 +104,51 @@ input::placeholder, textarea::placeholder {
   font-weight: 500;
   line-height: 1;
   cursor: pointer;
-  transition: border-color 0.15s, background 0.15s;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+}
+.btn-secondary:hover { background: var(--canvas); border-color: var(--ink); }
+.btn-secondary:active { transform: scale(0.97); }
+.btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+/* Card hover animation */
+.card {
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* Clickable card */
+a .card:hover, [role="button"] .card:hover {
+  border-color: var(--hairline-strong);
+  box-shadow: 0 2px 12px rgba(38, 37, 30, 0.06);
+}
+
+/* Input focus animation */
+input:focus, textarea:focus, select:focus {
+  border-color: var(--ink) !important;
+  box-shadow: 0 0 0 3px rgba(38, 37, 30, 0.06);
+  outline: none;
+}
+
+/* Page transition feel - fade in content */
+main {
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Spinner for loading states */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
 }
 
 .btn-secondary:hover { background: var(--canvas); }

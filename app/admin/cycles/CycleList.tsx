@@ -12,10 +12,10 @@ interface Cycle {
   createdAt: Date | string
 }
 
-const statusColors: Record<CycleStatus, string> = {
-  DRAFT: 'bg-gray-100 text-gray-700',
-  ACTIVE: 'bg-green-100 text-green-700',
-  CLOSED: 'bg-blue-100 text-blue-700',
+const statusStyles: Record<CycleStatus, { background: string; color: string }> = {
+  DRAFT: { background: '#f3f3f0', color: 'var(--muted)' },
+  ACTIVE: { background: '#d1f0e7', color: 'var(--semantic-success)' },
+  CLOSED: { background: 'var(--surface-strong)', color: 'var(--body)' },
 }
 
 export function CycleList({ initialCycles }: { initialCycles: Cycle[] }) {
@@ -116,7 +116,7 @@ export function CycleList({ initialCycles }: { initialCycles: Cycle[] }) {
                 {new Date(cycle.startDate).toLocaleDateString()} - {new Date(cycle.endDate).toLocaleDateString()}
               </p>
             </div>
-            <span className={`text-xs font-medium px-2 py-1 rounded-full ${statusColors[cycle.status]}`}>
+            <span style={{ ...statusStyles[cycle.status], fontSize: '11px', fontWeight: '600', letterSpacing: '0.5px', padding: '3px 10px', borderRadius: '9999px' }}>
               {cycle.status}
             </span>
           </div>

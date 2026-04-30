@@ -119,7 +119,7 @@ export function QuestionList({ initialQuestions }: { initialQuestions: Question[
         <button
           type="submit"
           disabled={submitting}
-          className="bg-blue-600 text-white rounded px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-50 self-start"
+          className="btn-primary" style={{ alignSelf: "flex-start" }}
         >
           {submitting ? 'Adding...' : 'Add Question'}
         </button>
