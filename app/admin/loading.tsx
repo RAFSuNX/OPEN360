@@ -13,15 +13,15 @@ export default function AdminLoading() {
 
       {/* Table skeleton */}
       <div className="skeleton-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--hairline)', display: 'flex', gap: '32px' }}>
+        <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--hairline)', display: 'flex', gap: '32px', overflowX: 'hidden' }}>
           {[80, 120, 100, 90].map((w, i) => (
-            <div key={i} className="skeleton skeleton-text" style={{ width: `${w}px` }} />
+            <div key={i} className="skeleton skeleton-text" style={{ width: `${w}px`, flexShrink: 0 }} />
           ))}
         </div>
         {[0, 1, 2, 3, 4].map(i => (
-          <div key={i} style={{ padding: '14px 16px', borderBottom: '1px solid var(--hairline-soft)', display: 'flex', gap: '32px' }}>
+          <div key={i} style={{ padding: '14px 16px', borderBottom: '1px solid var(--hairline-soft)', display: 'flex', gap: '32px', overflowX: 'hidden' }}>
             {[120, 160, 80, 60].map((w, j) => (
-              <div key={j} className="skeleton skeleton-text" style={{ width: `${w}px` }} />
+              <div key={j} className="skeleton skeleton-text" style={{ width: `${w}px`, flexShrink: 0 }} />
             ))}
           </div>
         ))}

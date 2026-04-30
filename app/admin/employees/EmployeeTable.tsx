@@ -149,9 +149,9 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
                   <td>{emp.manager?.name ?? '-'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '10px' }}>
-                      <button onClick={() => setViewingProfile(emp.id)} style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View</button>
-                      <button onClick={() => openEdit(emp)} style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>Edit</button>
-                      <button onClick={() => openReview(emp)} style={{ fontSize: '12px', color: 'var(--body)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Send review</button>
+                      <button onClick={() => setViewingProfile(emp.id)} style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', minHeight: '36px' }}>View</button>
+                      <button onClick={() => openEdit(emp)} style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500', minHeight: '36px' }}>Edit</button>
+                      <button onClick={() => openReview(emp)} style={{ fontSize: '12px', color: 'var(--body)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', minHeight: '36px' }}>Send review</button>
                     </div>
                   </td>
                 </tr>

@@ -26,9 +26,11 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <nav style={{
         background: 'var(--canvas)',
         borderBottom: '1px solid var(--hairline)',
-        height: '56px',
+        minHeight: '56px',
+        height: 'auto',
         display: 'flex',
         alignItems: 'center',
+        flexWrap: 'wrap',
         padding: '0 24px',
         position: 'sticky',
         top: 0,
@@ -43,17 +45,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           }
           <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>{displayName}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1 }}>
+        <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, overflow: 'hidden' }}>
           {navItems.map(({ href, label, exact }) => (
             <NavLink key={href} href={href} exact={exact}>{label}</NavLink>
           ))}
         </div>
-        <div style={{ textAlign: 'right' as const }}>
+        <div className="nav-email" style={{ textAlign: 'right' as const }}>
           <p style={{ fontSize: '12px', color: 'var(--ink)', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>{session.user.email}</p>
           <p style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--primary)', margin: 0 }}>Admin</p>
         </div>
       </nav>
-      <main style={{ padding: '32px 24px', maxWidth: '1200px', margin: '0 auto' }}>
+      <main style={{ padding: 'var(--page-padding)', maxWidth: '1200px', margin: '0 auto' }}>
         {children}
       </main>
     </div>

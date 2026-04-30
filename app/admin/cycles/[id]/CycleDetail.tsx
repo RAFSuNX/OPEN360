@@ -18,7 +18,7 @@ interface Assignment {
 
 const statusBadge: Record<CycleStatus, { bg: string; color: string }> = {
   DRAFT: { bg: '#f3f3f0', color: 'var(--muted)' },
-  ACTIVE: { bg: '#d1f0e7', color: 'var(--semantic-success)' },
+  ACTIVE: { bg: 'var(--success-bg)', color: 'var(--semantic-success)' },
   CLOSED: { bg: 'var(--surface-strong)', color: 'var(--body)' },
 }
 
@@ -77,8 +77,8 @@ function DeleteCycleButton({ cycleId, cycleTitle }: { cycleId: string; cycleTitl
       onClick={advance}
       disabled={deleting}
       style={{
-        background: isWarning ? '#fde8ec' : 'transparent',
-        border: `1px solid ${isWarning ? '#f5c0cb' : 'var(--hairline-strong)'}`,
+        background: isWarning ? 'var(--error-bg)' : 'transparent',
+        border: `1px solid ${isWarning ? 'var(--error-border)' : 'var(--hairline-strong)'}`,
         color: deleting ? 'var(--muted)' : isWarning ? 'var(--semantic-error)' : 'var(--muted)',
         borderRadius: '8px',
         padding: '8px 14px',
@@ -192,8 +192,8 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
 
       {message && (
         <div style={{
-          background: message.type === 'success' ? '#d1f0e7' : '#fde8ec',
-          border: `1px solid ${message.type === 'success' ? '#a8ddc6' : '#f5c0cb'}`,
+          background: message.type === 'success' ? 'var(--success-bg)' : 'var(--error-bg)',
+          border: `1px solid ${message.type === 'success' ? 'var(--success-border)' : 'var(--error-border)'}`,
           borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
           fontSize: '13px', color: message.type === 'success' ? 'var(--semantic-success)' : 'var(--semantic-error)',
         }}>
@@ -255,6 +255,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
         </p>
       )}
 
+      <div style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <table className="data-table">
         <thead>
           <tr>
@@ -299,6 +300,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
           ))}
         </tbody>
       </table>
+      </div>
       {assignments.length === 0 && (
         <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px', padding: '32px' }}>
           No assignments yet. Use Auto-assign to add reviewers.

@@ -34,7 +34,7 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
       style={{ position: 'fixed', inset: 0, background: 'rgba(38,37,30,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '24px' }}
       onClick={onClose}
     >
-      <div className="card" style={{ width: '100%', maxWidth: '420px', padding: '28px' }} onClick={e => e.stopPropagation()}>
+      <div className="card" style={{ width: '100%', maxWidth: '420px', padding: '28px', maxHeight: '90vh', overflowY: 'auto' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
           <div>
             {loading ? (
@@ -55,7 +55,7 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
 
         {profile && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px' }}>
               {[
                 { label: 'Employee ID', value: profile.employeeId },
                 { label: 'Department', value: profile.department },

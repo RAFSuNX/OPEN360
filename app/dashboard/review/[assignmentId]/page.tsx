@@ -14,7 +14,7 @@ export default async function ReviewPage({ params }: { params: Promise<{ assignm
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8">
+    <div style={{ maxWidth: '672px', margin: '0 auto', padding: '32px 24px' }}>
       <ReviewForm
         assignmentId={assignmentId}
         revieweeName={data.assignment.reviewee.name}

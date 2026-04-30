@@ -24,7 +24,7 @@ export default async function AdminHomePage() {
           Admin Dashboard
         </h1>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', maxWidth: '600px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '16px', maxWidth: '600px' }}>
         {stats.map(({ value, label }) => (
           <div key={label} className="card" style={{ padding: '20px' }}>
             <div style={{ fontSize: '32px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.5px', fontFamily: "'JetBrains Mono', monospace" }}>

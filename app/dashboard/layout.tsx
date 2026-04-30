@@ -17,9 +17,11 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div style={{ minHeight: '100vh', background: 'var(--canvas)' }}>
       <nav style={{
         borderBottom: '1px solid var(--hairline)',
-        height: '56px',
+        minHeight: '56px',
+        height: 'auto',
         display: 'flex',
         alignItems: 'center',
+        flexWrap: 'wrap',
         padding: '0 24px',
         position: 'sticky',
         top: 0,
@@ -34,7 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
           }
           <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>{displayName}</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '16px', overflowX: 'auto' }}>
           <NavLink href="/dashboard" exact>My Reviews</NavLink>
           {session.user.isAdmin && (
             <Link href="/admin" style={{
@@ -47,12 +49,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
               Admin Panel
             </Link>
           )}
-          <span style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>
+          <span className="nav-email" style={{ fontSize: '12px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace", overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {session.user.email}
           </span>
         </div>
       </nav>
-      <main style={{ padding: '32px 24px', maxWidth: '900px', margin: '0 auto' }}>
+      <main style={{ padding: 'var(--page-padding)', maxWidth: '900px', margin: '0 auto' }}>
         {children}
       </main>
     </div>

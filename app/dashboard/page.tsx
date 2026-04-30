@@ -52,7 +52,7 @@ export default async function DashboardPage() {
             </p>
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>{employee.role ?? 'No role assigned'}</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px 40px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '14px 40px' }}>
             {[
               { label: 'Employee ID', value: employee.employeeId, mono: true },
               { label: 'Department', value: employee.department },
@@ -85,8 +85,8 @@ export default async function DashboardPage() {
         </div>
         {pending.length === 0 ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '20px 0' }}>
-            <div style={{ width: '32px', height: '32px', background: '#d1f0e7', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1f8a65" strokeWidth="2.5">
+            <div style={{ width: '32px', height: '32px', background: 'var(--success-bg)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--semantic-success)" strokeWidth="2.5">
                 <polyline points="20 6 9 17 4 12"/>
               </svg>
             </div>

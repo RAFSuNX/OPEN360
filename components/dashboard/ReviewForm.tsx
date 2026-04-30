@@ -178,7 +178,7 @@ export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, que
                                     style={{ display: 'none' }} />
                                   <div className={sel && justSelected === q.id ? 'rating-selected' : ''}
                                     style={{
-                                      width: '38px', height: '38px', borderRadius: '8px',
+                                      width: '44px', height: '44px', borderRadius: '8px',
                                       border: `1.5px solid ${sel ? 'var(--primary)' : 'var(--hairline-strong)'}`,
                                       background: sel ? 'var(--primary)' : 'var(--surface-card)',
                                       color: sel ? 'var(--on-primary)' : 'var(--body)',
