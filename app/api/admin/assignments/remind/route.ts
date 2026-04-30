@@ -23,6 +23,7 @@ export async function POST(req: NextRequest) {
 
   if (!assignment) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
   if (assignment.submitted) return NextResponse.json({ error: 'Already submitted' }, { status: 400 })
+  if (assignment.cycle.status !== 'ACTIVE') return NextResponse.json({ error: 'Cycle is not active - re-open it first' }, { status: 400 })
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   const orgSettings = await getOrgSettings()

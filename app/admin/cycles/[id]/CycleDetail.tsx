@@ -187,7 +187,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
               </td>
               <td>
                 <div style={{ display: 'flex', gap: '8px' }}>
-                  {!a.submitted && (cycle.status === 'ACTIVE' || cycle.status === 'CLOSED') && (
+                  {!a.submitted && cycle.status === 'ACTIVE' && (
                     <button
                       onClick={() => sendReminderToAssignment(a.id, a.reviewer.email)}
                       disabled={remindingId === a.id}
