@@ -16,11 +16,16 @@ interface Props {
 export function EmployeeProfileModal({ employeeId, onClose }: Props) {
   const [profile, setProfile] = useState<EmployeeProfile | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     fetch(`/api/employees/${employeeId}`)
-      .then(r => r.json())
+      .then(async r => {
+        if (!r.ok) throw new Error((await r.json()).error ?? 'Failed to load')
+        return r.json() as Promise<EmployeeProfile>
+      })
       .then(setProfile)
+      .catch(e => setError(e.message))
       .finally(() => setLoading(false))
   }, [employeeId])
 
@@ -34,6 +39,8 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
           <div>
             {loading ? (
               <p style={{ color: 'var(--muted)', fontSize: '14px' }}>Loading...</p>
+            ) : error ? (
+              <p style={{ color: 'var(--semantic-error)', fontSize: '14px' }}>{error}</p>
             ) : profile ? (
               <>
                 <p style={{ fontSize: '20px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.2px', margin: '0 0 4px' }}>{profile.name}</p>

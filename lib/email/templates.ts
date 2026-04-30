@@ -3,6 +3,10 @@ export interface EmailContent {
   html: string
 }
 
+function escHtml(str: string): string {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 export interface OrgBranding {
   orgName?: string
   orgLogoUrl?: string
@@ -10,15 +14,14 @@ export interface OrgBranding {
 }
 
 function emailHeader(org: OrgBranding): string {
-  const name = org.orgName || 'OPEN360'
-  // Use HTTP logo URL (served via /api/logo) - Gmail blocks data: URIs in images
+  const name = escHtml(org.orgName || 'OPEN360')
   const logo = org.orgLogoUrl?.startsWith('http')
-    ? `<img src="${org.orgLogoUrl}" alt="${name}" style="height:36px;max-width:160px;object-fit:contain;display:block;" />`
+    ? `<img src="${escHtml(org.orgLogoUrl)}" alt="${name}" style="height:36px;max-width:160px;object-fit:contain;display:block;" />`
     : `<span style="font-size:18px;font-weight:600;color:#26251e;">${name}</span>`
   return `
     <div style="border-bottom:1px solid #e6e5e0;padding:20px 32px;background:#f7f7f4;">
       ${logo}
-      ${org.orgTagline ? `<p style="font-size:12px;color:#807d72;margin:4px 0 0;">${org.orgTagline}</p>` : ''}
+      ${org.orgTagline ? `<p style="font-size:12px;color:#807d72;margin:4px 0 0;">${escHtml(org.orgTagline)}</p>` : ''}
     </div>
   `
 }
@@ -31,7 +34,7 @@ function emailWrapper(content: string, org: OrgBranding): string {
         ${content}
       </div>
       <div style="padding:16px 32px;border-top:1px solid #e6e5e0;background:#f7f7f4;">
-        <p style="font-size:12px;color:#a09c92;margin:0;">Sent by ${org.orgName || 'OPEN360'} · Responses are completely anonymous</p>
+        <p style="font-size:12px;color:#a09c92;margin:0;">Sent by ${escHtml(org.orgName || 'OPEN360')} · Responses are completely anonymous</p>
       </div>
     </div>
   `
@@ -50,11 +53,11 @@ export function buildReviewInviteEmail(params: {
   return {
     subject: `Review request: ${revieweeName} - ${cycleTitle}`,
     html: emailWrapper(`
-      <p style="margin:0 0 16px;">Hi <strong>${reviewerName}</strong>,</p>
-      <p style="margin:0 0 16px;">You have been asked to provide feedback for <strong>${revieweeName}</strong> as part of <strong>${cycleTitle}</strong>.</p>
+      <p style="margin:0 0 16px;">Hi <strong>${escHtml(reviewerName)}</strong>,</p>
+      <p style="margin:0 0 16px;">You have been asked to provide feedback for <strong>${escHtml(revieweeName)}</strong> as part of <strong>${escHtml(cycleTitle)}</strong>.</p>
       <p style="margin:0 0 24px;color:#5a5852;">Your responses are completely anonymous - no one will know what you wrote.</p>
-      <a href="${url}" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">Complete your review</a>
-      <p style="margin:20px 0 0;font-size:12px;color:#a09c92;">Or copy: ${url}</p>
+      <a href="${escHtml(url)}" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">Complete your review</a>
+      <p style="margin:20px 0 0;font-size:12px;color:#a09c92;">Or copy: ${escHtml(url)}</p>
     `, org),
   }
 }
@@ -72,10 +75,10 @@ export function buildReminderEmail(params: {
   return {
     subject: `Reminder: complete your review for ${cycleTitle}`,
     html: emailWrapper(`
-      <p style="margin:0 0 16px;">Hi <strong>${reviewerName}</strong>,</p>
-      <p style="margin:0 0 16px;">This is a reminder that the <strong>${cycleTitle}</strong> review closes on <strong>${endDate}</strong>.</p>
-      <a href="${url}" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">Complete your review</a>
-      <p style="margin:20px 0 0;font-size:12px;color:#a09c92;">Or copy: ${url}</p>
+      <p style="margin:0 0 16px;">Hi <strong>${escHtml(reviewerName)}</strong>,</p>
+      <p style="margin:0 0 16px;">This is a reminder that the <strong>${escHtml(cycleTitle)}</strong> review closes on <strong>${escHtml(endDate)}</strong>.</p>
+      <a href="${escHtml(url)}" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">Complete your review</a>
+      <p style="margin:20px 0 0;font-size:12px;color:#a09c92;">Or copy: ${escHtml(url)}</p>
     `, org),
   }
 }
@@ -90,9 +93,9 @@ export function buildResultsReadyEmail(params: {
   return {
     subject: `Your review results are ready - ${cycleTitle}`,
     html: emailWrapper(`
-      <p style="margin:0 0 16px;">Hi <strong>${employeeName}</strong>,</p>
-      <p style="margin:0 0 24px;">Your review results for <strong>${cycleTitle}</strong> are now available.</p>
-      <a href="${appUrl}/dashboard" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">View your results</a>
+      <p style="margin:0 0 16px;">Hi <strong>${escHtml(employeeName)}</strong>,</p>
+      <p style="margin:0 0 24px;">Your review results for <strong>${escHtml(cycleTitle)}</strong> are now available.</p>
+      <a href="${escHtml(appUrl)}/dashboard" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">View your results</a>
     `, org),
   }
 }

@@ -4,9 +4,12 @@ import { sendEmail, buildReminderEmail } from '@/lib/email'
 import { sendResultsEmails } from '@/lib/services/assignments'
 import { CycleStatus } from '@prisma/client'
 
+const EMAIL_CONCURRENCY = 10
+
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-cron-secret')
-  if (secret !== process.env.CRON_SECRET) {
+  const cronSecret = process.env.CRON_SECRET
+  if (!cronSecret || secret !== cronSecret) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -34,23 +37,32 @@ export async function POST(req: NextRequest) {
     where: { status: CycleStatus.ACTIVE, endDate: { gte: now, lte: threeDaysFromNow } },
   })
 
-  let sent = 0
+  const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
+  const tasks: (() => Promise<void>)[] = []
+
   for (const cycle of cycles) {
     const pending = await db.reviewAssignment.findMany({
       where: { cycleId: cycle.id, submitted: false },
       include: { reviewer: { select: { name: true, email: true } } },
     })
     for (const assignment of pending) {
-      const { subject, html } = buildReminderEmail({
-        reviewerName: assignment.reviewer.name,
-        cycleTitle: cycle.title,
-        endDate: cycle.endDate.toISOString().slice(0, 10),
-        appUrl: process.env.NEXTAUTH_URL ?? 'http://localhost:3000',
-        assignmentId: assignment.id,
+      tasks.push(() => {
+        const { subject, html } = buildReminderEmail({
+          reviewerName: assignment.reviewer.name,
+          cycleTitle: cycle.title,
+          endDate: cycle.endDate.toISOString().slice(0, 10),
+          appUrl,
+          assignmentId: assignment.id,
+        })
+        return sendEmail({ to: assignment.reviewer.email, subject, html })
       })
-      await sendEmail({ to: assignment.reviewer.email, subject, html })
-      sent++
     }
+  }
+
+  let sent = 0
+  for (let i = 0; i < tasks.length; i += EMAIL_CONCURRENCY) {
+    const results = await Promise.allSettled(tasks.slice(i, i + EMAIL_CONCURRENCY).map(t => t()))
+    sent += results.filter(r => r.status === 'fulfilled').length
   }
 
   return NextResponse.json({ sent, closed: closedCount })

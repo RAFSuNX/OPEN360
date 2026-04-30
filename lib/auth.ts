@@ -20,11 +20,8 @@ export const authOptions: NextAuthOptions = {
       if (!allowed) return false
       return true
     },
-    async jwt({ token, trigger }) {
-      // [P1] Re-fetch on every refresh so admin role changes take effect without re-login.
-      // Only skip on the very first sign-in call since the data will be fresh anyway.
-      // Cost: one lightweight DB query per token refresh (every ~30s by default).
-      if (token.email && (trigger === 'signIn' || !token.employeeId)) {
+    async jwt({ token }) {
+      if (token.email) {
         const employee = await db.employee.findUnique({
           where: { email: token.email as string },
           select: { id: true, isAdmin: true },

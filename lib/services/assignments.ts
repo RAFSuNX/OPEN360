@@ -3,6 +3,17 @@ import { mapAssignments } from '@/lib/assignments'
 import { sendEmail, buildReviewInviteEmail, buildResultsReadyEmail } from '@/lib/email'
 import { getOrgSettings } from '@/lib/org'
 
+const EMAIL_CONCURRENCY = 10
+
+async function sendConcurrent(tasks: (() => Promise<void>)[]): Promise<number> {
+  let sent = 0
+  for (let i = 0; i < tasks.length; i += EMAIL_CONCURRENCY) {
+    const results = await Promise.allSettled(tasks.slice(i, i + EMAIL_CONCURRENCY).map(t => t()))
+    sent += results.filter(r => r.status === 'fulfilled').length
+  }
+  return sent
+}
+
 export async function listAssignments(cycleId: string) {
   return db.reviewAssignment.findMany({
     where: { cycleId },
@@ -51,7 +62,8 @@ export async function sendCycleEmails(cycleId: string) {
   const orgSettings = await getOrgSettings()
   const logoEmailUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
-  for (const a of assignments) {
+
+  const tasks = assignments.map(a => () => {
     const { subject, html } = buildReviewInviteEmail({
       reviewerName: a.reviewer.name,
       revieweeName: a.reviewee.name,
@@ -60,9 +72,10 @@ export async function sendCycleEmails(cycleId: string) {
       assignmentId: a.id,
       org,
     })
-    await sendEmail({ to: a.reviewer.email, subject, html })
-  }
-  return assignments.length
+    return sendEmail({ to: a.reviewer.email, subject, html })
+  })
+
+  return sendConcurrent(tasks)
 }
 
 export async function sendResultsEmails(cycleId: string) {
@@ -77,16 +90,18 @@ export async function sendResultsEmails(cycleId: string) {
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   const orgSettings = await getOrgSettings()
-  const logoEmailUrl2 = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
-  const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl2, orgTagline: orgSettings.org_tagline }
-  for (const r of reviewees) {
+  const logoEmailUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
+  const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
+
+  const tasks = reviewees.map(r => () => {
     const { subject, html } = buildResultsReadyEmail({
       employeeName: r.reviewee.name,
       cycleTitle,
       appUrl,
       org,
     })
-    await sendEmail({ to: r.reviewee.email, subject, html })
-  }
-  return reviewees.length
+    return sendEmail({ to: r.reviewee.email, subject, html })
+  })
+
+  return sendConcurrent(tasks)
 }

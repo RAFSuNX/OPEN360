@@ -15,8 +15,17 @@ export async function GET() {
     if (!matches) return new NextResponse(null, { status: 404 })
 
     const mimeType = matches[1]
+    if (!['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/svg+xml'].includes(mimeType)) {
+      return new NextResponse(null, { status: 415 })
+    }
     const base64Data = matches[2]
+    if (base64Data.length > 2 * 1024 * 1024) {
+      return new NextResponse(null, { status: 413 })
+    }
     const buffer = Buffer.from(base64Data, 'base64')
+    if (buffer.length > 1.5 * 1024 * 1024) {
+      return new NextResponse(null, { status: 413 })
+    }
 
     return new NextResponse(buffer, {
       headers: {

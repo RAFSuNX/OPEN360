@@ -42,14 +42,19 @@ export async function buildResults(cycleId: string, revieweeId: string, forAdmin
     orderBy: { sortOrder: 'asc' },
   })
 
+  const submittedCounts = await db.reviewAssignment.groupBy({
+    by: ['relationship'],
+    where: { cycleId, revieweeId, submitted: true },
+    _count: { _all: true },
+  })
+  const countByRel = Object.fromEntries(submittedCounts.map(r => [r.relationship, r._count._all]))
+
   const result: Record<string, RelationshipResult> = {}
 
   for (const rel of [Relationship.SELF, Relationship.MANAGER, Relationship.PEER, Relationship.DIRECT_REPORT]) {
     const relResponses = responses.filter(r => r.relationship === rel)
 
-    const submittedCount = await db.reviewAssignment.count({
-      where: { cycleId, revieweeId, relationship: rel, submitted: true },
-    })
+    const submittedCount = countByRel[rel] ?? 0
 
     const thresholdRequired = !forAdmin && (rel === Relationship.PEER || rel === Relationship.DIRECT_REPORT)
     if (thresholdRequired && submittedCount < threshold) {

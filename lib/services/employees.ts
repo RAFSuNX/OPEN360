@@ -58,7 +58,11 @@ export interface ImportResult {
 
 export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResult> {
   const errors: string[] = []
-  let imported = 0
+  const validRows: (CsvRow & { managerId: string | null })[] = []
+
+  // Pre-fetch all existing employees once to resolve manager emails without N+1 queries
+  const existingEmployees = await db.employee.findMany({ select: { id: true, email: true } })
+  const emailToId = new Map(existingEmployees.map(e => [e.email, e.id]))
 
   for (const row of rows) {
     if (!row.name || !row.email) {
@@ -68,24 +72,34 @@ export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResu
 
     let managerId: string | null = null
     if (row.manager_email) {
-      const manager = await db.employee.findUnique({ where: { email: row.manager_email } })
-      if (!manager) {
+      managerId = emailToId.get(row.manager_email) ?? null
+      if (!managerId) {
         errors.push(`Manager not found for ${row.email}: ${row.manager_email}`)
         continue
       }
-      managerId = manager.id
     }
 
-    await db.allowlist.upsert({ where: { email: row.email }, update: {}, create: { email: row.email } })
-    await db.employee.upsert({
-      where: { email: row.email },
-      update: { name: row.name, department: row.department, role: row.role, managerId },
-      create: { name: row.name, email: row.email, department: row.department, role: row.role, managerId },
-    })
-    imported++
+    validRows.push({ ...row, managerId })
   }
 
-  return { imported, errors }
+  if (validRows.length === 0) return { imported: 0, errors }
+
+  // Batch allowlist upserts then employee upserts in a transaction
+  await db.$transaction(async tx => {
+    await tx.allowlist.createMany({
+      data: validRows.map(r => ({ email: r.email })),
+      skipDuplicates: true,
+    })
+    for (const row of validRows) {
+      await tx.employee.upsert({
+        where: { email: row.email },
+        update: { name: row.name, department: row.department, role: row.role, managerId: row.managerId },
+        create: { name: row.name, email: row.email, department: row.department, role: row.role, managerId: row.managerId },
+      })
+    }
+  })
+
+  return { imported: validRows.length, errors }
 }
 
 export async function updateEmployee(id: string, data: {

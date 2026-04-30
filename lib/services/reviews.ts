@@ -50,6 +50,15 @@ export async function submitReview(
   const invalid = answers.find(a => !a.questionId || typeof a.answer !== 'string' || !a.answer.trim())
   if (invalid) throw new Error('All answers must be non-empty strings')
 
+  const activeQuestions = await db.question.findMany({ where: { isActive: true }, select: { id: true } })
+  const activeIds = new Set(activeQuestions.map(q => q.id))
+  const submittedIds = answers.map(a => a.questionId)
+  const unknownIds = submittedIds.filter(id => !activeIds.has(id))
+  if (unknownIds.length > 0) throw new Error('Answers contain unknown or inactive question IDs')
+  const uniqueIds = new Set(submittedIds)
+  if (uniqueIds.size !== submittedIds.length) throw new Error('Duplicate answers for the same question')
+  if (submittedIds.length !== activeQuestions.length) throw new Error('Must answer all active questions')
+
   // [P1] Atomic transaction: mark submitted and insert responses together.
   // updateMany with submitted:false condition acts as a lock - if already submitted
   // by a concurrent request, the update returns count=0 and we abort.

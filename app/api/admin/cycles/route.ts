@@ -21,8 +21,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'title, startDate, and endDate are required' }, { status: 400 })
   }
 
-  const cycle = await createCycle({ title, startDate, endDate })
-  return NextResponse.json(cycle, { status: 201 })
+  try {
+    const cycle = await createCycle({ title, startDate, endDate })
+    return NextResponse.json(cycle, { status: 201 })
+  } catch (e) {
+    if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })
+    throw e
+  }
 }
 
 export async function PATCH(req: NextRequest) {
