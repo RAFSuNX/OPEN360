@@ -23,6 +23,7 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
   const [editing, setEditing] = useState<Employee | null>(null)
   const [editForm, setEditForm] = useState({ name: '', employeeId: '', department: '', role: '', managerId: '', isAdmin: false })
   const [saveLoading, setSaveLoading] = useState(false)
+  const [saveError, setSaveError] = useState('')
 
   // Ad-hoc review state
   const [reviewTarget, setReviewTarget] = useState<Employee | null>(null)
@@ -41,19 +42,39 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
 
   function openEdit(emp: Employee) {
     setEditing(emp)
+    setSaveError('')
     setEditForm({ name: emp.name, employeeId: emp.employeeId ?? '', department: emp.department ?? '', role: emp.role ?? '', managerId: emp.manager?.id ?? '', isAdmin: emp.isAdmin })
   }
 
   async function saveEdit() {
     if (!editing) return
-    setSaveLoading(true)
-    const res = await fetch('/api/admin/employees', {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: editing.id, name: editForm.name, employeeId: editForm.employeeId || null, department: editForm.department || null, role: editForm.role || null, managerId: editForm.managerId || null, ...(editing.id !== currentUserId ? { isAdmin: editForm.isAdmin } : {}) }),
-    })
-    if (res.ok) { await refresh(); setEditing(null) }
-    setSaveLoading(false)
+    if (!editForm.name.trim()) { setSaveError('Name is required.'); return }
+    setSaveLoading(true); setSaveError('')
+    try {
+      const res = await fetch('/api/admin/employees', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editing.id,
+          name: editForm.name.trim(),
+          employeeId: editForm.employeeId || null,
+          department: editForm.department || null,
+          role: editForm.role || null,
+          managerId: editForm.managerId || null,
+          ...(editing.id !== currentUserId ? { isAdmin: editForm.isAdmin } : {}),
+        }),
+      })
+      if (res.ok) {
+        await refresh(); setEditing(null)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        setSaveError(data.error ?? `Save failed (${res.status})`)
+      }
+    } catch {
+      setSaveError('Network error. Please try again.')
+    } finally {
+      setSaveLoading(false)
+    }
   }
 
   function openReview(emp: Employee) {
@@ -170,7 +191,10 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
                   Admin access
                 </label>
               )}
-              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+              {saveError && (
+                <p style={{ fontSize: '12px', color: 'var(--semantic-error)', margin: '4px 0 0' }}>{saveError}</p>
+              )}
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button onClick={saveEdit} disabled={saveLoading} className="btn-primary" style={{ flex: 1 }}>{saveLoading ? 'Saving...' : 'Save changes'}</button>
                 <button onClick={() => setEditing(null)} className="btn-secondary">Cancel</button>
               </div>
