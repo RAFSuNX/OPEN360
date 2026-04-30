@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { sendEmail, buildReminderEmail } from '@/lib/email'
+import { sendResultsEmails } from '@/lib/services/assignments'
 import { CycleStatus } from '@prisma/client'
 
 export async function POST(req: NextRequest) {
@@ -12,6 +13,22 @@ export async function POST(req: NextRequest) {
   const now = new Date()
   const threeDaysFromNow = new Date()
   threeDaysFromNow.setDate(threeDaysFromNow.getDate() + 3)
+
+  // Auto-close ACTIVE cycles whose endDate has passed
+  const expiredCycles = await db.reviewCycle.findMany({
+    where: { status: CycleStatus.ACTIVE, endDate: { lt: now } },
+  })
+
+  let closedCount = 0
+  for (const cycle of expiredCycles) {
+    await db.reviewCycle.update({ where: { id: cycle.id }, data: { status: CycleStatus.CLOSED } })
+    await sendResultsEmails(cycle.id)
+    closedCount++
+  }
+
+  if (closedCount > 0) {
+    console.log(`[cron/reminders] Auto-closed ${closedCount} expired cycle(s)`)
+  }
 
   const cycles = await db.reviewCycle.findMany({
     where: { status: CycleStatus.ACTIVE, endDate: { gte: now, lte: threeDaysFromNow } },
@@ -36,5 +53,5 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  return NextResponse.json({ sent })
+  return NextResponse.json({ sent, closed: closedCount })
 }
