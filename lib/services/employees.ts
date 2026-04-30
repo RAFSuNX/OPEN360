@@ -94,6 +94,7 @@ export async function updateEmployee(id: string, data: {
   department?: string | null
   role?: string | null
   managerId?: string | null
+  isAdmin?: boolean
 }) {
   return db.employee.update({ where: { id }, data })
 }

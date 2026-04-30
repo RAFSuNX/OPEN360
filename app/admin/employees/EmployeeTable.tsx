@@ -8,6 +8,7 @@ interface Employee {
   id: string; name: string; email: string
   employeeId: string | null; department: string | null
   role: string | null; manager: { id: string; name: string } | null
+  isAdmin: boolean
 }
 
 const inputStyle = {
@@ -16,11 +17,11 @@ const inputStyle = {
   padding: '9px 12px', fontSize: '13px', fontFamily: 'inherit', outline: 'none',
 }
 
-export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee[] }) {
+export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmployees: Employee[]; currentUserId: string }) {
   const [employees, setEmployees] = useState(initialEmployees)
   const [viewingProfile, setViewingProfile] = useState<string | null>(null)
   const [editing, setEditing] = useState<Employee | null>(null)
-  const [editForm, setEditForm] = useState({ name: '', employeeId: '', department: '', role: '', managerId: '' })
+  const [editForm, setEditForm] = useState({ name: '', employeeId: '', department: '', role: '', managerId: '', isAdmin: false })
   const [saveLoading, setSaveLoading] = useState(false)
 
   // Ad-hoc review state
@@ -40,7 +41,7 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
 
   function openEdit(emp: Employee) {
     setEditing(emp)
-    setEditForm({ name: emp.name, employeeId: emp.employeeId ?? '', department: emp.department ?? '', role: emp.role ?? '', managerId: emp.manager?.id ?? '' })
+    setEditForm({ name: emp.name, employeeId: emp.employeeId ?? '', department: emp.department ?? '', role: emp.role ?? '', managerId: emp.manager?.id ?? '', isAdmin: emp.isAdmin })
   }
 
   async function saveEdit() {
@@ -49,7 +50,7 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
     const res = await fetch('/api/admin/employees', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id: editing.id, name: editForm.name, employeeId: editForm.employeeId || null, department: editForm.department || null, role: editForm.role || null, managerId: editForm.managerId || null }),
+      body: JSON.stringify({ id: editing.id, name: editForm.name, employeeId: editForm.employeeId || null, department: editForm.department || null, role: editForm.role || null, managerId: editForm.managerId || null, ...(editing.id !== currentUserId ? { isAdmin: editForm.isAdmin } : {}) }),
     })
     if (res.ok) { await refresh(); setEditing(null) }
     setSaveLoading(false)
@@ -117,7 +118,10 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
               {employees.map(emp => (
                 <tr key={emp.id}>
                   <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--muted)' }}>{emp.employeeId ?? '—'}</td>
-                  <td style={{ fontWeight: '500', color: 'var(--ink)' }}>{emp.name}</td>
+                  <td style={{ fontWeight: '500', color: 'var(--ink)' }}>
+                    {emp.name}
+                    {emp.isAdmin && <span title="Admin" style={{ marginLeft: '6px', fontSize: '12px' }}>&#9733;</span>}
+                  </td>
                   <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>{emp.email}</td>
                   <td>{emp.department ?? '—'}</td>
                   <td>{emp.role ?? '—'}</td>
@@ -158,6 +162,13 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
                 <option value="">No manager</option>
                 {employees.filter(e => e.id !== editing.id).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
               </select>
+              {editing.id !== currentUserId && (
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', padding: '8px 0', fontSize: '13px', color: 'var(--ink)' }}>
+                  <input type="checkbox" checked={editForm.isAdmin} onChange={e => setEditForm(f => ({ ...f, isAdmin: e.target.checked }))}
+                    style={{ accentColor: 'var(--primary)', width: '14px', height: '14px' }} />
+                  Admin access
+                </label>
+              )}
               <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
                 <button onClick={saveEdit} disabled={saveLoading} className="btn-primary" style={{ flex: 1 }}>{saveLoading ? 'Saving...' : 'Save changes'}</button>
                 <button onClick={() => setEditing(null)} className="btn-secondary">Cancel</button>

@@ -31,7 +31,7 @@ export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { id, name, employeeId, department, role, managerId } = await req.json()
+  const { id, name, employeeId, department, role, managerId, isAdmin } = await req.json()
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
   const employee = await updateEmployee(id, {
@@ -40,6 +40,7 @@ export async function PATCH(req: NextRequest) {
     department: department ?? null,
     role: role ?? null,
     managerId: managerId ?? null,
+    ...(typeof isAdmin === 'boolean' ? { isAdmin } : {}),
   })
   return NextResponse.json(employee)
 }
