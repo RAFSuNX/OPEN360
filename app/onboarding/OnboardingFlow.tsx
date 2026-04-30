@@ -2,6 +2,7 @@
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { ImageCropModal } from '@/components/ImageCropModal'
+import { compressLogoForEmail } from '@/lib/compressForEmail'
 
 const inputStyle = {
   width: '100%', background: 'var(--surface-card)', color: 'var(--ink)',
@@ -39,6 +40,10 @@ export function OnboardingFlow() {
   async function finish() {
     if (!orgName.trim()) { setError('Organization name is required'); return }
     setSaving(true); setError('')
+    // Compress logo for email use (avoids Gmail clipping)
+    const emailLogoUrl = logoUrl && logoUrl.startsWith('data:')
+      ? await compressLogoForEmail(logoUrl)
+      : logoUrl
     const res = await fetch('/api/admin/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -46,6 +51,7 @@ export function OnboardingFlow() {
         org_name: orgName.trim(),
         org_tagline: orgTagline.trim(),
         org_logo_url: logoUrl,
+        org_logo_email: emailLogoUrl,
         onboarding_complete: 'true',
       }),
     })

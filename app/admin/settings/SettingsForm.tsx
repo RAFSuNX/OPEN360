@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { ImageCropModal } from '@/components/ImageCropModal'
+import { compressLogoForEmail } from '@/lib/compressForEmail'
 
 interface Props { initialSettings: Record<string, string> }
 
@@ -33,6 +34,9 @@ export function SettingsForm({ initialSettings }: Props) {
 
   async function save() {
     setSaving(true); setMsg('')
+    const emailLogoUrl = logoUrl && logoUrl.startsWith('data:')
+      ? await compressLogoForEmail(logoUrl)
+      : logoUrl
     const res = await fetch('/api/admin/settings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -40,6 +44,7 @@ export function SettingsForm({ initialSettings }: Props) {
         org_name: orgName,
         org_tagline: orgTagline,
         org_logo_url: logoUrl,
+        org_logo_email: emailLogoUrl,
         anonymity_threshold: threshold,
         onboarding_complete: 'true',
       }),
