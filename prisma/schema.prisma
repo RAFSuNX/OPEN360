@@ -119,3 +119,11 @@ enum QuestionType {
   RATING
   OPEN_TEXT
 }
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("settings")
+}

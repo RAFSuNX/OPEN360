@@ -16,6 +16,6 @@ export async function GET(
   }
 
   const { cycleId, employeeId } = await params
-  const results = await buildResults(cycleId, employeeId)
+  const results = await buildResults(cycleId, employeeId, true)
   return NextResponse.json(results)
 }

@@ -2,7 +2,14 @@ import { db } from '@/lib/db'
 import { decrypt } from '@/lib/crypto'
 import { Relationship } from '@prisma/client'
 
-const ANONYMITY_THRESHOLD = 3
+async function getAnonymityThreshold(): Promise<number> {
+  try {
+    const setting = await db.setting.findUnique({ where: { key: 'anonymity_threshold' } })
+    return setting ? parseInt(setting.value, 10) : 1
+  } catch {
+    return 1
+  }
+}
 
 interface QuestionResult {
   id: string
@@ -20,7 +27,8 @@ interface RelationshipResult {
   questions: QuestionResult[]
 }
 
-export async function buildResults(cycleId: string, revieweeId: string): Promise<Record<string, RelationshipResult>> {
+export async function buildResults(cycleId: string, revieweeId: string, forAdmin = false): Promise<Record<string, RelationshipResult>> {
+  const threshold = forAdmin ? 1 : await getAnonymityThreshold()
   const responses = await db.reviewResponse.findMany({
     where: { cycleId, revieweeId },
     include: { question: true },
@@ -40,12 +48,12 @@ export async function buildResults(cycleId: string, revieweeId: string): Promise
       where: { cycleId, revieweeId, relationship: rel, submitted: true },
     })
 
-    const thresholdRequired = rel === Relationship.PEER || rel === Relationship.DIRECT_REPORT
-    if (thresholdRequired && submittedCount < ANONYMITY_THRESHOLD) {
+    const thresholdRequired = !forAdmin && (rel === Relationship.PEER || rel === Relationship.DIRECT_REPORT)
+    if (thresholdRequired && submittedCount < threshold) {
       result[rel] = {
         relationship: rel,
         visible: false,
-        reason: `Not enough responses to display anonymously (${submittedCount} of ${ANONYMITY_THRESHOLD} required).`,
+        reason: `Not enough responses to display anonymously (${submittedCount} of ${threshold} required).`,
         questions: [],
       }
       continue

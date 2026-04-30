@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { EmployeeForm } from '@/components/admin/EmployeeForm'
 import { CsvImport } from '@/components/admin/CsvImport'
+import { EmployeeProfileModal } from '@/components/EmployeeProfileModal'
 
 interface Employee {
   id: string; name: string; email: string
@@ -17,6 +18,7 @@ const inputStyle = {
 
 export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee[] }) {
   const [employees, setEmployees] = useState(initialEmployees)
+  const [viewingProfile, setViewingProfile] = useState<string | null>(null)
   const [editing, setEditing] = useState<Employee | null>(null)
   const [editForm, setEditForm] = useState({ name: '', employeeId: '', department: '', role: '', managerId: '' })
   const [saveLoading, setSaveLoading] = useState(false)
@@ -122,6 +124,7 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
                   <td>{emp.manager?.name ?? '—'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '10px' }}>
+                      <button onClick={() => setViewingProfile(emp.id)} style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View</button>
                       <button onClick={() => openEdit(emp)} style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>Edit</button>
                       <button onClick={() => openReview(emp)} style={{ fontSize: '12px', color: 'var(--body)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Send review</button>
                     </div>
@@ -131,6 +134,10 @@ export function EmployeeTable({ initialEmployees }: { initialEmployees: Employee
             </tbody>
           </table>
         </div>
+      )}
+
+      {viewingProfile && (
+        <EmployeeProfileModal employeeId={viewingProfile} onClose={() => setViewingProfile(null)} />
       )}
 
       {/* Edit modal */}
