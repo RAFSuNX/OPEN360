@@ -23,6 +23,16 @@ export async function getAssignmentWithQuestions(assignmentId: string, reviewerI
 
   if (!assignment || assignment.reviewerId !== reviewerId) return null
 
+  const cycleQuestions = await db.cycleQuestion.findMany({
+    where: { cycleId: assignment.cycleId },
+    orderBy: { sortOrder: 'asc' },
+  })
+
+  if (cycleQuestions.length > 0) {
+    return { assignment, questions: cycleQuestions }
+  }
+
+  // Legacy fallback: global active questions
   const questions = await db.question.findMany({
     where: { isActive: true },
     orderBy: { sortOrder: 'asc' },
@@ -41,47 +51,54 @@ export async function submitReview(
     include: { cycle: { select: { status: true } } },
   })
 
-  if (!assignment || assignment.reviewerId !== reviewerId) {
-    throw new Error('Assignment not found')
-  }
+  if (!assignment || assignment.reviewerId !== reviewerId) throw new Error('Assignment not found')
   if (assignment.submitted) throw new Error('Already submitted')
   if (assignment.cycle.status !== 'ACTIVE') throw new Error('Cycle is not active')
+
+  const cycleQuestions = await db.cycleQuestion.findMany({
+    where: { cycleId: assignment.cycleId },
+    select: { id: true },
+  })
+  const useCycleQuestions = cycleQuestions.length > 0
 
   const invalid = answers.find(a => !a.questionId || typeof a.answer !== 'string' || !a.answer.trim())
   if (invalid) throw new Error('All answers must be non-empty strings')
 
-  const activeQuestions = await db.question.findMany({ where: { isActive: true }, select: { id: true } })
-  const activeIds = new Set(activeQuestions.map(q => q.id))
   const submittedIds = answers.map(a => a.questionId)
-  const unknownIds = submittedIds.filter(id => !activeIds.has(id))
-  if (unknownIds.length > 0) throw new Error('Answers contain unknown or inactive question IDs')
   const uniqueIds = new Set(submittedIds)
   if (uniqueIds.size !== submittedIds.length) throw new Error('Duplicate answers for the same question')
-  if (submittedIds.length !== activeQuestions.length) throw new Error('Must answer all active questions')
 
-  // [P1] Atomic transaction: mark submitted and insert responses together.
-  // updateMany with submitted:false condition acts as a lock - if already submitted
-  // by a concurrent request, the update returns count=0 and we abort.
+  if (useCycleQuestions) {
+    const validIds = new Set(cycleQuestions.map(q => q.id))
+    const unknown = submittedIds.filter(id => !validIds.has(id))
+    if (unknown.length > 0) throw new Error('Answers contain unknown question IDs')
+    if (submittedIds.length !== cycleQuestions.length) throw new Error('Must answer all questions')
+  } else {
+    const activeQuestions = await db.question.findMany({ where: { isActive: true }, select: { id: true } })
+    const activeIds = new Set(activeQuestions.map(q => q.id))
+    const unknown = submittedIds.filter(id => !activeIds.has(id))
+    if (unknown.length > 0) throw new Error('Answers contain unknown or inactive question IDs')
+    if (submittedIds.length !== activeQuestions.length) throw new Error('Must answer all active questions')
+  }
+
   await db.$transaction(async tx => {
     const updated = await tx.reviewAssignment.updateMany({
       where: { id: assignmentId, submitted: false },
       data: { submitted: true, submittedAt: new Date() },
     })
-
     if (updated.count === 0) throw new Error('Already submitted')
 
-    // Store encrypted responses - NO reviewerId stored (anonymity)
     await tx.reviewResponse.createMany({
       data: answers.map(a => ({
         cycleId: assignment.cycleId,
         revieweeId: assignment.revieweeId,
-        questionId: a.questionId,
+        questionId: useCycleQuestions ? null : a.questionId,
+        cycleQuestionId: useCycleQuestions ? a.questionId : null,
         answerEncrypted: encrypt(a.answer),
         relationship: assignment.relationship,
       })),
     })
   })
 
-  // Fire-and-forget: notify admins if all non-self reviews are now complete
   notifyAdminIfCycleComplete(assignment.cycleId).catch(() => {})
 }
