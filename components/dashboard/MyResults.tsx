@@ -61,7 +61,7 @@ export default function MyResults({ results, cycleTitle }: Props) {
                             fontSize: '40px', fontWeight: '400', color: 'var(--ink)',
                             letterSpacing: '-1px', fontFamily: "'JetBrains Mono', monospace",
                           }}>
-                            {q.average !== undefined ? q.average : '—'}
+                            {q.average !== undefined ? q.average : '-'}
                           </span>
                           <span style={{ fontSize: '16px', color: 'var(--muted)' }}>/5</span>
                         </div>

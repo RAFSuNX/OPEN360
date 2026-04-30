@@ -63,7 +63,7 @@ export function ExportButton({ cycleId, employeeId, employeeName = 'Employee', c
       doc.setTextColor(255, 255, 255)
       doc.setFontSize(11)
       doc.setFont('helvetica', 'bold')
-      doc.text('OPEN360 — 360-Degree Review Results', margin, 9.5)
+      doc.text('OPEN360 - 360-Degree Review Results', margin, 9.5)
       y = 22
 
       doc.setTextColor(38, 37, 30)

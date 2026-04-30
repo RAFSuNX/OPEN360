@@ -47,11 +47,11 @@ export function buildReviewInviteEmail(params: {
   const { reviewerName, revieweeName, cycleTitle, appUrl, assignmentId, org = {} } = params
   const url = `${appUrl}/dashboard/review/${assignmentId}`
   return {
-    subject: `Review request: ${revieweeName} — ${cycleTitle}`,
+    subject: `Review request: ${revieweeName} - ${cycleTitle}`,
     html: emailWrapper(`
       <p style="margin:0 0 16px;">Hi <strong>${reviewerName}</strong>,</p>
       <p style="margin:0 0 16px;">You have been asked to provide feedback for <strong>${revieweeName}</strong> as part of <strong>${cycleTitle}</strong>.</p>
-      <p style="margin:0 0 24px;color:#5a5852;">Your responses are completely anonymous — no one will know what you wrote.</p>
+      <p style="margin:0 0 24px;color:#5a5852;">Your responses are completely anonymous - no one will know what you wrote.</p>
       <a href="${url}" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">Complete your review</a>
       <p style="margin:20px 0 0;font-size:12px;color:#a09c92;">Or copy: ${url}</p>
     `, org),
@@ -87,7 +87,7 @@ export function buildResultsReadyEmail(params: {
 }): EmailContent {
   const { employeeName, cycleTitle, appUrl, org = {} } = params
   return {
-    subject: `Your review results are ready — ${cycleTitle}`,
+    subject: `Your review results are ready - ${cycleTitle}`,
     html: emailWrapper(`
       <p style="margin:0 0 16px;">Hi <strong>${employeeName}</strong>,</p>
       <p style="margin:0 0 24px;">Your review results for <strong>${cycleTitle}</strong> are now available.</p>

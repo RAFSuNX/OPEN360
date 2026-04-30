@@ -59,7 +59,7 @@ export default async function DashboardPage() {
                   fontSize: '13px', margin: 0,
                   color: value ? 'var(--ink)' : 'var(--muted)',
                   fontFamily: mono ? "'JetBrains Mono', monospace" : 'inherit',
-                }}>{value ?? '—'}</p>
+                }}>{value ?? '-'}</p>
               </div>
             ))}
           </div>

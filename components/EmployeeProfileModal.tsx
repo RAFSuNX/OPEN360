@@ -58,7 +58,7 @@ export function EmployeeProfileModal({ employeeId, onClose }: Props) {
                 <div key={label}>
                   <p className="section-label" style={{ marginBottom: '2px', fontSize: '10px' }}>{label}</p>
                   <p style={{ fontSize: '13px', color: value ? 'var(--ink)' : 'var(--muted)', margin: 0, fontFamily: label === 'Email' || label === 'Employee ID' ? "'JetBrains Mono', monospace" : 'inherit', wordBreak: 'break-all' as const }}>
-                    {value ?? '—'}
+                    {value ?? '-'}
                   </p>
                 </div>
               ))}

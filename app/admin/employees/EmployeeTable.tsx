@@ -117,15 +117,15 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
             <tbody>
               {employees.map(emp => (
                 <tr key={emp.id}>
-                  <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--muted)' }}>{emp.employeeId ?? '—'}</td>
+                  <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--muted)' }}>{emp.employeeId ?? '-'}</td>
                   <td style={{ fontWeight: '500', color: 'var(--ink)' }}>
                     {emp.name}
                     {emp.isAdmin && <span title="Admin" style={{ marginLeft: '6px', fontSize: '12px' }}>&#9733;</span>}
                   </td>
                   <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>{emp.email}</td>
-                  <td>{emp.department ?? '—'}</td>
-                  <td>{emp.role ?? '—'}</td>
-                  <td>{emp.manager?.name ?? '—'}</td>
+                  <td>{emp.department ?? '-'}</td>
+                  <td>{emp.role ?? '-'}</td>
+                  <td>{emp.manager?.name ?? '-'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <button onClick={() => setViewingProfile(emp.id)} style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>View</button>
@@ -202,7 +202,7 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
               </div>
               <div>
                 <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '8px' }}>
-                  Select reviewers — or leave all unselected to auto-assign from org tree
+                  Select reviewers - or leave all unselected to auto-assign from org tree
                 </p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', maxHeight: '200px', overflowY: 'auto' as const }}>
                   {potentialReviewers.map(e => (

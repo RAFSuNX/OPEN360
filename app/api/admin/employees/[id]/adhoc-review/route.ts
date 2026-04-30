@@ -42,7 +42,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   // Create a dedicated cycle for this employee
-  const cycleTitle = title || `Ad-hoc: ${reviewee.name} — ${new Date().toLocaleDateString()}`
+  const cycleTitle = title || `Ad-hoc: ${reviewee.name} - ${new Date().toLocaleDateString()}`
   const cycle = await db.reviewCycle.create({
     data: {
       title: cycleTitle,
