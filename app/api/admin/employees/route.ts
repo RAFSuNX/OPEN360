@@ -35,11 +35,14 @@ export async function PATCH(req: NextRequest) {
   const { id, name, employeeId, department, role, managerId, isAdmin } = await req.json()
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  // [P1] Prevent last-admin lockout - must always have at least one active admin
+  // [P1] Prevent last-admin lockout - only block if actually demoting an existing admin
   if (isAdmin === false) {
-    const adminCount = await db.employee.count({ where: { isAdmin: true, isActive: true } })
-    if (adminCount <= 1) {
-      return NextResponse.json({ error: 'Cannot remove the last admin. Promote another employee first.' }, { status: 400 })
+    const current = await db.employee.findUnique({ where: { id }, select: { isAdmin: true } })
+    if (current?.isAdmin === true) {
+      const adminCount = await db.employee.count({ where: { isAdmin: true, isActive: true } })
+      if (adminCount <= 1) {
+        return NextResponse.json({ error: 'Cannot remove the last admin. Promote another employee first.' }, { status: 400 })
+      }
     }
   }
 
