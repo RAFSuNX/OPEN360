@@ -1,6 +1,7 @@
 'use client'
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import { ImageCropModal } from '@/components/ImageCropModal'
 
 const inputStyle = {
   width: '100%', background: 'var(--surface-card)', color: 'var(--ink)',
@@ -16,6 +17,7 @@ export function OnboardingFlow() {
   const [orgTagline, setOrgTagline] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
   const [logoPreview, setLogoPreview] = useState('')
+  const [cropSrc, setCropSrc] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
@@ -23,15 +25,15 @@ export function OnboardingFlow() {
   function handleLogoFile(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 500 * 1024) { setError('Logo must be under 500KB'); return }
+    if (file.size > 5 * 1024 * 1024) { setError('Logo must be under 5MB'); return }
     const reader = new FileReader()
-    reader.onload = ev => {
-      const result = ev.target?.result as string
-      setLogoPreview(result)
-      setLogoUrl(result)
-      setError('')
-    }
+    reader.onload = ev => { setCropSrc(ev.target?.result as string); setError('') }
     reader.readAsDataURL(file)
+    if (fileRef.current) fileRef.current.value = ''
+  }
+
+  function handleCropDone(dataUrl: string) {
+    setLogoPreview(dataUrl); setLogoUrl(dataUrl); setCropSrc(null)
   }
 
   async function finish() {
@@ -59,6 +61,8 @@ export function OnboardingFlow() {
   const totalSteps = 3
 
   return (
+    <>
+    {cropSrc && <ImageCropModal imageSrc={cropSrc} onDone={handleCropDone} onCancel={() => setCropSrc(null)} />}
     <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ width: '100%', maxWidth: '480px' }}>
 
@@ -225,5 +229,6 @@ export function OnboardingFlow() {
         )}
       </div>
     </div>
+    </>
   )
 }
