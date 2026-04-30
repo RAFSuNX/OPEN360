@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Allowlist {
+  id       String   @id @default(uuid())
+  email    String   @unique
+  addedAt  DateTime @default(now()) @map("added_at")
+
+  @@map("allowlist")
+}
+
+model Employee {
+  id         String   @id @default(uuid())
+  name       String
+  email      String   @unique
+  department String?
+  role       String?
+  isAdmin    Boolean  @default(false) @map("is_admin")
+  isActive   Boolean  @default(true) @map("is_active")
+  managerId  String?  @map("manager_id")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  manager        Employee?  @relation("EmployeeManager", fields: [managerId], references: [id])
+  directReports  Employee[] @relation("EmployeeManager")
+
+  reviewsAsReviewee   ReviewAssignment[] @relation("AssignmentReviewee")
+  reviewsAsReviewer   ReviewAssignment[] @relation("AssignmentReviewer")
+
+  @@map("employees")
+}
+
+model ReviewCycle {
+  id        String      @id @default(uuid())
+  title     String
+  startDate DateTime    @map("start_date")
+  endDate   DateTime    @map("end_date")
+  status    CycleStatus @default(DRAFT)
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  assignments ReviewAssignment[]
+  responses   ReviewResponse[]
+
+  @@map("review_cycles")
+}
+
+enum CycleStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+model ReviewAssignment {
+  id           String       @id @default(uuid())
+  cycleId      String       @map("cycle_id")
+  revieweeId   String       @map("reviewee_id")
+  reviewerId   String       @map("reviewer_id")
+  relationship Relationship
+  submitted    Boolean      @default(false)
+  submittedAt  DateTime?    @map("submitted_at")
+
+  cycle    ReviewCycle @relation(fields: [cycleId], references: [id])
+  reviewee Employee    @relation("AssignmentReviewee", fields: [revieweeId], references: [id])
+  reviewer Employee    @relation("AssignmentReviewer", fields: [reviewerId], references: [id])
+
+  @@unique([cycleId, revieweeId, reviewerId])
+  @@map("review_assignments")
+}
+
+enum Relationship {
+  SELF
+  MANAGER
+  PEER
+  DIRECT_REPORT
+}
+
+model ReviewResponse {
+  id              String       @id @default(uuid())
+  cycleId         String       @map("cycle_id")
+  revieweeId      String       @map("reviewee_id")
+  questionId      String       @map("question_id")
+  answerEncrypted String       @map("answer_encrypted")
+  relationship    Relationship
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  cycle    ReviewCycle @relation(fields: [cycleId], references: [id])
+  question Question    @relation(fields: [questionId], references: [id])
+
+  @@map("review_responses")
+}
+
+model Question {
+  id          String       @id @default(uuid())
+  text        String
+  type        QuestionType
+  ratingScale Int?         @map("rating_scale")
+  category    String
+  sortOrder   Int          @default(0) @map("sort_order")
+  isActive    Boolean      @default(true) @map("is_active")
+
+  responses ReviewResponse[]
+
+  @@map("questions")
+}
+
+enum QuestionType {
+  RATING
+  OPEN_TEXT
+}
