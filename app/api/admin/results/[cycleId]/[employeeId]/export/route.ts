@@ -6,10 +6,12 @@ import { decrypt } from '@/lib/crypto'
 import { Relationship } from '@prisma/client'
 
 function csvEscape(value: string): string {
-  if (value.includes(',') || value.includes('"') || value.includes('\n')) {
-    return `"${value.replace(/"/g, '""')}"`
+  // [P1] Neutralize formula injection - prefix with tab if starts with =, +, -, @
+  const safe = /^[=+\-@]/.test(value) ? `\t${value}` : value
+  if (safe.includes(',') || safe.includes('"') || safe.includes('\n') || safe.includes('\t')) {
+    return `"${safe.replace(/"/g, '""')}"`
   }
-  return value
+  return safe
 }
 
 export async function GET(
