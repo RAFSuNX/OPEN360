@@ -16,13 +16,13 @@ export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { title, startDate, endDate } = await req.json()
+  const { title, startDate, endDate, templateId } = await req.json()
   if (!title || !startDate || !endDate) {
     return NextResponse.json({ error: 'title, startDate, and endDate are required' }, { status: 400 })
   }
 
   try {
-    const cycle = await createCycle({ title, startDate, endDate })
+    const cycle = await createCycle({ title, startDate, endDate, templateId })
     return NextResponse.json(cycle, { status: 201 })
   } catch (e) {
     if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })
