@@ -8,15 +8,15 @@ export class EmployeeExistsError extends Error {
   }
 }
 
-export async function listEmployees() {
+export async function listEmployees(orgId: string) {
   return db.employee.findMany({
-    where: { isActive: true },
+    where: { orgId, isActive: true },
     include: { manager: { select: { id: true, name: true } } },
     orderBy: { name: 'asc' },
   })
 }
 
-export async function createEmployee(data: {
+export async function createEmployee(orgId: string, data: {
   name: string
   email: string
   employeeId?: string
@@ -24,16 +24,14 @@ export async function createEmployee(data: {
   role?: string
   managerId?: string
 }) {
-  // [P2] Wrap in transaction so allowlist and employee are always in sync.
-  // If employee creation fails, the allowlist entry is rolled back too.
   try {
     return await db.$transaction(async tx => {
       await tx.allowlist.upsert({
-        where: { email: data.email },
+        where: { orgId_email: { orgId, email: data.email } },
         update: {},
-        create: { email: data.email },
+        create: { orgId, email: data.email },
       })
-      return tx.employee.create({ data })
+      return tx.employee.create({ data: { ...data, orgId } })
     })
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
@@ -56,12 +54,14 @@ export interface ImportResult {
   errors: string[]
 }
 
-export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResult> {
+export async function importEmployeesFromCsv(orgId: string, rows: CsvRow[]): Promise<ImportResult> {
   const errors: string[] = []
   const validRows: (CsvRow & { managerId: string | null })[] = []
 
-  // Pre-fetch all existing employees once to resolve manager emails without N+1 queries
-  const existingEmployees = await db.employee.findMany({ select: { id: true, email: true } })
+  const existingEmployees = await db.employee.findMany({
+    where: { orgId },
+    select: { id: true, email: true },
+  })
   const emailToId = new Map(existingEmployees.map(e => [e.email, e.id]))
 
   for (const row of rows) {
@@ -69,7 +69,6 @@ export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResu
       errors.push(`Row missing name or email: ${JSON.stringify(row)}`)
       continue
     }
-
     let managerId: string | null = null
     if (row.manager_email) {
       managerId = emailToId.get(row.manager_email) ?? null
@@ -78,23 +77,21 @@ export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResu
         continue
       }
     }
-
     validRows.push({ ...row, managerId })
   }
 
   if (validRows.length === 0) return { imported: 0, errors }
 
-  // Batch allowlist upserts then employee upserts in a transaction
   await db.$transaction(async tx => {
     await tx.allowlist.createMany({
-      data: validRows.map(r => ({ email: r.email })),
+      data: validRows.map(r => ({ orgId, email: r.email })),
       skipDuplicates: true,
     })
     for (const row of validRows) {
       await tx.employee.upsert({
-        where: { email: row.email },
+        where: { orgId_email: { orgId, email: row.email } },
         update: { name: row.name, department: row.department, role: row.role, managerId: row.managerId },
-        create: { name: row.name, email: row.email, department: row.department, role: row.role, managerId: row.managerId },
+        create: { orgId, name: row.name, email: row.email, department: row.department, role: row.role, managerId: row.managerId },
       })
     }
   })
@@ -102,7 +99,7 @@ export async function importEmployeesFromCsv(rows: CsvRow[]): Promise<ImportResu
   return { imported: validRows.length, errors }
 }
 
-export async function updateEmployee(id: string, data: {
+export async function updateEmployee(orgId: string, id: string, data: {
   name?: string
   employeeId?: string | null
   department?: string | null
@@ -110,5 +107,13 @@ export async function updateEmployee(id: string, data: {
   managerId?: string | null
   isAdmin?: boolean
 }) {
-  return db.employee.update({ where: { id }, data })
+  return db.employee.update({ where: { id, orgId }, data })
+}
+
+export async function deactivateEmployee(orgId: string, id: string) {
+  return db.employee.update({ where: { id, orgId }, data: { isActive: false } })
+}
+
+export async function getEmployee(orgId: string, id: string) {
+  return db.employee.findFirst({ where: { id, orgId } })
 }

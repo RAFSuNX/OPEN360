@@ -2,9 +2,9 @@ import { db } from '@/lib/db'
 import { decrypt } from '@/lib/crypto'
 import { Relationship } from '@prisma/client'
 
-async function getAnonymityThreshold(): Promise<number> {
+async function getAnonymityThreshold(orgId: string): Promise<number> {
   try {
-    const setting = await db.setting.findUnique({ where: { key: 'anonymity_threshold' } })
+    const setting = await db.setting.findFirst({ where: { orgId, key: 'anonymity_threshold' } })
     if (!setting) return 1
     const parsed = parseInt(setting.value, 10)
     return Number.isFinite(parsed) && parsed >= 1 ? parsed : 1
@@ -29,8 +29,17 @@ interface RelationshipResult {
   questions: QuestionResult[]
 }
 
-export async function buildResults(cycleId: string, revieweeId: string, forAdmin = false): Promise<Record<string, RelationshipResult>> {
-  const threshold = forAdmin ? 1 : await getAnonymityThreshold()
+export async function buildResults(
+  orgId: string,
+  cycleId: string,
+  revieweeId: string,
+  forAdmin = false
+): Promise<Record<string, RelationshipResult>> {
+  const threshold = forAdmin ? 1 : await getAnonymityThreshold(orgId)
+
+  // Verify cycle belongs to org
+  const cycle = await db.reviewCycle.findFirst({ where: { id: cycleId, orgId } })
+  if (!cycle) return {}
 
   const cycleQuestionsRaw = await db.cycleQuestion.findMany({
     where: { cycleId },
@@ -44,7 +53,7 @@ export async function buildResults(cycleId: string, revieweeId: string, forAdmin
 
   const questions = useCycleQuestions
     ? cycleQuestionsRaw.map(q => ({ id: q.id, text: q.text, type: q.type as string, category: q.category, ratingScale: q.ratingScale }))
-    : (await db.question.findMany({ where: { isActive: true }, orderBy: { sortOrder: 'asc' } }))
+    : (await db.question.findMany({ where: { orgId, isActive: true }, orderBy: { sortOrder: 'asc' } }))
         .map(q => ({ id: q.id, text: q.text, type: q.type as string, category: q.category, ratingScale: q.ratingScale }))
 
   const getResponseQId = (r: typeof responses[number]) =>
@@ -90,7 +99,7 @@ export async function buildResults(cycleId: string, revieweeId: string, forAdmin
         const average = nums.length > 0
           ? Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10
           : undefined
-        return { id: q.id, text: q.text, type: q.type, category: q.category, average }
+        return { id: q.id, text: q.text, type: q.type, category: q.category, ratingScale: q.ratingScale, average }
       }
 
       return { id: q.id, text: q.text, type: q.type, category: q.category, answers: decrypted }

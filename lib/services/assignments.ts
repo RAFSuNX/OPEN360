@@ -14,7 +14,11 @@ async function sendConcurrent(tasks: (() => Promise<void>)[]): Promise<number> {
   return sent
 }
 
-export async function listAssignments(cycleId: string) {
+export async function listAssignments(orgId: string, cycleId: string) {
+  // Verify cycle belongs to org
+  const cycle = await db.reviewCycle.findFirst({ where: { id: cycleId, orgId } })
+  if (!cycle) throw new Error('Cycle not found')
+
   return db.reviewAssignment.findMany({
     where: { cycleId },
     include: {
@@ -25,9 +29,13 @@ export async function listAssignments(cycleId: string) {
   })
 }
 
-export async function autoAssign(cycleId: string) {
+export async function autoAssign(orgId: string, cycleId: string) {
+  // Verify cycle belongs to org
+  const cycle = await db.reviewCycle.findFirst({ where: { id: cycleId, orgId } })
+  if (!cycle) throw new Error('Cycle not found')
+
   const employees = await db.employee.findMany({
-    where: { isActive: true },
+    where: { orgId, isActive: true },
     select: { id: true, managerId: true },
   })
 
@@ -44,26 +52,35 @@ export async function autoAssign(cycleId: string) {
   return result.count
 }
 
-export async function deleteAssignment(id: string) {
+export async function deleteAssignment(orgId: string, id: string) {
+  // Verify assignment belongs to org via cycle
+  const assignment = await db.reviewAssignment.findFirst({
+    where: { id },
+    include: { cycle: { select: { orgId: true } } },
+  })
+  if (!assignment || assignment.cycle.orgId !== orgId) throw new Error('Assignment not found')
   return db.reviewAssignment.delete({ where: { id } })
 }
 
-export async function sendCycleEmails(cycleId: string) {
+export async function sendCycleEmails(orgId: string, cycleId: string) {
   const assignments = await db.reviewAssignment.findMany({
     where: { cycleId, submitted: false },
     include: {
       reviewer: { select: { name: true, email: true } },
       reviewee: { select: { name: true } },
-      cycle: { select: { title: true } },
+      cycle: { select: { title: true, orgId: true } },
     },
   })
 
+  // Security: only send for cycles belonging to this org
+  const filtered = assignments.filter(a => a.cycle.orgId === orgId)
+
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-  const orgSettings = await getOrgSettings()
-  const logoEmailUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
+  const orgSettings = await getOrgSettings(orgId)
+  const logoEmailUrl = `${appUrl}/api/logo`
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
 
-  const tasks = assignments.map(a => () => {
+  const tasks = filtered.map(a => () => {
     const { subject, html } = buildReviewInviteEmail({
       reviewerName: a.reviewer.name,
       revieweeName: a.reviewee.name,
@@ -78,9 +95,12 @@ export async function sendCycleEmails(cycleId: string) {
   return sendConcurrent(tasks)
 }
 
-export async function sendResultsEmails(cycleId: string) {
-  const cycle = await db.reviewCycle.findUnique({ where: { id: cycleId }, select: { title: true } })
-  const cycleTitle = cycle?.title ?? cycleId
+export async function sendResultsEmails(orgId: string, cycleId: string) {
+  const cycle = await db.reviewCycle.findFirst({
+    where: { id: cycleId, orgId },
+    select: { title: true },
+  })
+  if (!cycle) throw new Error('Cycle not found')
 
   const reviewees = await db.reviewAssignment.findMany({
     where: { cycleId },
@@ -89,14 +109,14 @@ export async function sendResultsEmails(cycleId: string) {
   })
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-  const orgSettings = await getOrgSettings()
-  const logoEmailUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
+  const orgSettings = await getOrgSettings(orgId)
+  const logoEmailUrl = `${appUrl}/api/logo`
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
 
   const tasks = reviewees.map(r => () => {
     const { subject, html } = buildResultsReadyEmail({
       employeeName: r.reviewee.name,
-      cycleTitle,
+      cycleTitle: cycle.title,
       appUrl,
       org,
     })
