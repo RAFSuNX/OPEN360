@@ -48,7 +48,7 @@ export async function submitReview(
 ) {
   const assignment = await db.reviewAssignment.findUnique({
     where: { id: assignmentId },
-    include: { cycle: { select: { status: true } } },
+    include: { cycle: { select: { status: true, orgId: true } } },
   })
 
   if (!assignment || assignment.reviewerId !== reviewerId) throw new Error('Assignment not found')
@@ -100,5 +100,5 @@ export async function submitReview(
     })
   })
 
-  notifyAdminIfCycleComplete(assignment.cycleId).catch(() => {})
+  notifyAdminIfCycleComplete(assignment.cycle.orgId, assignment.cycleId).catch(() => {})
 }
