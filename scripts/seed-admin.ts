@@ -6,34 +6,35 @@ const prisma = new PrismaClient({ adapter })
 
 async function main() {
   const email = process.env.FIRST_ADMIN_EMAIL
-  if (!email) {
-    throw new Error('FIRST_ADMIN_EMAIL environment variable is required')
-  }
+  const orgSlug = process.env.FIRST_ORG_SLUG ?? 'default'
+  const orgName = process.env.FIRST_ORG_NAME ?? 'My Organization'
 
-  await prisma.allowlist.upsert({
-    where: { email },
+  if (!email) throw new Error('FIRST_ADMIN_EMAIL environment variable is required')
+
+  // Find or create org
+  const org = await prisma.organization.upsert({
+    where: { slug: orgSlug },
     update: {},
-    create: { email },
+    create: { name: orgName, slug: orgSlug },
   })
 
+  // Add to allowlist
+  await prisma.allowlist.upsert({
+    where: { orgId_email: { orgId: org.id, email } },
+    update: {},
+    create: { orgId: org.id, email },
+  })
+
+  // Create or update admin employee
   await prisma.employee.upsert({
-    where: { email },
+    where: { orgId_email: { orgId: org.id, email } },
     update: { isAdmin: true },
-    create: {
-      name: 'Admin',
-      email,
-      isAdmin: true,
-    },
+    create: { orgId: org.id, name: email.split('@')[0], email, isAdmin: true },
   })
 
-  console.log(`Admin bootstrapped: ${email}`)
+  console.log(`Admin bootstrapped: ${email} in org "${org.name}" (${org.slug})`)
 }
 
 main()
-  .catch((e) => {
-    console.error(e)
-    process.exit(1)
-  })
-  .finally(async () => {
-    await prisma.$disconnect()
-  })
+  .catch((e) => { console.error(e); process.exit(1) })
+  .finally(async () => { await prisma.$disconnect() })
