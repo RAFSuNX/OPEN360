@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: open360
-          image: ghcr.io/rafsunx/open360:db7d27e07a9e412cd1a25587f7d2c1da66541170
+          image: ghcr.io/rafsunx/open360:59f8896c0bbf3449948c0f05418bb07d1d091d45
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
