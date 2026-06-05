@@ -11,22 +11,23 @@ async function assertTemplateEditable(templateId: string) {
   if (blocking > 0) throw new Error('Cannot edit a template used by active or closed cycles')
 }
 
-export async function listTemplates() {
+export async function listTemplates(orgId: string) {
   return db.questionTemplate.findMany({
+    where: { orgId },
     include: { _count: { select: { items: true } } },
     orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
   })
 }
 
-export async function getTemplate(id: string) {
-  return db.questionTemplate.findUnique({
-    where: { id },
+export async function getTemplate(orgId: string, id: string) {
+  return db.questionTemplate.findFirst({
+    where: { id, orgId },
     include: { items: { orderBy: { sortOrder: 'asc' } } },
   })
 }
 
-export async function createTemplate(name: string, description?: string) {
-  return db.questionTemplate.create({ data: { name, description } })
+export async function createTemplate(orgId: string, name: string, description?: string) {
+  return db.questionTemplate.create({ data: { orgId, name, description } })
 }
 
 export async function updateTemplate(id: string, data: { name?: string; description?: string }) {

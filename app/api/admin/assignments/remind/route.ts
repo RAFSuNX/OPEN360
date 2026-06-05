@@ -8,12 +8,13 @@ import { getOrgSettings } from '@/lib/org'
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const { assignmentId } = await req.json()
   if (!assignmentId) return NextResponse.json({ error: 'assignmentId required' }, { status: 400 })
 
-  const assignment = await db.reviewAssignment.findUnique({
-    where: { id: assignmentId },
+  const assignment = await db.reviewAssignment.findFirst({
+    where: { id: assignmentId, cycle: { orgId } },
     include: {
       reviewer: { select: { name: true, email: true } },
       reviewee: { select: { name: true } },
@@ -23,11 +24,13 @@ export async function POST(req: NextRequest) {
 
   if (!assignment) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
   if (assignment.submitted) return NextResponse.json({ error: 'Already submitted' }, { status: 400 })
-  if (assignment.cycle.status !== 'ACTIVE') return NextResponse.json({ error: 'Cycle is not active - re-open it first' }, { status: 400 })
+  if (assignment.cycle.status !== 'ACTIVE') {
+    return NextResponse.json({ error: 'Cycle is not active' }, { status: 400 })
+  }
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-  const orgSettings = await getOrgSettings()
-  const logoUrl = `${process.env.NEXTAUTH_URL ?? 'http://localhost:3000'}/api/logo`
+  const orgSettings = await getOrgSettings(orgId)
+  const logoUrl = `${appUrl}/api/logo`
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoUrl, orgTagline: orgSettings.org_tagline }
 
   const { subject, html } = buildReviewInviteEmail({

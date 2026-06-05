@@ -2,68 +2,67 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { listAssignments, autoAssign, deleteAssignment, sendCycleEmails, sendResultsEmails } from '@/lib/services/assignments'
-import { updateCycleStatus, snapshotTemplateForCycle } from '@/lib/services/cycles'
+import { updateCycleStatus, snapshotTemplateForCycle, getCycle } from '@/lib/services/cycles'
 import { CycleStatus } from '@prisma/client'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const cycleId = req.nextUrl.searchParams.get('cycleId')
   if (!cycleId) return NextResponse.json({ error: 'cycleId is required' }, { status: 400 })
 
-  const assignments = await listAssignments(cycleId)
+  const assignments = await listAssignments(orgId, cycleId)
   return NextResponse.json(assignments)
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const { cycleId, action } = await req.json()
   if (!cycleId || !action) return NextResponse.json({ error: 'cycleId and action are required' }, { status: 400 })
 
   if (action === 'auto-assign') {
-    const count = await autoAssign(cycleId)
+    const count = await autoAssign(orgId, cycleId)
     return NextResponse.json({ assigned: count })
   }
 
   if (action === 'activate') {
-    // Guard against double-activate
-    const { getCycle } = await import('@/lib/services/cycles')
-    const cycle = await getCycle(cycleId)
-    if (cycle?.status === CycleStatus.ACTIVE) return NextResponse.json({ error: 'Cycle already active' }, { status: 409 })
-    await snapshotTemplateForCycle(cycleId)
-    const emailsSent = await sendCycleEmails(cycleId)
-    await updateCycleStatus(cycleId, CycleStatus.ACTIVE)
-    return NextResponse.json({ emailsSent })
+    const cycle = await getCycle(orgId, cycleId)
+    if (cycle?.status === CycleStatus.ACTIVE) {
+      return NextResponse.json({ error: 'Cycle already active' }, { status: 400 })
+    }
+    await snapshotTemplateForCycle(orgId, cycleId)
+    await updateCycleStatus(orgId, cycleId, CycleStatus.ACTIVE)
+    const sent = await sendCycleEmails(orgId, cycleId)
+    return NextResponse.json({ activated: true, emailsSent: sent })
   }
 
   if (action === 'close') {
-    const { getCycle } = await import('@/lib/services/cycles')
-    const cycle = await getCycle(cycleId)
-    if (cycle?.status === CycleStatus.CLOSED) return NextResponse.json({ error: 'Cycle already closed' }, { status: 409 })
-    // Send results emails first - if they fail, status stays ACTIVE (retriable)
-    const emailsSent = await sendResultsEmails(cycleId)
-    await updateCycleStatus(cycleId, CycleStatus.CLOSED)
-    return NextResponse.json({ emailsSent })
+    await updateCycleStatus(orgId, cycleId, CycleStatus.CLOSED)
+    const sent = await sendResultsEmails(orgId, cycleId)
+    return NextResponse.json({ closed: true, emailsSent: sent })
   }
 
-  if (action === 're-open') {
-    await updateCycleStatus(cycleId, CycleStatus.ACTIVE)
-    return NextResponse.json({ ok: true })
-  }
-
-  return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+  return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
 }
 
 export async function DELETE(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
-  const id = req.nextUrl.searchParams.get('id')
-  if (!id) return NextResponse.json({ error: 'id query param is required' }, { status: 400 })
+  const { id } = await req.json()
+  if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  await deleteAssignment(id)
-  return NextResponse.json({ ok: true })
+  try {
+    await deleteAssignment(orgId, id)
+    return NextResponse.json({ ok: true })
+  } catch (e) {
+    if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })
+    throw e
+  }
 }
