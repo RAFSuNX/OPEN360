@@ -1,4 +1,4 @@
-import { getServerSession } from 'next-auth'
+import { getServerSession, Session } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { redirect } from 'next/navigation'
@@ -6,7 +6,7 @@ import { redirect } from 'next/navigation'
 export type OrgContext = {
   org: { id: string; name: string; slug: string; plan: string }
   employee: { id: string; email: string; isAdmin: boolean; isSuperAdmin: boolean }
-  session: Awaited<ReturnType<typeof getServerSession>>
+  session: Session
 }
 
 /**
