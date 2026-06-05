@@ -48,14 +48,15 @@ export async function deleteTemplate(id: string) {
   return db.questionTemplate.delete({ where: { id } })
 }
 
-export async function copyTemplate(id: string) {
-  const source = await db.questionTemplate.findUnique({
-    where: { id },
+export async function copyTemplate(orgId: string, id: string) {
+  const source = await db.questionTemplate.findFirst({
+    where: { id, orgId },
     include: { items: { orderBy: { sortOrder: 'asc' } } },
   })
   if (!source) throw new Error('Template not found')
   return db.questionTemplate.create({
     data: {
+      orgId,
       name: `Copy of ${source.name}`,
       description: source.description,
       items: {
