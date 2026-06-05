@@ -8,11 +8,19 @@ datasource db {
 }
 
 model Allowlist {
-  id       String   @id @default(uuid())
-  email    String   @unique
-  addedAt  DateTime @default(now()) @map("added_at")
+  id      String   @id @default(uuid())
+  email   String   @unique
+  addedAt DateTime @default(now()) @map("added_at")
 
   @@map("allowlist")
+}
+
+model AllowedDomain {
+  id      String   @id @default(uuid())
+  domain  String   @unique
+  addedAt DateTime @default(now()) @map("added_at")
+
+  @@map("allowed_domains")
 }
 
 model Employee {

@@ -15,10 +15,16 @@ export const authOptions: NextAuthOptions = {
     async signIn({ user }) {
       const email = user.email
       if (!email) return false
+      // Check individual email allowlist
       const allowed = await db.allowlist.findUnique({ where: { email } })
-      // NextAuth converts redirect strings to AccessDenied - use false to trigger that
-      if (!allowed) return false
-      return true
+      if (allowed) return true
+      // Check domain allowlist (e.g. allow anyone @company.com)
+      const domain = email.split('@')[1]
+      if (domain) {
+        const domainAllowed = await db.allowedDomain.findUnique({ where: { domain } })
+        if (domainAllowed) return true
+      }
+      return false
     },
     async jwt({ token }) {
       if (token.email) {
