@@ -1,1 +1,4 @@
-export default function L({ children }: { children: React.ReactNode }) { return <>{children}</> }
+import type { ReactNode } from 'react'
+export default function LegacyDashboardLayout(props: { children: ReactNode }) {
+  return props.children
+}

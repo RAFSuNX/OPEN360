@@ -3,13 +3,19 @@ import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
-  await requireAdmin()
-  const domains = await db.allowedDomain.findMany({ orderBy: { addedAt: 'asc' } })
+  const session = await requireAdmin()
+  const orgId = session.user.orgId
+  const domains = await db.allowedDomain.findMany({
+    where: { orgId },
+    orderBy: { addedAt: 'asc' },
+  })
   return NextResponse.json(domains)
 }
 
 export async function POST(req: NextRequest) {
-  await requireAdmin()
+  const session = await requireAdmin()
+  const orgId = session.user.orgId
+
   const { domain } = await req.json()
   if (!domain || typeof domain !== 'string') {
     return NextResponse.json({ error: 'Domain is required' }, { status: 400 })
@@ -18,8 +24,9 @@ export async function POST(req: NextRequest) {
   if (!cleaned || cleaned.includes('@') || !cleaned.includes('.')) {
     return NextResponse.json({ error: 'Invalid domain format. Use: company.com' }, { status: 400 })
   }
+
   try {
-    const entry = await db.allowedDomain.create({ data: { domain: cleaned } })
+    const entry = await db.allowedDomain.create({ data: { orgId, domain: cleaned } })
     return NextResponse.json(entry, { status: 201 })
   } catch {
     return NextResponse.json({ error: 'Domain already exists' }, { status: 409 })
@@ -27,9 +34,11 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  await requireAdmin()
+  const session = await requireAdmin()
+  const orgId = session.user.orgId
+
   const { domain } = await req.json()
   if (!domain) return NextResponse.json({ error: 'Domain is required' }, { status: 400 })
-  await db.allowedDomain.deleteMany({ where: { domain } })
+  await db.allowedDomain.deleteMany({ where: { orgId, domain } })
   return NextResponse.json({ ok: true })
 }
