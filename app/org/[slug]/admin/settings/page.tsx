@@ -10,6 +10,8 @@ export default async function OrgSettingsPage({
   const { slug } = await params
   const { org } = await requireOrgAdmin(slug)
   const settings = await getOrgSettings(org.id)
+  // Convert OrgSettings to Record<string, string> for SettingsForm
+  const settingsMap: Record<string, string> = { ...settings }
   return (
     <div>
       <div style={{ marginBottom: '32px' }}>
@@ -23,7 +25,7 @@ export default async function OrgSettingsPage({
           </span>
         </p>
       </div>
-      <SettingsForm initialSettings={settings} />
+      <SettingsForm initialSettings={settingsMap} />
     </div>
   )
 }
