@@ -44,6 +44,7 @@ export default async function OrgDashboardLayout({
 
         <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '16px', overflowX: 'auto' }}>
           <NavLink href={`/org/${slug}/dashboard`} exact>My Reviews</NavLink>
+          <NavLink href={`/org/${slug}/dashboard/profile`}>Profile</NavLink>
 
           {employee.isAdmin && (
             <Link href={`/org/${slug}/admin`} style={{

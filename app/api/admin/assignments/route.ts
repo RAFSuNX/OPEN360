@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { listAssignments, autoAssign, deleteAssignment, sendCycleEmails, sendResultsEmails } from '@/lib/services/assignments'
 import { updateCycleStatus, snapshotTemplateForCycle, getCycle } from '@/lib/services/cycles'
 import { CycleStatus } from '@prisma/client'
+import { writeAudit } from '@/lib/audit'
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions)
@@ -27,6 +28,7 @@ export async function POST(req: NextRequest) {
 
   if (action === 'auto-assign') {
     const count = await autoAssign(orgId, cycleId)
+    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'assignment.auto_assign', target: cycleId })
     return NextResponse.json({ assigned: count })
   }
 
@@ -38,12 +40,14 @@ export async function POST(req: NextRequest) {
     await snapshotTemplateForCycle(orgId, cycleId)
     await updateCycleStatus(orgId, cycleId, CycleStatus.ACTIVE)
     const sent = await sendCycleEmails(orgId, cycleId)
+    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'cycle.activate', target: cycleId })
     return NextResponse.json({ activated: true, emailsSent: sent })
   }
 
   if (action === 'close') {
     await updateCycleStatus(orgId, cycleId, CycleStatus.CLOSED)
     const sent = await sendResultsEmails(orgId, cycleId)
+    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'cycle.close', target: cycleId })
     return NextResponse.json({ closed: true, emailsSent: sent })
   }
 

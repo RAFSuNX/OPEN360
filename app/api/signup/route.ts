@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
 import { db } from '@/lib/db'
+import { rateLimit, getClientIp } from '@/lib/rate-limit'
+
+const SignupSchema = z.object({
+  orgName: z.string().min(1).max(200).trim(),
+  adminEmail: z.string().email().max(300).toLowerCase(),
+})
 
 function generateSlug(name: string): string {
   return name
@@ -23,21 +30,23 @@ async function ensureUniqueSlug(base: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  const { orgName, adminEmail } = await req.json()
-
-  if (!orgName || typeof orgName !== 'string' || !orgName.trim()) {
-    return NextResponse.json({ error: 'Organization name is required' }, { status: 400 })
-  }
-  if (!adminEmail || typeof adminEmail !== 'string' || !adminEmail.includes('@')) {
-    return NextResponse.json({ error: 'Valid admin email is required' }, { status: 400 })
+  // Rate limit: 5 signups per IP per hour
+  const ip = getClientIp(req)
+  const rl = rateLimit(`signup:${ip}`, 5, 60 * 60 * 1000)
+  if (!rl.allowed) {
+    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
   }
 
-  const cleanName  = orgName.trim()
-  const cleanEmail = adminEmail.trim().toLowerCase()
+  const parsed = SignupSchema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
+  }
+
+  const { orgName, adminEmail } = parsed.data
 
   // Check if this email is already in an org
   const existingEmployee = await db.employee.findFirst({
-    where: { email: cleanEmail },
+    where: { email: adminEmail },
     include: { org: { select: { slug: true, name: true } } },
   })
   if (existingEmployee) {
@@ -46,7 +55,7 @@ export async function POST(req: NextRequest) {
     }, { status: 409 })
   }
 
-  const baseSlug = generateSlug(cleanName)
+  const baseSlug = generateSlug(orgName)
   if (!baseSlug) {
     return NextResponse.json({ error: 'Organization name must contain letters or numbers' }, { status: 400 })
   }
@@ -55,20 +64,19 @@ export async function POST(req: NextRequest) {
   try {
     const { org } = await db.$transaction(async tx => {
       const org = await tx.organization.create({
-        data: { name: cleanName, slug },
+        data: { name: orgName, slug },
       })
       await tx.allowlist.create({
-        data: { orgId: org.id, email: cleanEmail },
+        data: { orgId: org.id, email: adminEmail },
       })
       await tx.employee.create({
         data: {
           orgId: org.id,
-          name: cleanEmail.split('@')[0], // placeholder name — updated in onboarding
-          email: cleanEmail,
+          name: adminEmail.split('@')[0],
+          email: adminEmail,
           isAdmin: true,
         },
       })
-      // Seed default settings
       await tx.setting.create({
         data: { orgId: org.id, key: 'onboarding_complete', value: 'false' },
       })

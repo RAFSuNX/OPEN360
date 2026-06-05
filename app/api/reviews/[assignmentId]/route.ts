@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
 import { getAssignmentWithQuestions, submitReview } from '@/lib/services/reviews'
+
+const SubmitReviewSchema = z.object({
+  answers: z.array(z.object({
+    questionId: z.string().uuid(),
+    rating: z.number().int().min(1).max(10).optional().nullable(),
+    text: z.string().max(10000).optional().nullable(),
+  })).min(1),
+})
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ assignmentId: string }> }) {
   const session = await getServerSession(authOptions)
@@ -16,10 +25,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ass
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { assignmentId } = await params
-  const { answers } = await req.json()
-  if (!answers || !Array.isArray(answers)) return NextResponse.json({ error: 'answers array required' }, { status: 400 })
+
+  const parsed = SubmitReviewSchema.safeParse(await req.json())
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
+  }
+
   try {
-    await submitReview(assignmentId, session.user.id, answers)
+    await submitReview(assignmentId, session.user.id, parsed.data.answers)
     return NextResponse.json({ ok: true })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Submission failed'

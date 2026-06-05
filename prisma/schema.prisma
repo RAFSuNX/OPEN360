@@ -24,6 +24,7 @@ model Organization {
   settings          Setting[]
   allowlist         Allowlist[]
   allowedDomains    AllowedDomain[]
+  auditLogs         AuditLog[]
 
   @@map("organizations")
 }
@@ -237,6 +238,24 @@ model Question {
 enum QuestionType {
   RATING
   OPEN_TEXT
+}
+
+// ─── Audit Log ────────────────────────────────────────────────────────────────
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  orgId      String   @map("org_id")
+  actorEmail String   @map("actor_email")
+  action     String
+  target     String?
+  metadata   String?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@index([orgId])
+  @@index([orgId, createdAt])
+  @@map("audit_logs")
 }
 
 // ─── Settings ─────────────────────────────────────────────────────────────────
