@@ -9,16 +9,17 @@ import { Relationship } from '@prisma/client'
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const { id } = await params
   const { title, reviewerIds, endDate } = await req.json()
 
-  const reviewee = await db.employee.findUnique({ where: { id }, select: { name: true } })
+  const reviewee = await db.employee.findFirst({ where: { id, orgId }, select: { name: true } })
   if (!reviewee) return NextResponse.json({ error: 'Employee not found' }, { status: 404 })
 
   // Get all employees for org-tree mapping
   const allEmployees = await db.employee.findMany({
-    where: { isActive: true },
+    where: { orgId, isActive: true },
     select: { id: true, managerId: true },
   })
 
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
   const cycleTitle = title || `Ad-hoc: ${reviewee.name} - ${now.toLocaleDateString()}`
   const cycle = await db.reviewCycle.create({
-    data: { title: cycleTitle, startDate: now, endDate: parsedEnd, status: 'ACTIVE' },
+    data: { orgId, title: cycleTitle, startDate: now, endDate: parsedEnd, status: 'ACTIVE' },
   })
 
   // Create assignments

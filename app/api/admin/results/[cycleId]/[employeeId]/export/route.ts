@@ -21,11 +21,12 @@ export async function GET(
   if (!session?.user?.isAdmin) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
+  const orgId = session.user.orgId
 
   const { cycleId, employeeId } = await params
 
   const responses = await db.reviewResponse.findMany({
-    where: { cycleId, revieweeId: employeeId },
+    where: { cycleId, revieweeId: employeeId, cycle: { orgId } },
     include: { question: true, cycleQuestion: true },
   })
 
