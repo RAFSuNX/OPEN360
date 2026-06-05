@@ -17,8 +17,8 @@ export async function GET(
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const employee = await db.employee.findUnique({
-    where: { id },
+  const employee = await db.employee.findFirst({
+    where: { id, orgId: session.user.orgId },
     select: {
       id: true, name: true, email: true, employeeId: true,
       department: true, role: true,
