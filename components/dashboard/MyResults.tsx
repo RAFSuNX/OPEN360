@@ -3,7 +3,7 @@ import { Relationship } from '@prisma/client'
 
 interface QuestionResult {
   id: string; text: string; type: string; category: string
-  average?: number; answers?: string[]
+  average?: number; ratingScale?: number | null; answers?: string[]
 }
 
 interface RelationshipResult {
@@ -18,6 +18,39 @@ interface Props {
 const REL_ORDER: Relationship[] = [Relationship.SELF, Relationship.MANAGER, Relationship.PEER, Relationship.DIRECT_REPORT]
 const REL_LABELS: Record<Relationship, string> = {
   SELF: 'Self Review', MANAGER: 'Manager', PEER: 'Peers', DIRECT_REPORT: 'Direct Reports',
+}
+
+function RatingBar({ value, max = 5 }: { value: number; max?: number }) {
+  const pct = Math.min(100, Math.round((value / max) * 100))
+  const color = pct >= 80 ? 'var(--semantic-success)' : pct >= 60 ? 'var(--primary)' : 'var(--muted)'
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '3px', minWidth: '64px' }}>
+        <span style={{
+          fontSize: '36px', fontWeight: '400', color: 'var(--ink)',
+          letterSpacing: '-1px', fontFamily: "'JetBrains Mono', monospace",
+          lineHeight: 1,
+        }}>
+          {value}
+        </span>
+        <span style={{ fontSize: '14px', color: 'var(--muted)' }}>/{max}</span>
+      </div>
+      <div style={{ flex: 1 }}>
+        <div style={{
+          height: '6px', background: 'var(--hairline)', borderRadius: '9999px', overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%', width: `${pct}%`, background: color,
+            borderRadius: '9999px',
+            transition: 'width 0.4s ease',
+          }} />
+        </div>
+        <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '4px 0 0', letterSpacing: '0.5px' }}>
+          {pct}%
+        </p>
+      </div>
+    </div>
+  )
 }
 
 export default function MyResults({ results, cycleTitle }: Props) {
@@ -49,43 +82,40 @@ export default function MyResults({ results, cycleTitle }: Props) {
               {!section.visible ? (
                 <p style={{ fontSize: '13px', color: 'var(--muted)', fontStyle: 'italic' }}>{section.reason}</p>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  {section.questions.map(q => (
-                    <div key={q.id}>
-                      <span className="badge" style={{ fontSize: '10px', marginBottom: '6px' }}>{q.category}</span>
-                      <p style={{ fontSize: '14px', color: 'var(--body)', margin: '0 0 12px', lineHeight: '1.5' }}>{q.text}</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {section.questions.map(q => {
+                    const scale = q.ratingScale ?? 5
+                    return (
+                      <div key={q.id}>
+                        <span className="badge" style={{ fontSize: '10px', marginBottom: '6px' }}>{q.category}</span>
+                        <p style={{ fontSize: '14px', color: 'var(--body)', margin: '0 0 12px', lineHeight: '1.5' }}>{q.text}</p>
 
-                      {q.type === 'RATING' && (
-                        <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px' }}>
-                          <span style={{
-                            fontSize: '40px', fontWeight: '400', color: 'var(--ink)',
-                            letterSpacing: '-1px', fontFamily: "'JetBrains Mono', monospace",
-                          }}>
-                            {q.average !== undefined ? q.average : '-'}
-                          </span>
-                          <span style={{ fontSize: '16px', color: 'var(--muted)' }}>/5</span>
-                        </div>
-                      )}
+                        {q.type === 'RATING' && (
+                          q.average !== undefined
+                            ? <RatingBar value={q.average} max={scale} />
+                            : <p style={{ fontSize: '13px', color: 'var(--muted)', fontStyle: 'italic' }}>No responses yet</p>
+                        )}
 
-                      {q.type === 'OPEN_TEXT' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                          {(q.answers ?? []).length === 0 ? (
-                            <p style={{ fontSize: '13px', color: 'var(--muted)', fontStyle: 'italic' }}>No responses</p>
-                          ) : (
-                            (q.answers ?? []).map((ans, i) => (
-                              <div key={i} style={{
-                                background: 'var(--canvas-soft)',
-                                borderLeft: '2px solid var(--hairline-strong)',
-                                padding: '10px 14px',
-                                borderRadius: '0 6px 6px 0',
-                                fontSize: '14px', color: 'var(--body)', lineHeight: '1.5',
-                              }}>{ans}</div>
-                            ))
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        {q.type === 'OPEN_TEXT' && (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {(q.answers ?? []).length === 0 ? (
+                              <p style={{ fontSize: '13px', color: 'var(--muted)', fontStyle: 'italic' }}>No responses</p>
+                            ) : (
+                              (q.answers ?? []).map((ans, i) => (
+                                <div key={i} style={{
+                                  background: 'var(--canvas-soft)',
+                                  borderLeft: '2px solid var(--hairline-strong)',
+                                  padding: '10px 14px',
+                                  borderRadius: '0 6px 6px 0',
+                                  fontSize: '14px', color: 'var(--body)', lineHeight: '1.5',
+                                }}>{ans}</div>
+                              ))
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               )}
             </div>

@@ -18,7 +18,7 @@ export default async function ResultsPage({ params }: { params: Promise<{ cycleI
     <div>
       <div style={{ marginBottom: '8px' }}>
         <Link href="/dashboard" style={{ fontSize: '12px', color: 'var(--primary)', textDecoration: 'none' }}>
-          - Back to dashboard
+          ← Back to dashboard
         </Link>
       </div>
       <MyResults results={results} cycleTitle={cycle.title} />

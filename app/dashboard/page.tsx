@@ -26,7 +26,7 @@ export default async function DashboardPage() {
     )
   }
 
-  const [pending, closedCycles] = await Promise.all([
+  const [pending, closedCycles, activeReviewStatus] = await Promise.all([
     db.reviewAssignment.findMany({
       where: { reviewerId: employee.id, submitted: false, cycle: { status: 'ACTIVE' } },
       include: {
@@ -37,6 +37,16 @@ export default async function DashboardPage() {
     db.reviewCycle.findMany({
       where: { status: 'CLOSED', assignments: { some: { revieweeId: employee.id } } },
       orderBy: { endDate: 'desc' },
+    }),
+    db.reviewCycle.findFirst({
+      where: { status: 'ACTIVE', assignments: { some: { revieweeId: employee.id } } },
+      select: {
+        id: true, title: true, endDate: true,
+        assignments: {
+          where: { revieweeId: employee.id },
+          select: { submitted: true, relationship: true },
+        },
+      },
     }),
   ])
 
@@ -71,6 +81,39 @@ export default async function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Active cycle — my review status */}
+      {activeReviewStatus && (() => {
+        const total = activeReviewStatus.assignments.length
+        const submitted = activeReviewStatus.assignments.filter(a => a.submitted).length
+        const pct = total > 0 ? Math.round((submitted / total) * 100) : 0
+        return (
+          <section style={{ marginBottom: '40px' }}>
+            <p className="section-label" style={{ marginBottom: '16px' }}>My review status</p>
+            <div className="card" style={{ padding: '20px 24px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <p style={{ fontSize: '15px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 2px' }}>{activeReviewStatus.title}</p>
+                  <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>
+                    {submitted} of {total} reviewers have submitted
+                  </p>
+                </div>
+                <span style={{
+                  fontSize: '24px', fontWeight: '400', color: pct === 100 ? 'var(--semantic-success)' : 'var(--ink)',
+                  fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px',
+                }}>{pct}%</span>
+              </div>
+              <div style={{ height: '6px', background: 'var(--hairline)', borderRadius: '9999px', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%', width: `${pct}%`,
+                  background: pct === 100 ? 'var(--semantic-success)' : 'var(--primary)',
+                  borderRadius: '9999px', transition: 'width 0.4s ease',
+                }} />
+              </div>
+            </div>
+          </section>
+        )
+      })()}
 
       {/* Pending reviews */}
       <section style={{ marginBottom: '40px' }}>
