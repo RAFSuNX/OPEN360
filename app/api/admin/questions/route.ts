@@ -7,14 +7,15 @@ import { QuestionType } from '@prisma/client'
 export async function GET() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-
-  const questions = await listQuestions()
+  const orgId = session.user.orgId
+  const questions = await listQuestions(orgId)
   return NextResponse.json(questions)
 }
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const { text, type, category, ratingScale, sortOrder } = await req.json()
   if (!text || !type || !category) {
@@ -24,20 +25,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'type must be RATING or OPEN_TEXT' }, { status: 400 })
   }
 
-  const question = await createQuestion({ text, type, category, ratingScale, sortOrder })
+  const question = await createQuestion(orgId, { text, type, category, ratingScale, sortOrder })
   return NextResponse.json(question, { status: 201 })
 }
 
 export async function PATCH(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const { id, isActive, text, type, category, ratingScale } = await req.json()
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  // Full edit
   if (text !== undefined || type !== undefined || category !== undefined || ratingScale !== undefined) {
-    const question = await updateQuestion(id, {
+    const question = await updateQuestion(orgId, id, {
       text: text ?? undefined,
       type: type ?? undefined,
       category: category ?? undefined,
@@ -47,8 +48,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(question)
   }
 
-  // Toggle only
   if (typeof isActive !== 'boolean') return NextResponse.json({ error: 'isActive required' }, { status: 400 })
-  const question = await toggleQuestionActive(id, isActive)
+  const question = await toggleQuestionActive(orgId, id, isActive)
   return NextResponse.json(question)
 }

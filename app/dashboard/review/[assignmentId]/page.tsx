@@ -1,26 +1,5 @@
-import { redirect } from 'next/navigation'
-import { requireAuth } from '@/lib/auth'
-import { getAssignmentWithQuestions } from '@/lib/services/reviews'
-import ReviewForm from '@/components/dashboard/ReviewForm'
-
-export default async function ReviewPage({ params }: { params: Promise<{ assignmentId: string }> }) {
-  const session = await requireAuth()
-  const { assignmentId } = await params
-
-  const data = await getAssignmentWithQuestions(assignmentId, session.user.id)
-
-  if (!data || data.assignment.submitted || data.assignment.cycle.status !== 'ACTIVE') {
-    redirect('/dashboard')
-  }
-
-  return (
-    <div style={{ maxWidth: '672px', margin: '0 auto', padding: '32px 24px' }}>
-      <ReviewForm
-        assignmentId={assignmentId}
-        revieweeName={data.assignment.reviewee.name}
-        cycleTitle={data.assignment.cycle.title}
-        questions={data.questions}
-      />
-    </div>
-  )
+import { getServerSession } from 'next-auth'; import { authOptions } from '@/lib/auth'; import { redirect } from 'next/navigation';
+export default async function P({ params }: { params: Promise<{ assignmentId: string }> }) {
+  const [s, { assignmentId }] = await Promise.all([getServerSession(authOptions), params])
+  redirect(`/org/${s?.user?.orgSlug ?? ''}/dashboard/review/${assignmentId}`)
 }

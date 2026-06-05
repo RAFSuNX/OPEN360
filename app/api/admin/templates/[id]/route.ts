@@ -6,8 +6,9 @@ import { getTemplate, updateTemplate, deleteTemplate } from '@/lib/services/temp
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
   const { id } = await params
-  const t = await getTemplate(id)
+  const t = await getTemplate(orgId, id)
   if (!t) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(t)
 }

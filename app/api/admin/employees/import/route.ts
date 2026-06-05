@@ -7,6 +7,7 @@ import { parse } from 'csv-parse/sync'
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions)
   if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const formData = await req.formData()
   const file = formData.get('file') as File
@@ -14,7 +15,7 @@ export async function POST(req: NextRequest) {
 
   const text = await file.text()
   const rows: CsvRow[] = parse(text, { columns: true, skip_empty_lines: true })
-  const result = await importEmployeesFromCsv(rows)
+  const result = await importEmployeesFromCsv(orgId, rows)
   const status = result.imported === 0 && result.errors.length > 0 ? 422 : 200
   return NextResponse.json(result, { status })
 }

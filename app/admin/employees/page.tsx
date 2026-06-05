@@ -1,9 +1,2 @@
-import { requireAdmin } from '@/lib/auth'
-import { listEmployees } from '@/lib/services/employees'
-import { EmployeeTable } from './EmployeeTable'
-
-export default async function EmployeesPage() {
-  const session = await requireAdmin()
-  const employees = await listEmployees()
-  return <EmployeeTable initialEmployees={employees} currentUserId={session.user.id} />
-}
+import { getServerSession } from 'next-auth'; import { authOptions } from '@/lib/auth'; import { redirect } from 'next/navigation';
+export default async function P() { const s = await getServerSession(authOptions); redirect(`/org/${s?.user?.orgSlug ?? ''}/admin/employees`) }

@@ -9,20 +9,17 @@ export async function GET(
   { params }: { params: Promise<{ cycleId: string }> }
 ) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const orgId = session.user.orgId
 
   const { cycleId } = await params
 
-  const cycle = await db.reviewCycle.findUnique({ where: { id: cycleId } })
-  if (!cycle) {
-    return NextResponse.json({ error: 'Cycle not found' }, { status: 404 })
-  }
+  const cycle = await db.reviewCycle.findFirst({ where: { id: cycleId, orgId } })
+  if (!cycle) return NextResponse.json({ error: 'Cycle not found' }, { status: 404 })
   if (cycle.status !== 'CLOSED') {
-    return NextResponse.json({ error: 'Results are not available until the cycle is closed' }, { status: 403 })
+    return NextResponse.json({ error: 'Results not available until cycle is closed' }, { status: 403 })
   }
 
-  const results = await buildResults(cycleId, session.user.id)
+  const results = await buildResults(orgId, cycleId, session.user.id)
   return NextResponse.json(results)
 }

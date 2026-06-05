@@ -1,9 +1,2 @@
-import { requireAdmin } from '@/lib/auth'
-import { listQuestions } from '@/lib/services/questions'
-import { QuestionList } from './QuestionList'
-
-export default async function QuestionsPage() {
-  await requireAdmin()
-  const questions = await listQuestions()
-  return <QuestionList initialQuestions={questions} />
-}
+import { getServerSession } from 'next-auth'; import { authOptions } from '@/lib/auth'; import { redirect } from 'next/navigation';
+export default async function P() { const s = await getServerSession(authOptions); redirect(`/org/${s?.user?.orgSlug ?? ''}/admin/questions`) }

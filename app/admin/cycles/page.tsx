@@ -1,10 +1,2 @@
-import { requireAdmin } from '@/lib/auth'
-import { listCycles } from '@/lib/services/cycles'
-import { listTemplates } from '@/lib/services/templates'
-import { CycleList } from './CycleList'
-
-export default async function CyclesPage() {
-  await requireAdmin()
-  const [cycles, templates] = await Promise.all([listCycles(), listTemplates()])
-  return <CycleList initialCycles={cycles} templates={templates} />
-}
+import { getServerSession } from 'next-auth'; import { authOptions } from '@/lib/auth'; import { redirect } from 'next/navigation';
+export default async function P() { const s = await getServerSession(authOptions); redirect(`/org/${s?.user?.orgSlug ?? ''}/admin/cycles`) }
