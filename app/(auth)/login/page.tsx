@@ -24,7 +24,7 @@ function LoginContent() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', flexDirection: 'column' }}>
       {/* Top bar */}
-      <div style={{ background: '#1c1208', padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center' }}>
+      <div style={{ background: '#1c1208', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '0 32px', height: '60px', display: 'flex', alignItems: 'center' }}>
         <a href="/" style={{ textDecoration: 'none' }}>
           <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             OPEN<span style={{ color: 'var(--primary)' }}>360</span>
