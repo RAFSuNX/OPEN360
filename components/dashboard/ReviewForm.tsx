@@ -152,7 +152,7 @@ export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, que
                       padding: '20px',
                       borderColor: isAnswered ? 'var(--hairline-strong)' : 'var(--hairline)',
                       transition: 'border-color 0.15s, box-shadow 0.15s',
-                      boxShadow: isAnswered ? '0 1px 4px rgba(38,37,30,0.04)' : 'none',
+                      boxShadow: isAnswered ? '0 1px 4px rgba(0,0,0,0.2)' : 'none',
                     }}>
                     <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
                       <span style={{
@@ -218,7 +218,7 @@ export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, que
 
       {error && (
         <div style={{
-          background: '#fde8ec', border: '1px solid #f5c0cb', borderRadius: '8px',
+          background: 'var(--error-bg)', border: '1px solid var(--error-border)', borderRadius: '8px',
           padding: '10px 14px', marginTop: '16px', marginBottom: '4px',
           fontSize: '13px', color: 'var(--semantic-error)',
           display: 'flex', alignItems: 'center', gap: '8px',

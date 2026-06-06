@@ -8,7 +8,6 @@ import Link from 'next/link'
 export default async function RootPage() {
   const session = await getServerSession(authOptions)
 
-  // Logged-in users get routed to their org
   if (session?.user?.email) {
     const employee = await db.employee.findFirst({
       where: { email: session.user.email, isActive: true },
@@ -26,7 +25,6 @@ export default async function RootPage() {
     redirect('/signup')
   }
 
-  // Public homepage
   return <HomePage />
 }
 
@@ -66,7 +64,7 @@ const features = [
       </svg>
     ),
     title: 'Anonymous results',
-    body: 'Responses are anonymized below your configured threshold. Employees see aggregated feedback only.',
+    body: 'Responses anonymized below your threshold. Employees see aggregated feedback only.',
   },
   {
     icon: (
@@ -112,15 +110,15 @@ function HomePage() {
         position: 'sticky',
         top: 0,
         zIndex: 10,
-        background: 'rgba(247,247,244,0.92)',
-        backdropFilter: 'blur(8px)',
+        background: 'rgba(3,7,18,0.85)',
+        backdropFilter: 'blur(12px)',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <div style={{ width: '22px', height: '22px', background: 'var(--primary)', borderRadius: '6px', flexShrink: 0 }} />
           <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.02em' }}>OPEN360</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Link href="/login" style={{ fontSize: '13px', color: 'var(--body)', textDecoration: 'none', padding: '6px 12px' }}>
+          <Link href="/login" style={{ fontSize: '13px', color: 'var(--body)', textDecoration: 'none', padding: '6px 12px', transition: 'color 0.15s' }}>
             Sign in
           </Link>
           <Link href="/signup" className="btn-primary" style={{ fontSize: '13px', padding: '7px 16px', borderRadius: '8px' }}>
@@ -130,62 +128,78 @@ function HomePage() {
       </nav>
 
       {/* Hero */}
-      <section style={{ maxWidth: '820px', margin: '0 auto', padding: '100px 32px 80px', textAlign: 'center' }}>
+      <section style={{ position: 'relative', maxWidth: '820px', margin: '0 auto', padding: '110px 32px 90px', textAlign: 'center', overflow: 'visible' }}>
+        {/* Atmospheric orange glow */}
         <div style={{
-          display: 'inline-flex', alignItems: 'center', gap: '6px',
-          background: 'rgba(245,78,0,0.07)', border: '1px solid rgba(245,78,0,0.15)',
-          borderRadius: '9999px', padding: '4px 12px', marginBottom: '32px',
-        }}>
-          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} />
-          <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', letterSpacing: '0.04em' }}>
-            OPEN SOURCE · FREE TO START
-          </span>
-        </div>
+          position: 'absolute',
+          top: '0',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '700px',
+          height: '500px',
+          background: 'radial-gradient(ellipse at 50% 20%, rgba(245,78,0,0.13) 0%, transparent 65%)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }} />
 
-        <h1 style={{
-          fontSize: 'clamp(38px, 6vw, 64px)',
-          fontWeight: '400',
-          color: 'var(--ink)',
-          letterSpacing: '-2px',
-          lineHeight: '1.08',
-          margin: '0 0 24px',
-        }}>
-          360-degree employee reviews,{' '}
-          <span style={{ color: 'var(--primary)' }}>done right.</span>
-        </h1>
-
-        <p style={{
-          fontSize: '18px',
-          color: 'var(--body)',
-          lineHeight: '1.6',
-          maxWidth: '560px',
-          margin: '0 auto 40px',
-        }}>
-          OPEN360 is a self-hostable, multi-tenant performance review platform.
-          Set up your organization, run structured 360 cycles, and deliver anonymous feedback to your team.
-        </p>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <Link href="/signup" className="btn-primary" style={{ fontSize: '15px', padding: '11px 28px', borderRadius: '10px' }}>
-            Create your workspace
-          </Link>
-          <Link href="https://github.com/RAFSuNX/OPEN360" target="_blank" rel="noopener" style={{
-            display: 'flex', alignItems: 'center', gap: '8px',
-            fontSize: '14px', color: 'var(--body)', textDecoration: 'none',
-            padding: '11px 20px', border: '1px solid var(--hairline-strong)',
-            borderRadius: '10px', background: 'var(--surface-card)',
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <div style={{
+            display: 'inline-flex', alignItems: 'center', gap: '6px',
+            background: 'rgba(245,78,0,0.08)', border: '1px solid rgba(245,78,0,0.2)',
+            borderRadius: '9999px', padding: '4px 12px', marginBottom: '32px',
           }}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
-            </svg>
-            View on GitHub
-          </Link>
+            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} />
+            <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', letterSpacing: '0.06em', fontFamily: "'JetBrains Mono', monospace" }}>
+              OPEN SOURCE · FREE TO START
+            </span>
+          </div>
+
+          <h1 style={{
+            fontSize: 'clamp(38px, 6vw, 64px)',
+            fontWeight: '500',
+            color: 'var(--ink)',
+            letterSpacing: '-2px',
+            lineHeight: '1.06',
+            margin: '0 0 24px',
+          }}>
+            360-degree employee reviews,{' '}
+            <span style={{ color: 'var(--primary)' }}>done right.</span>
+          </h1>
+
+          <p style={{
+            fontSize: '18px',
+            color: 'var(--body)',
+            lineHeight: '1.6',
+            maxWidth: '540px',
+            margin: '0 auto 44px',
+          }}>
+            OPEN360 is a self-hostable, multi-tenant performance review platform.
+            Set up your organization, run structured 360 cycles, and deliver anonymous feedback.
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
+            <Link href="/signup" className="btn-primary" style={{ fontSize: '15px', padding: '11px 28px', borderRadius: '8px' }}>
+              Create your workspace
+            </Link>
+            <Link href="https://github.com/RAFSuNX/OPEN360" target="_blank" rel="noopener" style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              fontSize: '14px', color: 'var(--body)', textDecoration: 'none',
+              padding: '11px 20px', border: '1px solid var(--hairline-strong)',
+              borderRadius: '8px', background: 'var(--surface-card)',
+              transition: 'border-color 0.15s, color 0.15s',
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+              </svg>
+              View on GitHub
+            </Link>
+          </div>
         </div>
       </section>
 
-      {/* Social proof strip */}
-      <section style={{ borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)', padding: '20px 32px' }}>
-        <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '40px', flexWrap: 'wrap' }}>
+      {/* Stats strip */}
+      <section style={{ borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)', padding: '24px 32px', background: 'var(--surface-card)' }}>
+        <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '48px', flexWrap: 'wrap' }}>
           {[
             { value: '360°', label: 'Feedback coverage' },
             { value: 'AES-256', label: 'Encrypted responses' },
@@ -193,23 +207,29 @@ function HomePage() {
             { value: 'Multi-tenant', label: 'Org isolation' },
           ].map(({ value, label }) => (
             <div key={label} style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '18px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 2px', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}>{value}</p>
-              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: '500' }}>{label}</p>
+              <p style={{ fontSize: '18px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 3px', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}>{value}</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: '600' }}>{label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Features */}
-      <section style={{ maxWidth: '900px', margin: '0 auto', padding: '80px 32px' }}>
-        <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px' }}>Features</p>
-        <h2 style={{ fontSize: '32px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.8px', textAlign: 'center', margin: '0 0 48px' }}>
+      <section style={{ maxWidth: '900px', margin: '0 auto', padding: '88px 32px' }}>
+        <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px', color: 'var(--primary)' }}>Features</p>
+        <h2 style={{ fontSize: '36px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', textAlign: 'center', margin: '0 0 56px' }}>
           Everything you need to run reviews
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
           {features.map(({ icon, title, body }) => (
-            <div key={title} className="card" style={{ padding: '24px' }}>
-              <div style={{ color: 'var(--primary)', marginBottom: '14px' }}>{icon}</div>
+            <div key={title} style={{
+              background: 'var(--surface-card)',
+              border: '1px solid var(--hairline)',
+              borderRadius: '12px',
+              padding: '24px',
+              transition: 'border-color 0.15s',
+            }}>
+              <div style={{ color: 'var(--primary)', marginBottom: '16px', width: '40px', height: '40px', background: 'rgba(245,78,0,0.08)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
               <p style={{ fontSize: '15px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 8px' }}>{title}</p>
               <p style={{ fontSize: '13px', color: 'var(--body)', margin: 0, lineHeight: '1.6' }}>{body}</p>
             </div>
@@ -218,16 +238,17 @@ function HomePage() {
       </section>
 
       {/* How it works */}
-      <section style={{ background: 'var(--surface-card)', borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)', padding: '80px 32px' }}>
+      <section style={{ background: 'var(--surface-card)', borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)', padding: '88px 32px' }}>
         <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-          <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px' }}>How it works</p>
-          <h2 style={{ fontSize: '32px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.8px', textAlign: 'center', margin: '0 0 48px' }}>
+          <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px', color: 'var(--primary)' }}>How it works</p>
+          <h2 style={{ fontSize: '36px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', textAlign: 'center', margin: '0 0 56px' }}>
             Up and running in minutes
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '32px' }}>
             {steps.map(({ n, title, body }) => (
               <div key={n}>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', color: 'var(--primary)', fontWeight: '600', margin: '0 0 10px', letterSpacing: '0.06em' }}>{n}</p>
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--primary)', fontWeight: '600', margin: '0 0 12px', letterSpacing: '0.04em' }}>{n}</p>
+                <div style={{ width: '32px', height: '1px', background: 'var(--hairline-strong)', marginBottom: '16px' }} />
                 <p style={{ fontSize: '15px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 8px' }}>{title}</p>
                 <p style={{ fontSize: '13px', color: 'var(--body)', margin: 0, lineHeight: '1.6' }}>{body}</p>
               </div>
@@ -237,9 +258,9 @@ function HomePage() {
       </section>
 
       {/* Pricing */}
-      <section style={{ maxWidth: '820px', margin: '0 auto', padding: '80px 32px' }}>
-        <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px' }}>Pricing</p>
-        <h2 style={{ fontSize: '32px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.8px', textAlign: 'center', margin: '0 0 48px' }}>
+      <section style={{ maxWidth: '820px', margin: '0 auto', padding: '88px 32px' }}>
+        <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px', color: 'var(--primary)' }}>Pricing</p>
+        <h2 style={{ fontSize: '36px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', textAlign: 'center', margin: '0 0 56px' }}>
           Simple, honest pricing
         </h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
@@ -263,29 +284,33 @@ function HomePage() {
               highlight: true,
             },
           ].map(({ plan, price, period, features: fs, cta, href, highlight }) => (
-            <div key={plan} className="card" style={{
+            <div key={plan} style={{
+              background: 'var(--surface-card)',
+              border: highlight ? '1px solid var(--primary)' : '1px solid var(--hairline)',
+              borderRadius: '12px',
               padding: '28px 24px',
-              border: highlight ? '2px solid var(--primary)' : '1px solid var(--hairline)',
               position: 'relative',
+              boxShadow: highlight ? '0 0 40px rgba(245,78,0,0.08)' : 'none',
             }}>
               {highlight && (
                 <div style={{
                   position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--primary)', color: 'white', fontSize: '11px', fontWeight: '700',
-                  letterSpacing: '0.08em', padding: '3px 12px', borderRadius: '9999px',
+                  background: 'var(--primary)', color: 'white', fontSize: '10px', fontWeight: '700',
+                  letterSpacing: '0.1em', padding: '3px 12px', borderRadius: '9999px',
+                  fontFamily: "'JetBrains Mono', monospace",
                 }}>
                   MOST POPULAR
                 </div>
               )}
-              <p style={{ fontSize: '16px', fontWeight: '600', color: 'var(--ink)', margin: '0 0 6px' }}>{plan}</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '20px' }}>
-                <span style={{ fontSize: '36px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-1.5px', fontFamily: "'JetBrains Mono', monospace" }}>{price}</span>
+              <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--body)', margin: '0 0 8px', letterSpacing: '0.04em', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace" }}>{plan}</p>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
+                <span style={{ fontSize: '40px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-2px', fontFamily: "'JetBrains Mono', monospace" }}>{price}</span>
                 <span style={{ fontSize: '13px', color: 'var(--muted)' }}>/{period}</span>
               </div>
-              <ul style={{ listStyle: 'none', margin: '0 0 24px', padding: 0 }}>
+              <ul style={{ listStyle: 'none', margin: '0 0 28px', padding: 0 }}>
                 {fs.map(f => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--body)', marginBottom: '10px' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--semantic-success)" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--body)', marginBottom: '12px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--semantic-success)" strokeWidth="2.5" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
                     {f}
                   </li>
                 ))}
@@ -299,29 +324,35 @@ function HomePage() {
       </section>
 
       {/* CTA */}
-      <section style={{ background: 'var(--ink)', padding: '80px 32px', textAlign: 'center' }}>
-        <h2 style={{ fontSize: '36px', fontWeight: '400', color: 'white', letterSpacing: '-1px', margin: '0 0 16px' }}>
-          Ready to run better reviews?
-        </h2>
-        <p style={{ fontSize: '16px', color: 'rgba(255,255,255,0.6)', margin: '0 0 32px' }}>
-          Free to start. No credit card required.
-        </p>
-        <Link href="/signup" style={{
-          display: 'inline-block', background: 'var(--primary)', color: 'white',
-          fontSize: '15px', fontWeight: '500', padding: '12px 32px',
-          borderRadius: '10px', textDecoration: 'none',
-        }}>
-          Create your workspace
-        </Link>
+      <section style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-card)', borderTop: '1px solid var(--hairline)', padding: '100px 32px', textAlign: 'center' }}>
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '600px', height: '300px',
+          background: 'radial-gradient(ellipse at center, rgba(245,78,0,0.1) 0%, transparent 70%)',
+          pointerEvents: 'none',
+        }} />
+        <div style={{ position: 'relative', zIndex: 1 }}>
+          <p className="section-label" style={{ marginBottom: '16px', color: 'var(--primary)' }}>Get started today</p>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', margin: '0 0 16px' }}>
+            Ready to run better reviews?
+          </h2>
+          <p style={{ fontSize: '16px', color: 'var(--body)', margin: '0 0 36px' }}>
+            Free to start. No credit card required.
+          </p>
+          <Link href="/signup" className="btn-primary" style={{ fontSize: '15px', padding: '12px 32px', borderRadius: '8px', display: 'inline-block', textDecoration: 'none' }}>
+            Create your workspace
+          </Link>
+        </div>
       </section>
 
       {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--hairline)', padding: '28px 32px' }}>
+      <footer style={{ borderTop: '1px solid var(--hairline)', padding: '28px 32px', background: 'var(--canvas)' }}>
         <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <div style={{ width: '18px', height: '18px', background: 'var(--primary)', borderRadius: '5px' }} />
             <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink)' }}>OPEN360</span>
-            <span style={{ fontSize: '12px', color: 'var(--muted)' }}>MIT License</span>
+            <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.04em' }}>MIT License</span>
           </div>
           <div style={{ display: 'flex', gap: '20px' }}>
             {[
@@ -329,7 +360,7 @@ function HomePage() {
               { label: 'Sign in', href: '/login' },
               { label: 'Sign up', href: '/signup' },
             ].map(({ label, href }) => (
-              <Link key={label} href={href} style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'none' }}>{label}</Link>
+              <Link key={label} href={href} style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.15s' }}>{label}</Link>
             ))}
           </div>
         </div>

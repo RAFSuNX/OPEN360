@@ -37,7 +37,7 @@ function LoginContent() {
         padding: '44px 40px',
         width: '100%',
         maxWidth: '400px',
-        boxShadow: '0 4px 24px rgba(38,37,30,0.07)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
         animation: 'fadeIn 0.25s ease-out',
       }}>
         {/* Logo */}
@@ -65,7 +65,7 @@ function LoginContent() {
 
         {errorMessage && (
           <div style={{
-            background: '#fde8ec', border: '1px solid #f5c0cb',
+            background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.2)',
             borderRadius: '8px', padding: '10px 14px', marginBottom: '20px',
             fontSize: '13px', color: 'var(--semantic-error)',
             display: 'flex', alignItems: 'center', gap: '8px',

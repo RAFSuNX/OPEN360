@@ -167,7 +167,7 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
 
       {/* Edit modal */}
       {editing && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(38,37,30,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '24px' }} onClick={() => setEditing(null)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '24px' }} onClick={() => setEditing(null)}>
           <div className="card" style={{ width: '100%', maxWidth: '440px', padding: '28px' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <p style={{ fontSize: '16px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>Edit Employee</p>
@@ -205,7 +205,7 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
 
       {/* Ad-hoc review modal */}
       {reviewTarget && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(38,37,30,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '24px' }} onClick={() => setReviewTarget(null)}>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50, padding: '24px' }} onClick={() => setReviewTarget(null)}>
           <div className="card" style={{ width: '100%', maxWidth: '480px', padding: '28px', maxHeight: '90vh', overflowY: 'auto' as const }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
               <p style={{ fontSize: '16px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>Send Review Request</p>

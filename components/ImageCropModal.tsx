@@ -44,7 +44,7 @@ export function ImageCropModal({ imageSrc, onDone, onCancel }: Props) {
     canvas.height = dispH
     ctx.drawImage(img, 0, 0, dispW, dispH)
     // Dim outside crop
-    ctx.fillStyle = 'rgba(38,37,30,0.5)'
+    ctx.fillStyle = 'rgba(0,0,0,0.6)'
     ctx.fillRect(0, 0, dispW, dispH)
     // Clear crop area
     ctx.clearRect(crop.x, crop.y, crop.size, crop.size)
@@ -115,7 +115,7 @@ export function ImageCropModal({ imageSrc, onDone, onCancel }: Props) {
   }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: 'rgba(38,37,30,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '24px' }}>
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '24px' }}>
       <div className="card" style={{ padding: '24px', maxWidth: '420px', width: '100%' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
           <p style={{ fontSize: '15px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>Crop logo</p>
