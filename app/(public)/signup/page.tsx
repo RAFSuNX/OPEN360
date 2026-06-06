@@ -11,31 +11,51 @@ function generateSlug(name: string): string {
     .slice(0, 48)
 }
 
+const PLANS = [
+  {
+    id: 'FREE',
+    label: 'Free',
+    price: '$0 / month',
+    features: ['Up to 10 employees', 'Unlimited review cycles', 'Email notifications', 'All question types'],
+  },
+  {
+    id: 'PRO',
+    label: 'Pro',
+    price: '$29 / month',
+    features: ['Unlimited employees', 'Priority support', 'Advanced analytics', 'Custom branding'],
+    highlight: true,
+  },
+]
+
 export default function SignupPage() {
-  const [orgName, setOrgName]     = useState('')
-  const [email, setEmail]         = useState('')
-  const [loading, setLoading]     = useState(false)
-  const [error, setError]         = useState('')
-  const [done, setDone]           = useState(false)
+  const [orgName, setOrgName] = useState('')
+  const [email, setEmail]     = useState('')
+  const [plan, setPlan]       = useState<'FREE' | 'PRO'>('FREE')
+  const [tos, setTos]         = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError]     = useState('')
+  const [done, setDone]       = useState(false)
+  const [resultSlug, setResultSlug] = useState('')
 
   const slug = generateSlug(orgName)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!orgName.trim() || !email.trim()) { setError('All fields are required'); return }
+    if (!tos) { setError('You must accept the Terms of Service to continue'); return }
     setLoading(true); setError('')
 
     try {
       const res = await fetch('/api/signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orgName: orgName.trim(), adminEmail: email.trim().toLowerCase() }),
+        body: JSON.stringify({ orgName: orgName.trim(), adminEmail: email.trim().toLowerCase(), plan }),
       })
       const data = await res.json()
       if (!res.ok) { setError(data.error ?? 'Something went wrong'); return }
+      setResultSlug(data.slug)
       setDone(true)
-      // Trigger Google OAuth — on success, session will pick up the new org
-      setTimeout(() => signIn('google', { callbackUrl: `/org/${data.slug}/onboarding` }), 1200)
+      setTimeout(() => signIn('google', { callbackUrl: `/org/${data.slug}/onboarding` }), 1500)
     } catch {
       setError('Network error. Please try again.')
     } finally {
@@ -53,85 +73,168 @@ export default function SignupPage() {
   if (done) {
     return (
       <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ maxWidth: '400px', width: '100%', padding: '0 24px', textAlign: 'center' }}>
-          <div style={{ width: '48px', height: '48px', background: 'var(--semantic-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+        <div style={{ maxWidth: '420px', width: '100%', padding: '0 24px', textAlign: 'center' }}>
+          <div style={{ width: '52px', height: '52px', background: 'var(--semantic-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
           </div>
-          <p style={{ fontSize: '20px', fontWeight: '400', color: 'var(--ink)', margin: '0 0 8px' }}>Organization created</p>
-          <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0 }}>Redirecting to Google sign-in...</p>
+          <h2 style={{ fontSize: '22px', fontWeight: '400', color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
+            Organization created
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 8px' }}>
+            Your workspace URL:
+          </p>
+          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--primary)', margin: '0 0 24px' }}>
+            /org/{resultSlug}
+          </p>
+          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
+            Redirecting to Google sign-in...
+          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div style={{ maxWidth: '400px', width: '100%', padding: '0 24px' }}>
-        <div style={{ marginBottom: '40px', textAlign: 'center' }}>
-          <div style={{ width: '32px', height: '32px', background: 'var(--primary)', borderRadius: '8px', margin: '0 auto 16px' }} />
-          <p style={{ fontSize: '24px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.4px', margin: '0 0 6px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <div style={{ maxWidth: '480px', width: '100%' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '32px', textAlign: 'center' }}>
+          <div style={{ width: '36px', height: '36px', background: 'var(--primary)', borderRadius: '9px', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
+            </svg>
+          </div>
+          <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.4px', margin: '0 0 8px' }}>
             Create your workspace
-          </p>
+          </h1>
           <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0 }}>
-            360-degree reviews for your team
+            Set up your organization in under a minute.
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
+        <form onSubmit={handleSubmit}>
+
+          {/* Plan selection */}
+          <div style={{ marginBottom: '24px' }}>
+            <p className="section-label" style={{ marginBottom: '12px' }}>Choose a plan</p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {PLANS.map(p => (
+                <button
+                  key={p.id}
+                  type="button"
+                  onClick={() => setPlan(p.id as 'FREE' | 'PRO')}
+                  style={{
+                    padding: '16px',
+                    border: plan === p.id ? '2px solid var(--primary)' : '1px solid var(--hairline-strong)',
+                    borderRadius: '10px',
+                    background: plan === p.id ? 'rgba(245,78,0,0.04)' : 'var(--surface-card)',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)' }}>{p.label}</span>
+                    {p.highlight && (
+                      <span style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.06em', color: 'var(--primary)', background: 'rgba(245,78,0,0.08)', padding: '2px 6px', borderRadius: '4px' }}>
+                        POPULAR
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ fontSize: '13px', fontWeight: '500', color: plan === p.id ? 'var(--primary)' : 'var(--muted)', margin: '0 0 10px' }}>{p.price}</p>
+                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                    {p.features.map(f => (
+                      <li key={f} style={{ fontSize: '11px', color: 'var(--body)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--semantic-success)" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        {f}
+                      </li>
+                    ))}
+                  </ul>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Org name */}
+          <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '6px' }}>
               Organization name
             </label>
             <input
+              type="text"
+              placeholder="Acme Corp"
               value={orgName}
               onChange={e => setOrgName(e.target.value)}
-              placeholder="Acme Corp"
+              required
               style={inputStyle}
-              autoFocus
             />
             {slug && (
-              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '4px 0 0', fontFamily: "'JetBrains Mono', monospace" }}>
-                open360.com/org/{slug}
+              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '5px', fontFamily: "'JetBrains Mono', monospace" }}>
+                Your URL: /org/<span style={{ color: 'var(--ink)' }}>{slug}</span>
               </p>
             )}
           </div>
 
-          <div>
+          {/* Admin email */}
+          <div style={{ marginBottom: '24px' }}>
             <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '6px' }}>
               Your work email
             </label>
             <input
               type="email"
+              placeholder="you@company.com"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              placeholder="you@company.com"
+              required
               style={inputStyle}
             />
-            <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '4px 0 0' }}>
-              Must match your Google account. You will be the admin.
+            <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '5px' }}>
+              Must match your Google account. You will be the organization admin.
             </p>
           </div>
 
+          {/* ToS checkbox */}
+          <div style={{ marginBottom: '24px' }}>
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={tos}
+                onChange={e => setTos(e.target.checked)}
+                style={{ marginTop: '2px', accentColor: 'var(--primary)', flexShrink: 0 }}
+              />
+              <span style={{ fontSize: '13px', color: 'var(--body)', lineHeight: '1.5' }}>
+                I agree to the{' '}
+                <Link href="/terms" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Terms of Service</Link>
+                {' '}and{' '}
+                <Link href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Privacy Policy</Link>
+              </span>
+            </label>
+          </div>
+
           {error && (
-            <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: 0 }}>{error}</p>
+            <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'var(--error-bg)', borderRadius: '8px', border: '1px solid rgba(220,38,38,0.15)' }}>
+              <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: 0 }}>{error}</p>
+            </div>
           )}
 
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !tos}
             className="btn-primary"
-            style={{ width: '100%', padding: '12px', fontSize: '15px', marginTop: '8px' }}
+            style={{ width: '100%', opacity: loading || !tos ? 0.6 : 1, cursor: loading || !tos ? 'not-allowed' : 'pointer' }}
           >
-            {loading ? 'Creating workspace...' : 'Create workspace'}
+            {loading ? 'Creating workspace...' : `Create workspace — ${plan === 'PRO' ? '$29/mo' : 'Free'}`}
           </button>
         </form>
 
-        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--muted)', marginTop: '24px' }}>
+        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--muted)', marginTop: '20px' }}>
           Already have a workspace?{' '}
-          <Link href="/login" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Sign in</Link>
+          <Link href="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: '500' }}>Sign in</Link>
         </p>
+
       </div>
     </div>
   )

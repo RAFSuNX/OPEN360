@@ -76,15 +76,7 @@ npx prisma migrate dev
 npm run db:seed
 ```
 
-### 5. Create your first admin account
-
-```bash
-npm run bootstrap:admin
-```
-
-This adds `FIRST_ADMIN_EMAIL` to the allowlist and marks it as admin in the database.
-
-### 6. Run the dev server
+### 5. Run the dev server
 
 ```bash
 npm run dev
@@ -110,7 +102,6 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with your Google
 | `SMTP_FROM` | Yes | From address for outgoing emails. e.g. `reviews@yourcompany.com` |
 | `ENCRYPTION_KEY` | Yes | AES-256 key for encrypting review responses. Generate: `openssl rand -hex 32` |
 | `CRON_SECRET` | Yes | Secret token to protect cron job endpoints. Generate: `openssl rand -hex 16` |
-| `FIRST_ADMIN_EMAIL` | Yes | Email of the first admin user. Must match their Google account email |
 
 ### Setting up Google OAuth
 
@@ -130,7 +121,7 @@ Open [http://localhost:3000](http://localhost:3000) and sign in with your Google
 
 OPEN360 uses an email allowlist. Only emails in the `allowlist` table can sign in.
 
-- The first admin is seeded via `npm run bootstrap:admin` using `FIRST_ADMIN_EMAIL`
+- Sign up at `/signup` to create your organization — the first user becomes admin automatically
 - Admins can add more emails via the Admin → Settings panel
 - Domain-based allowlist lets you allow an entire `@company.com` domain at once
 
@@ -176,7 +167,6 @@ Add all environment variables in the Vercel dashboard under Project Settings →
 | `npm run lint` | Run ESLint |
 | `npm run test` | Run Jest tests |
 | `npm run db:seed` | Seed database with sample data |
-| `npm run bootstrap:admin` | Create first admin account |
 
 ---
 

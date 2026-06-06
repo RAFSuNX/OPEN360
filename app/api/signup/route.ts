@@ -6,6 +6,7 @@ import { rateLimit, getClientIp } from '@/lib/rate-limit'
 const SignupSchema = z.object({
   orgName: z.string().min(1).max(200).trim(),
   adminEmail: z.string().email().max(300).toLowerCase(),
+  plan: z.enum(['FREE', 'PRO']).default('FREE'),
 })
 
 function generateSlug(name: string): string {
@@ -42,7 +43,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { orgName, adminEmail } = parsed.data
+  const { orgName, adminEmail, plan } = parsed.data
 
   // Check if this email is already in an org
   const existingEmployee = await db.employee.findFirst({
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
   try {
     const { org } = await db.$transaction(async tx => {
       const org = await tx.organization.create({
-        data: { name: orgName, slug },
+        data: { name: orgName, slug, plan },
       })
       await tx.allowlist.create({
         data: { orgId: org.id, email: adminEmail },
