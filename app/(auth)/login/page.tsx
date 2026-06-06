@@ -37,7 +37,7 @@ function LoginContent() {
         padding: '44px 40px',
         width: '100%',
         maxWidth: '400px',
-        boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+        boxShadow: '0 4px 24px rgba(37,40,43,0.08)',
         animation: 'fadeIn 0.25s ease-out',
       }}>
         {/* Logo */}

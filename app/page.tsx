@@ -30,59 +30,26 @@ export default async function RootPage() {
 
 const features = [
   {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-      </svg>
-    ),
     title: '360-degree reviews',
     body: 'Collect feedback from managers, peers, and direct reports in one structured cycle.',
   },
   {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-        <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-      </svg>
-    ),
     title: 'Multi-tenant workspaces',
     body: 'Every organization gets its own isolated workspace with custom branding and settings.',
   },
   {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
-      </svg>
-    ),
     title: 'Question templates',
     body: 'Build reusable templates with rating scales and open-text questions for consistent reviews.',
   },
   {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/>
-      </svg>
-    ),
     title: 'Anonymous results',
     body: 'Responses anonymized below your threshold. Employees see aggregated feedback only.',
   },
   {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-        <polyline points="22,6 12,13 2,6"/>
-      </svg>
-    ),
     title: 'Email notifications',
     body: 'Automated invites, reminders, and results-ready emails keep everyone on track.',
   },
   {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-    ),
     title: 'Encrypted by default',
     body: 'Review responses are encrypted at rest with AES-256. Your data stays private.',
   },
@@ -97,98 +64,112 @@ const steps = [
 
 function HomePage() {
   return (
-    <div style={{ background: 'var(--canvas)', minHeight: '100vh', color: 'var(--ink)' }}>
+    <div style={{ background: 'var(--canvas)', minHeight: '100vh', color: 'var(--ink)', fontFamily: "'Geist', 'Helvetica Neue', Arial, sans-serif" }}>
 
-      {/* Nav */}
+      {/* ─── Nav ─── */}
       <nav style={{
-        borderBottom: '1px solid var(--hairline)',
+        background: 'var(--ink)',
         padding: '0 32px',
-        height: '56px',
+        height: '60px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         position: 'sticky',
         top: 0,
         zIndex: 10,
-        background: 'rgba(3,7,18,0.85)',
-        backdropFilter: 'blur(12px)',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <div style={{ width: '22px', height: '22px', background: 'var(--primary)', borderRadius: '6px', flexShrink: 0 }} />
-          <span style={{ fontSize: '15px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.02em' }}>OPEN360</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* Speechmark orb */}
+          <div style={{
+            width: '28px', height: '28px',
+            background: 'var(--primary)',
+            borderRadius: '5px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+          }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+              <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>
+            </svg>
+          </div>
+          <span style={{ fontSize: '15px', fontWeight: '800', color: 'white', letterSpacing: '-0.01em', textTransform: 'uppercase' }}>OPEN360</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <Link href="/login" style={{ fontSize: '13px', color: 'var(--body)', textDecoration: 'none', padding: '6px 12px', transition: 'color 0.15s' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <Link href="/login" style={{ fontSize: '16px', fontWeight: '400', color: 'rgba(255,255,255,0.75)', textDecoration: 'none', transition: 'color 0.15s' }}>
             Sign in
           </Link>
-          <Link href="/signup" className="btn-primary" style={{ fontSize: '13px', padding: '7px 16px', borderRadius: '8px' }}>
+          <Link href="/signup" style={{
+            fontSize: '16px', fontWeight: '400', color: 'white',
+            textDecoration: 'none', padding: '8px 20px',
+            background: 'var(--primary)', borderRadius: '60px',
+            border: '1px solid var(--primary)',
+            transition: 'background 0.15s',
+          }}>
             Get started free
           </Link>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section style={{ position: 'relative', maxWidth: '820px', margin: '0 auto', padding: '110px 32px 90px', textAlign: 'center', overflow: 'visible' }}>
-        {/* Atmospheric orange glow */}
+      {/* ─── Hero Band (Dark) ─── */}
+      <section style={{
+        background: 'var(--ink)',
+        padding: '80px 32px 96px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Subtle red glow bottom-right */}
         <div style={{
-          position: 'absolute',
-          top: '0',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '700px',
-          height: '500px',
-          background: 'radial-gradient(ellipse at 50% 20%, rgba(245,78,0,0.13) 0%, transparent 65%)',
+          position: 'absolute', bottom: '-60px', right: '-60px',
+          width: '400px', height: '400px',
+          background: 'radial-gradient(circle, rgba(230,0,0,0.18) 0%, transparent 70%)',
           pointerEvents: 'none',
-          zIndex: 0,
         }} />
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '6px',
-            background: 'rgba(245,78,0,0.08)', border: '1px solid rgba(245,78,0,0.2)',
-            borderRadius: '9999px', padding: '4px 12px', marginBottom: '32px',
-          }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)' }} />
-            <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--primary)', letterSpacing: '0.06em', fontFamily: "'JetBrains Mono', monospace" }}>
-              OPEN SOURCE · FREE TO START
-            </span>
-          </div>
-
-          <h1 style={{
-            fontSize: 'clamp(38px, 6vw, 64px)',
-            fontWeight: '500',
-            color: 'var(--ink)',
-            letterSpacing: '-2px',
-            lineHeight: '1.06',
-            margin: '0 0 24px',
-          }}>
-            360-degree employee reviews,{' '}
-            <span style={{ color: 'var(--primary)' }}>done right.</span>
-          </h1>
-
-          <p style={{
-            fontSize: '18px',
-            color: 'var(--body)',
-            lineHeight: '1.6',
-            maxWidth: '540px',
-            margin: '0 auto 44px',
-          }}>
-            OPEN360 is a self-hostable, multi-tenant performance review platform.
-            Set up your organization, run structured 360 cycles, and deliver anonymous feedback.
+        <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+          {/* Eyebrow */}
+          <p style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0', margin: '0 0 24px' }}>
+            Open Source · Free to Start
           </p>
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            <Link href="/signup" className="btn-primary" style={{ fontSize: '15px', padding: '11px 28px', borderRadius: '8px' }}>
+          {/* Massive headline */}
+          <h1 style={{
+            fontSize: 'clamp(52px, 8vw, 120px)',
+            fontWeight: '800',
+            color: 'white',
+            lineHeight: '0.96',
+            letterSpacing: '-2px',
+            margin: '0 0 40px',
+            textTransform: 'uppercase',
+            maxWidth: '900px',
+          }}>
+            PERFORMANCE<br />
+            <span style={{ color: 'var(--primary)' }}>REVIEWS,</span><br />
+            DONE RIGHT.
+          </h1>
+
+          <p style={{ fontSize: '20px', fontWeight: '400', color: 'rgba(255,255,255,0.65)', lineHeight: '1.55', maxWidth: '540px', margin: '0 0 48px' }}>
+            Self-hostable, multi-tenant 360-degree review platform.
+            Set up your organization, run structured cycles, deliver anonymous feedback.
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <Link href="/signup" style={{
+              fontSize: '18px', fontWeight: '400', color: 'white',
+              textDecoration: 'none', padding: '12px 28px',
+              background: 'var(--primary)', borderRadius: '60px',
+              border: '1px solid var(--primary)', transition: 'background 0.15s',
+              display: 'inline-block',
+            }}>
               Create your workspace
             </Link>
             <Link href="https://github.com/RAFSuNX/OPEN360" target="_blank" rel="noopener" style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              fontSize: '14px', color: 'var(--body)', textDecoration: 'none',
-              padding: '11px 20px', border: '1px solid var(--hairline-strong)',
-              borderRadius: '8px', background: 'var(--surface-card)',
-              transition: 'border-color 0.15s, color 0.15s',
+              fontSize: '18px', fontWeight: '400', color: 'white',
+              textDecoration: 'none', padding: '12px 28px',
+              background: 'transparent', borderRadius: '60px',
+              border: '1px solid white',
+              display: 'inline-flex', alignItems: 'center', gap: '8px',
+              transition: 'background 0.15s',
             }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
                 <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
               </svg>
               View on GitHub
@@ -197,170 +178,187 @@ function HomePage() {
         </div>
       </section>
 
-      {/* Stats strip */}
-      <section style={{ borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)', padding: '24px 32px', background: 'var(--surface-card)' }}>
-        <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '48px', flexWrap: 'wrap' }}>
+      {/* ─── Stats Band (Light) ─── */}
+      <section style={{ background: 'var(--canvas-soft)', padding: '32px', borderTop: '1px solid var(--hairline)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '64px', flexWrap: 'wrap' }}>
           {[
             { value: '360°', label: 'Feedback coverage' },
             { value: 'AES-256', label: 'Encrypted responses' },
-            { value: 'MIT', label: 'Open source license' },
+            { value: 'MIT', label: 'Open source' },
             { value: 'Multi-tenant', label: 'Org isolation' },
           ].map(({ value, label }) => (
             <div key={label} style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: '18px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 3px', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '-0.5px' }}>{value}</p>
-              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0, letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: '600' }}>{label}</p>
+              <p style={{ fontSize: '22px', fontWeight: '800', color: 'var(--ink)', margin: '0 0 4px', letterSpacing: '-0.5px' }}>{value}</p>
+              <p style={{ fontSize: '14px', color: 'var(--body)', margin: 0, textTransform: 'uppercase', fontWeight: '600', letterSpacing: '0.57px' }}>{label}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Features */}
-      <section style={{ maxWidth: '900px', margin: '0 auto', padding: '88px 32px' }}>
-        <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px', color: 'var(--primary)' }}>Features</p>
-        <h2 style={{ fontSize: '36px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', textAlign: 'center', margin: '0 0 56px' }}>
-          Everything you need to run reviews
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-          {features.map(({ icon, title, body }) => (
-            <div key={title} style={{
-              background: 'var(--surface-card)',
-              border: '1px solid var(--hairline)',
-              borderRadius: '12px',
-              padding: '24px',
-              transition: 'border-color 0.15s',
-            }}>
-              <div style={{ color: 'var(--primary)', marginBottom: '16px', width: '40px', height: '40px', background: 'rgba(245,78,0,0.08)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{icon}</div>
-              <p style={{ fontSize: '15px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 8px' }}>{title}</p>
-              <p style={{ fontSize: '13px', color: 'var(--body)', margin: 0, lineHeight: '1.6' }}>{body}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* How it works */}
-      <section style={{ background: 'var(--surface-card)', borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)', padding: '88px 32px' }}>
-        <div style={{ maxWidth: '820px', margin: '0 auto' }}>
-          <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px', color: 'var(--primary)' }}>How it works</p>
-          <h2 style={{ fontSize: '36px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', textAlign: 'center', margin: '0 0 56px' }}>
-            Up and running in minutes
+      {/* ─── Features Band (Light) ─── */}
+      <section style={{ background: 'var(--canvas)', padding: '88px 32px' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <p style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', margin: '0 0 16px' }}>Features</p>
+          <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'var(--ink)', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 56px', maxWidth: '700px' }}>
+            Everything you need to run great reviews
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '32px' }}>
-            {steps.map(({ n, title, body }) => (
-              <div key={n}>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--primary)', fontWeight: '600', margin: '0 0 12px', letterSpacing: '0.04em' }}>{n}</p>
-                <div style={{ width: '32px', height: '1px', background: 'var(--hairline-strong)', marginBottom: '16px' }} />
-                <p style={{ fontSize: '15px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 8px' }}>{title}</p>
-                <p style={{ fontSize: '13px', color: 'var(--body)', margin: 0, lineHeight: '1.6' }}>{body}</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0', border: '1px solid var(--hairline)' }}>
+            {features.map(({ title, body }, i) => (
+              <div key={title} style={{
+                padding: '32px',
+                borderRight: i % 3 !== 2 ? '1px solid var(--hairline)' : 'none',
+                borderBottom: i < 3 ? '1px solid var(--hairline)' : 'none',
+              }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)', marginBottom: '20px' }} />
+                <p style={{ fontSize: '18px', fontWeight: '700', color: 'var(--ink)', margin: '0 0 10px', lineHeight: '1.3' }}>{title}</p>
+                <p style={{ fontSize: '16px', fontWeight: '400', color: 'var(--body)', margin: 0, lineHeight: '1.6' }}>{body}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing */}
-      <section style={{ maxWidth: '820px', margin: '0 auto', padding: '88px 32px' }}>
-        <p className="section-label" style={{ textAlign: 'center', marginBottom: '12px', color: 'var(--primary)' }}>Pricing</p>
-        <h2 style={{ fontSize: '36px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', textAlign: 'center', margin: '0 0 56px' }}>
-          Simple, honest pricing
-        </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
-          {[
-            {
-              plan: 'Free',
-              price: '$0',
-              period: 'forever',
-              features: ['Up to 10 employees', 'Unlimited review cycles', 'All question types', 'Email notifications', 'Anonymous feedback', 'Community support'],
-              cta: 'Get started free',
-              href: '/signup',
-              highlight: false,
-            },
-            {
-              plan: 'Pro',
-              price: '$29',
-              period: 'per month',
-              features: ['Unlimited employees', 'Everything in Free', 'Priority support', 'Advanced analytics', 'Custom branding', 'SSO (coming soon)'],
-              cta: 'Start Pro trial',
-              href: '/signup?plan=PRO',
-              highlight: true,
-            },
-          ].map(({ plan, price, period, features: fs, cta, href, highlight }) => (
-            <div key={plan} style={{
-              background: 'var(--surface-card)',
-              border: highlight ? '1px solid var(--primary)' : '1px solid var(--hairline)',
-              borderRadius: '12px',
-              padding: '28px 24px',
-              position: 'relative',
-              boxShadow: highlight ? '0 0 40px rgba(245,78,0,0.08)' : 'none',
-            }}>
-              {highlight && (
-                <div style={{
-                  position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--primary)', color: 'white', fontSize: '10px', fontWeight: '700',
-                  letterSpacing: '0.1em', padding: '3px 12px', borderRadius: '9999px',
-                  fontFamily: "'JetBrains Mono', monospace",
-                }}>
-                  MOST POPULAR
-                </div>
-              )}
-              <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--body)', margin: '0 0 8px', letterSpacing: '0.04em', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace" }}>{plan}</p>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '24px' }}>
-                <span style={{ fontSize: '40px', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-2px', fontFamily: "'JetBrains Mono', monospace" }}>{price}</span>
-                <span style={{ fontSize: '13px', color: 'var(--muted)' }}>/{period}</span>
+      {/* ─── How it works Band (Soft) ─── */}
+      <section style={{ background: 'var(--canvas-soft)', borderTop: '1px solid var(--hairline)', padding: '88px 32px' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <p style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', margin: '0 0 16px' }}>How it works</p>
+          <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'var(--ink)', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 64px' }}>
+            Up and running in minutes
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '48px' }}>
+            {steps.map(({ n, title, body }) => (
+              <div key={n}>
+                <p style={{ fontSize: '14px', fontWeight: '800', color: 'var(--primary)', margin: '0 0 16px', textTransform: 'uppercase', letterSpacing: '0.57px' }}>{n}</p>
+                <p style={{ fontSize: '20px', fontWeight: '700', color: 'var(--ink)', margin: '0 0 10px', lineHeight: '1.2' }}>{title}</p>
+                <p style={{ fontSize: '16px', fontWeight: '400', color: 'var(--body)', margin: 0, lineHeight: '1.6' }}>{body}</p>
               </div>
-              <ul style={{ listStyle: 'none', margin: '0 0 28px', padding: 0 }}>
-                {fs.map(f => (
-                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '13px', color: 'var(--body)', marginBottom: '12px' }}>
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--semantic-success)" strokeWidth="2.5" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Link href={href} className={highlight ? 'btn-primary' : 'btn-secondary'} style={{ display: 'block', textAlign: 'center', fontSize: '14px', padding: '10px', borderRadius: '8px', textDecoration: 'none' }}>
-                {cta}
-              </Link>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section style={{ position: 'relative', overflow: 'hidden', background: 'var(--surface-card)', borderTop: '1px solid var(--hairline)', padding: '100px 32px', textAlign: 'center' }}>
-        <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '600px', height: '300px',
-          background: 'radial-gradient(ellipse at center, rgba(245,78,0,0.1) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }} />
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <p className="section-label" style={{ marginBottom: '16px', color: 'var(--primary)' }}>Get started today</p>
-          <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: '500', color: 'var(--ink)', letterSpacing: '-1px', margin: '0 0 16px' }}>
-            Ready to run better reviews?
+      {/* ─── Pricing Band (Light) ─── */}
+      <section style={{ background: 'var(--canvas)', borderTop: '1px solid var(--hairline)', padding: '88px 32px' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <p style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', margin: '0 0 16px' }}>Pricing</p>
+          <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'var(--ink)', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 56px' }}>
+            Simple, honest pricing
           </h2>
-          <p style={{ fontSize: '16px', color: 'var(--body)', margin: '0 0 36px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', maxWidth: '720px' }}>
+            {[
+              {
+                plan: 'Free',
+                price: '$0',
+                period: 'forever',
+                features: ['Up to 10 employees', 'Unlimited review cycles', 'All question types', 'Email notifications', 'Anonymous feedback', 'Community support'],
+                cta: 'Get started free',
+                href: '/signup',
+                highlight: false,
+              },
+              {
+                plan: 'Pro',
+                price: '$29',
+                period: 'per month',
+                features: ['Unlimited employees', 'Everything in Free', 'Priority support', 'Advanced analytics', 'Custom branding', 'SSO (coming soon)'],
+                cta: 'Start Pro trial',
+                href: '/signup?plan=PRO',
+                highlight: true,
+              },
+            ].map(({ plan, price, period, features: fs, cta, href, highlight }) => (
+              <div key={plan} style={{
+                background: highlight ? 'var(--ink)' : 'var(--canvas-soft)',
+                borderRadius: '6px',
+                padding: '32px',
+                position: 'relative',
+              }}>
+                {highlight && (
+                  <span style={{
+                    position: 'absolute', top: '20px', right: '20px',
+                    fontSize: '12px', fontWeight: '600', color: 'white',
+                    background: 'var(--primary)', borderRadius: '32px',
+                    padding: '3px 12px', textTransform: 'uppercase', letterSpacing: '0.57px',
+                  }}>
+                    Popular
+                  </span>
+                )}
+                <p style={{ fontSize: '14px', fontWeight: '800', color: highlight ? 'rgba(255,255,255,0.5)' : 'var(--body)', margin: '0 0 12px', textTransform: 'uppercase', letterSpacing: '0.57px' }}>{plan}</p>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '28px' }}>
+                  <span style={{ fontSize: '56px', fontWeight: '800', color: highlight ? 'white' : 'var(--ink)', letterSpacing: '-2px', lineHeight: '1' }}>{price}</span>
+                  <span style={{ fontSize: '16px', color: highlight ? 'rgba(255,255,255,0.5)' : 'var(--body)' }}>/{period}</span>
+                </div>
+                <ul style={{ listStyle: 'none', margin: '0 0 32px', padding: 0 }}>
+                  {fs.map(f => (
+                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '16px', color: highlight ? 'rgba(255,255,255,0.8)' : 'var(--ink)', marginBottom: '12px' }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={highlight ? 'var(--primary)' : 'var(--semantic-success)'} strokeWidth="2.5" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <Link href={href} style={{
+                  display: 'block', textAlign: 'center',
+                  fontSize: '18px', fontWeight: '400', textDecoration: 'none',
+                  padding: '12px 24px', borderRadius: '60px',
+                  background: highlight ? 'var(--primary)' : 'transparent',
+                  color: highlight ? 'white' : 'var(--ink)',
+                  border: highlight ? '1px solid var(--primary)' : '1px solid var(--ink)',
+                  transition: 'background 0.15s',
+                }}>
+                  {cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── CTA Band (Red) ─── */}
+      <section style={{ background: 'var(--primary)', padding: '96px 32px', textAlign: 'center' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h2 style={{
+            fontSize: 'clamp(44px, 7vw, 96px)',
+            fontWeight: '800',
+            color: 'white',
+            textTransform: 'uppercase',
+            letterSpacing: '-2px',
+            lineHeight: '0.96',
+            margin: '0 0 32px',
+          }}>
+            READY TO<br />RUN BETTER<br />REVIEWS?
+          </h2>
+          <p style={{ fontSize: '20px', color: 'rgba(255,255,255,0.75)', margin: '0 0 40px' }}>
             Free to start. No credit card required.
           </p>
-          <Link href="/signup" className="btn-primary" style={{ fontSize: '15px', padding: '12px 32px', borderRadius: '8px', display: 'inline-block', textDecoration: 'none' }}>
+          <Link href="/signup" style={{
+            fontSize: '18px', fontWeight: '400', color: 'var(--primary)',
+            textDecoration: 'none', padding: '14px 36px',
+            background: 'white', borderRadius: '60px',
+            border: '1px solid white', display: 'inline-block',
+            transition: 'opacity 0.15s',
+          }}>
             Create your workspace
           </Link>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ borderTop: '1px solid var(--hairline)', padding: '28px 32px', background: 'var(--canvas)' }}>
-        <div style={{ maxWidth: '820px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+      {/* ─── Footer (Dark) ─── */}
+      <footer style={{ background: 'var(--ink)', padding: '48px 32px' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '18px', height: '18px', background: 'var(--primary)', borderRadius: '5px' }} />
-            <span style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink)' }}>OPEN360</span>
-            <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.04em' }}>MIT License</span>
+            <div style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>
+              </svg>
+            </div>
+            <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.57px' }}>OPEN360</span>
+            <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.35)', fontWeight: '600', letterSpacing: '0.57px', textTransform: 'uppercase' }}>MIT License</span>
           </div>
-          <div style={{ display: 'flex', gap: '20px' }}>
+          <div style={{ display: 'flex', gap: '32px' }}>
             {[
               { label: 'GitHub', href: 'https://github.com/RAFSuNX/OPEN360' },
               { label: 'Sign in', href: '/login' },
               { label: 'Sign up', href: '/signup' },
             ].map(({ label, href }) => (
-              <Link key={label} href={href} style={{ fontSize: '13px', color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.15s' }}>{label}</Link>
+              <Link key={label} href={href} style={{ fontSize: '14px', color: 'rgba(255,255,255,0.5)', textDecoration: 'none', fontWeight: '400', transition: 'color 0.15s' }}>{label}</Link>
             ))}
           </div>
         </div>

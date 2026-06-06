@@ -29,7 +29,7 @@ export default async function OrgDashboardLayout({
         top: 0,
         zIndex: 10,
         backdropFilter: 'blur(8px)',
-        background: 'rgba(3,7,18,0.92)',
+        background: 'var(--ink)',
         gap: '8px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>
@@ -37,27 +37,27 @@ export default async function OrgDashboardLayout({
             ? <img src={logoUrl} alt={displayName} style={{ height: '24px', maxWidth: '80px', objectFit: 'contain' }} />
             : <div style={{ width: '20px', height: '20px', background: 'var(--primary)', borderRadius: '5px', flexShrink: 0 }} />
           }
-          <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', letterSpacing: '-0.01em' }}>
+          <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--on-dark)', letterSpacing: '-0.01em' }}>
             {displayName}
           </span>
         </div>
 
-        <div className="nav-links" style={{ display: 'flex', alignItems: 'center', gap: '16px', overflowX: 'auto' }}>
+        <div className="nav-links nav-dark" style={{ display: 'flex', alignItems: 'center', gap: '16px', overflowX: 'auto' }}>
           <NavLink href={`/org/${slug}/dashboard`} exact>My Reviews</NavLink>
           <NavLink href={`/org/${slug}/dashboard/profile`}>Profile</NavLink>
 
           {employee.isAdmin && (
             <Link href={`/org/${slug}/admin`} style={{
               fontSize: '13px', fontWeight: '500', color: 'var(--primary)',
-              textDecoration: 'none', padding: '5px 10px', borderRadius: '6px',
-              border: '1px solid rgba(245,78,0,0.2)',
+              textDecoration: 'none', padding: '5px 10px', borderRadius: '32px',
+              border: '1px solid rgba(230,0,0,0.3)',
             }}>
               Admin Panel
             </Link>
           )}
 
           <span className="nav-email" style={{
-            fontSize: '12px', color: 'var(--muted)',
+            fontSize: '12px', color: 'rgba(255,255,255,0.5)',
             fontFamily: "'JetBrains Mono', monospace",
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>
