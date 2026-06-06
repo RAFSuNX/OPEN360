@@ -29,7 +29,7 @@ export default async function OrgDashboardLayout({
         top: 0,
         zIndex: 10,
         backdropFilter: 'blur(8px)',
-        background: 'var(--ink)',
+        background: '#1c1208',
         gap: '8px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1 }}>

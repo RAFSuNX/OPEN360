@@ -3,8 +3,8 @@
 
 :root {
   /* OPEN360 — Vodafone design language */
-  --primary: #e60000;
-  --primary-active: #cc0000;
+  --primary: #f54e00;
+  --primary-active: #d04200;
   --ink: #25282b;
   --body: #7e7e7e;
   --body-strong: #25282b;
@@ -19,15 +19,15 @@
   --surface-strong: #f2f2f2;
   --on-primary: #ffffff;
   --on-dark: #ffffff;
-  --semantic-error: #e60000;
+  --semantic-error: #cf2d56;
   --semantic-success: #007c3c;
-  --error-bg: rgba(230, 0, 0, 0.06);
-  --error-border: rgba(230, 0, 0, 0.2);
+  --error-bg: rgba(207, 45, 86, 0.06);
+  --error-border: rgba(207, 45, 86, 0.2);
   --success-bg: rgba(0, 124, 60, 0.06);
   --success-border: rgba(0, 124, 60, 0.2);
   --page-padding: 32px 24px;
-  --radius-pill: 60px;
-  --radius-card: 6px;
+  --radius-pill: 28px;
+  --radius-card: 8px;
 }
 
 @theme inline {
@@ -90,15 +90,15 @@ input::placeholder, textarea::placeholder {
   text-align: center;
   text-decoration: none;
 }
-.btn-primary:hover { background: var(--primary-active); border-color: var(--primary-active); }
+.btn-primary:hover { background: var(--primary-active); border-color: var(--primary-active); box-shadow: 0 4px 20px rgba(245,78,0,0.3); }
 .btn-primary:active { transform: scale(0.98); }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
 /* Secondary pill — outline red */
 .btn-secondary {
   background: var(--canvas);
-  color: var(--primary);
-  border: 1px solid var(--primary);
+  color: var(--ink);
+  border: 1px solid var(--ink);
   border-radius: var(--radius-pill);
   padding: 12px 24px;
   font-family: 'Geist', sans-serif;
@@ -111,7 +111,7 @@ input::placeholder, textarea::placeholder {
   text-align: center;
   text-decoration: none;
 }
-.btn-secondary:hover { background: rgba(230, 0, 0, 0.04); }
+.btn-secondary:hover { background: var(--canvas-soft); }
 .btn-secondary:active { transform: scale(0.98); }
 .btn-secondary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
@@ -338,8 +338,8 @@ main { animation: fadeIn 0.18s ease-out; }
   border-radius: 32px; padding: 3px 12px;
 }
 .badge-success { background: rgba(0,124,60,0.08); color: var(--semantic-success); }
-.badge-error   { background: rgba(230,0,0,0.08); color: var(--semantic-error); }
-.badge-orange  { background: rgba(230,0,0,0.08); color: var(--primary); }
+.badge-error   { background: rgba(207,45,86,0.08); color: var(--semantic-error); }
+.badge-orange  { background: rgba(245,78,0,0.08); color: var(--primary); }
 
 .text-error   { color: var(--semantic-error); font-size: 14px; }
 .text-success { color: var(--semantic-success); font-size: 14px; }

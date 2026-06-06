@@ -29,7 +29,7 @@ export default async function OrgAdminLayout({
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)' }}>
       <nav style={{
-        background: 'var(--ink)',
+        background: '#1c1208',
         borderBottom: '1px solid var(--hairline)',
         minHeight: '56px',
         display: 'flex',
