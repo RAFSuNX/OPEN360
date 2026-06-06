@@ -73,15 +73,25 @@ export function OnboardingFlow() {
   return (
     <>
     {cropSrc && <ImageCropModal imageSrc={cropSrc} onDone={handleCropDone} onCancel={() => setCropSrc(null)} />}
-    <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ width: '100%', maxWidth: '480px' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', flexDirection: 'column' }}>
 
-        {/* Header */}
-        <div style={{ marginBottom: '40px' }}>
-          <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-            OPEN<span style={{ color: 'var(--primary)' }}>360</span>
-          </span>
-        </div>
+      {/* Nav bar */}
+      <div style={{
+        background: '#1c1208',
+        borderBottom: '1px solid rgba(255,255,255,0.07)',
+        height: '60px',
+        display: 'flex',
+        alignItems: 'center',
+        padding: '0 32px',
+        flexShrink: 0,
+      }}>
+        <span style={{ fontSize: '13px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          OPEN<span style={{ color: 'var(--primary)' }}>360</span>
+        </span>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+      <div style={{ width: '100%', maxWidth: '480px' }}>
 
         {/* Progress */}
         <div style={{ display: 'flex', gap: '6px', marginBottom: '32px' }}>
@@ -238,6 +248,7 @@ export function OnboardingFlow() {
             </div>
           </div>
         )}
+      </div>
       </div>
     </div>
     </>
