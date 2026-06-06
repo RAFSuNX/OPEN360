@@ -99,7 +99,7 @@ function HomePage() {
       {/* ─── Hero ─── */}
       <section style={{
         background: '#1c1208',
-        padding: '88px 32px 104px',
+        padding: '68px 32px 104px',
         position: 'relative',
         overflow: 'hidden',
         borderBottom: '1px solid rgba(245,78,0,0.2)',
