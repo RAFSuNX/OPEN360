@@ -7,8 +7,7 @@ import { getAssignmentWithQuestions, submitReview } from '@/lib/services/reviews
 const SubmitReviewSchema = z.object({
   answers: z.array(z.object({
     questionId: z.string().uuid(),
-    rating: z.number().int().min(1).max(10).optional().nullable(),
-    text: z.string().max(10000).optional().nullable(),
+    answer: z.string().min(1).max(10000),
   })).min(1),
 })
 
