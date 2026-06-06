@@ -24,12 +24,23 @@ function LoginContent() {
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', flexDirection: 'column' }}>
       {/* Top bar */}
-      <div style={{ background: '#1c1208', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '0 32px', height: '60px', display: 'flex', alignItems: 'center' }}>
+      <div style={{ background: '#1c1208', borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '0 32px', height: '60px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <a href="/" style={{ textDecoration: 'none' }}>
-          <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <span style={{ fontSize: '15px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             OPEN<span style={{ color: 'var(--primary)' }}>360</span>
           </span>
         </a>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ fontSize: '14px', color: 'rgba(255,255,255,0.45)' }}>No account?</span>
+          <a href="/signup" style={{
+            fontSize: '14px', fontWeight: '500', color: 'white',
+            textDecoration: 'none', padding: '8px 20px',
+            background: 'var(--primary)', borderRadius: '28px',
+            transition: 'background 0.15s',
+          }}>
+            Get started free
+          </a>
+        </div>
       </div>
 
       {/* Content */}
