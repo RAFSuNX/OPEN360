@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation'
 import { db } from '@/lib/db'
 import { getOrgSettings, isOnboardingComplete } from '@/lib/org'
 import Link from 'next/link'
+import { HomeNav } from './HomeNav'
 
 export default async function RootPage() {
   const session = await getServerSession(authOptions)
@@ -66,35 +67,7 @@ function HomePage() {
   return (
     <div style={{ background: 'var(--canvas)', minHeight: '100vh', color: 'var(--ink)' }}>
 
-      {/* ─── Nav ─── */}
-      <nav style={{
-        background: '#1c1208',
-        padding: '0 32px',
-        height: '60px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-      }}>
-        <span style={{ fontSize: '15px', fontWeight: '800', color: 'white', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-          OPEN<span style={{ color: 'var(--primary)' }}>360</span>
-        </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link href="/login" style={{ fontSize: '14px', fontWeight: '400', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', padding: '7px 14px' }}>
-            Sign in
-          </Link>
-          <Link href="/signup" style={{
-            fontSize: '14px', fontWeight: '500', color: 'white',
-            textDecoration: 'none', padding: '8px 20px',
-            background: 'var(--primary)', borderRadius: '28px',
-            transition: 'background 0.15s',
-          }}>
-            Get started free
-          </Link>
-        </div>
-      </nav>
+      <HomeNav />
 
       {/* ─── Hero ─── */}
       <section style={{
@@ -182,7 +155,7 @@ function HomePage() {
       </section>
 
       {/* ─── Features ─── */}
-      <section style={{ background: 'var(--canvas)', padding: '88px 32px' }}>
+      <section id="features" style={{ background: 'var(--canvas)', padding: '88px 32px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Features</p>
           <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'var(--ink)', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 56px', maxWidth: '600px' }}>
@@ -206,7 +179,7 @@ function HomePage() {
       </section>
 
       {/* ─── How it works ─── */}
-      <section style={{ background: '#1c1208', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '88px 32px', position: 'relative', overflow: 'hidden' }}>
+      <section id="how-it-works" style={{ background: '#1c1208', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '88px 32px', position: 'relative', overflow: 'hidden' }}>
         <div style={{
           position: 'absolute', inset: 0,
           backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
@@ -232,7 +205,7 @@ function HomePage() {
       </section>
 
       {/* ─── Pricing ─── */}
-      <section style={{ background: 'var(--canvas)', borderTop: '1px solid var(--hairline)', padding: '88px 32px' }}>
+      <section id="pricing" style={{ background: 'var(--canvas)', borderTop: '1px solid var(--hairline)', padding: '88px 32px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Pricing</p>
           <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'var(--ink)', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 56px' }}>
