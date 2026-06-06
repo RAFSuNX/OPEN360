@@ -130,7 +130,7 @@ export default function SignupPage() {
                     padding: '16px',
                     border: plan === p.id ? '2px solid var(--primary)' : '1px solid var(--hairline-strong)',
                     borderRadius: '10px',
-                    background: plan === p.id ? 'rgba(245,78,0,0.04)' : 'var(--surface-card)',
+                    background: plan === p.id ? 'rgba(245,78,0,0.10)' : 'var(--surface-card)',
                     cursor: 'pointer',
                     textAlign: 'left',
                     transition: 'all 0.15s',
@@ -215,7 +215,7 @@ export default function SignupPage() {
           </div>
 
           {error && (
-            <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'var(--error-bg)', borderRadius: '8px', border: '1px solid rgba(220,38,38,0.15)' }}>
+            <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'var(--error-bg)', borderRadius: '8px', border: '1px solid var(--error-border)' }}>
               <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: 0 }}>{error}</p>
             </div>
           )}
