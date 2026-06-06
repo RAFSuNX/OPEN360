@@ -77,9 +77,10 @@ export function OnboardingFlow() {
       <div style={{ width: '100%', maxWidth: '480px' }}>
 
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '40px' }}>
-          <div style={{ width: '24px', height: '24px', background: 'var(--primary)', borderRadius: '6px' }} />
-          <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)' }}>OPEN360</span>
+        <div style={{ marginBottom: '40px' }}>
+          <span style={{ fontSize: '14px', fontWeight: '800', color: 'var(--ink)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            OPEN<span style={{ color: 'var(--primary)' }}>360</span>
+          </span>
         </div>
 
         {/* Progress */}

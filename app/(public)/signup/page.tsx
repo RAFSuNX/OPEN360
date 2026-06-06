@@ -63,178 +63,177 @@ export default function SignupPage() {
     }
   }
 
-  const inputStyle = {
-    width: '100%', background: 'var(--surface-card)', color: 'var(--ink)',
-    border: '1px solid var(--hairline-strong)', borderRadius: '8px',
-    padding: '10px 12px', fontSize: '14px', outline: 'none',
-    boxSizing: 'border-box' as const,
-  }
-
   if (done) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ maxWidth: '420px', width: '100%', padding: '0 24px', textAlign: 'center' }}>
-          <div style={{ width: '52px', height: '52px', background: 'var(--semantic-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <polyline points="20 6 9 17 4 12"/>
-            </svg>
+      <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ background: '#1c1208', padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center' }}>
+          <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            OPEN<span style={{ color: 'var(--primary)' }}>360</span>
+          </span>
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+          <div style={{ maxWidth: '420px', width: '100%', textAlign: 'center' }}>
+            <div style={{ width: '48px', height: '48px', background: 'var(--semantic-success)', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            </div>
+            <h2 style={{ fontSize: '24px', fontWeight: '700', color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.5px' }}>
+              Organization created
+            </h2>
+            <p style={{ fontSize: '14px', color: 'var(--body)', margin: '0 0 8px' }}>Your workspace URL:</p>
+            <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--primary)', margin: '0 0 24px' }}>
+              /org/{resultSlug}
+            </p>
+            <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Redirecting to Google sign-in...</p>
           </div>
-          <h2 style={{ fontSize: '22px', fontWeight: '400', color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.3px' }}>
-            Organization created
-          </h2>
-          <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 8px' }}>
-            Your workspace URL:
-          </p>
-          <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '13px', color: 'var(--primary)', margin: '0 0 24px' }}>
-            /org/{resultSlug}
-          </p>
-          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
-            Redirecting to Google sign-in...
-          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
-      <div style={{ maxWidth: '480px', width: '100%' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', flexDirection: 'column' }}>
+      {/* Top bar */}
+      <div style={{ background: '#1c1208', padding: '0 32px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <a href="/" style={{ textDecoration: 'none' }}>
+          <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+            OPEN<span style={{ color: 'var(--primary)' }}>360</span>
+          </span>
+        </a>
+        <Link href="/login" style={{ fontSize: '13px', color: 'rgba(255,255,255,0.55)', textDecoration: 'none' }}>
+          Already have a workspace? <span style={{ color: 'var(--primary)' }}>Sign in</span>
+        </Link>
+      </div>
 
-        {/* Header */}
-        <div style={{ marginBottom: '32px', textAlign: 'center' }}>
-          <div style={{ width: '36px', height: '36px', background: 'var(--primary)', borderRadius: '9px', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-              <circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>
-            </svg>
-          </div>
-          <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.4px', margin: '0 0 8px' }}>
-            Create your workspace
-          </h1>
-          <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0 }}>
-            Set up your organization in under a minute.
-          </p>
-        </div>
+      {/* Content */}
+      <div style={{ flex: 1, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: '48px 24px' }}>
+        <div style={{ maxWidth: '500px', width: '100%' }}>
 
-        <form onSubmit={handleSubmit}>
-
-          {/* Plan selection */}
-          <div style={{ marginBottom: '24px' }}>
-            <p className="section-label" style={{ marginBottom: '12px' }}>Choose a plan</p>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              {PLANS.map(p => (
-                <button
-                  key={p.id}
-                  type="button"
-                  onClick={() => setPlan(p.id as 'FREE' | 'PRO')}
-                  style={{
-                    padding: '16px',
-                    border: plan === p.id ? '2px solid var(--primary)' : '1px solid var(--hairline-strong)',
-                    borderRadius: '10px',
-                    background: plan === p.id ? 'rgba(230,0,0,0.04)' : 'var(--surface-card)',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)' }}>{p.label}</span>
-                    {p.highlight && (
-                      <span style={{ fontSize: '10px', fontWeight: '600', letterSpacing: '0.06em', color: 'var(--primary)', background: 'rgba(230,0,0,0.08)', padding: '2px 6px', borderRadius: '4px' }}>
-                        POPULAR
-                      </span>
-                    )}
-                  </div>
-                  <p style={{ fontSize: '13px', fontWeight: '500', color: plan === p.id ? 'var(--primary)' : 'var(--muted)', margin: '0 0 10px' }}>{p.price}</p>
-                  <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
-                    {p.features.map(f => (
-                      <li key={f} style={{ fontSize: '11px', color: 'var(--body)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--semantic-success)" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Org name */}
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '6px' }}>
-              Organization name
-            </label>
-            <input
-              type="text"
-              placeholder="Acme Corp"
-              value={orgName}
-              onChange={e => setOrgName(e.target.value)}
-              required
-              style={inputStyle}
-            />
-            {slug && (
-              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '5px', fontFamily: "'JetBrains Mono', monospace" }}>
-                Your URL: /org/<span style={{ color: 'var(--ink)' }}>{slug}</span>
-              </p>
-            )}
-          </div>
-
-          {/* Admin email */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', color: 'var(--ink)', marginBottom: '6px' }}>
-              Your work email
-            </label>
-            <input
-              type="email"
-              placeholder="you@company.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              required
-              style={inputStyle}
-            />
-            <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '5px' }}>
-              Must match your Google account. You will be the organization admin.
+          <div style={{ marginBottom: '36px' }}>
+            <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>Get started</p>
+            <h1 style={{ fontSize: '32px', fontWeight: '700', color: 'var(--ink)', letterSpacing: '-0.8px', lineHeight: '1.1', margin: '0 0 8px' }}>
+              Create your workspace
+            </h1>
+            <p style={{ fontSize: '15px', color: 'var(--body)', margin: 0 }}>
+              Set up your organization in under a minute.
             </p>
           </div>
 
-          {/* ToS checkbox */}
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={tos}
-                onChange={e => setTos(e.target.checked)}
-                style={{ marginTop: '2px', accentColor: 'var(--primary)', flexShrink: 0 }}
-              />
-              <span style={{ fontSize: '13px', color: 'var(--body)', lineHeight: '1.5' }}>
-                I agree to the{' '}
-                <Link href="/terms" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Terms of Service</Link>
-                {' '}and{' '}
-                <Link href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Privacy Policy</Link>
-              </span>
-            </label>
-          </div>
+          <form onSubmit={handleSubmit}>
 
-          {error && (
-            <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'var(--error-bg)', borderRadius: '8px', border: '1px solid rgba(220,38,38,0.15)' }}>
-              <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: 0 }}>{error}</p>
+            {/* Plan selection */}
+            <div style={{ marginBottom: '28px' }}>
+              <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--body)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 12px' }}>Choose a plan</p>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                {PLANS.map(p => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPlan(p.id as 'FREE' | 'PRO')}
+                    style={{
+                      padding: '16px',
+                      border: plan === p.id ? '2px solid var(--primary)' : '1px solid var(--hairline)',
+                      borderRadius: '8px',
+                      background: plan === p.id ? 'rgba(245,78,0,0.04)' : 'var(--canvas-soft)',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      transition: 'all 0.15s',
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--ink)' }}>{p.label}</span>
+                      {p.highlight && (
+                        <span style={{ fontSize: '10px', fontWeight: '700', letterSpacing: '0.08em', color: 'white', background: 'var(--primary)', padding: '2px 8px', borderRadius: '9999px', fontFamily: "'JetBrains Mono', monospace" }}>
+                          PRO
+                        </span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '12px', fontWeight: '600', color: plan === p.id ? 'var(--primary)' : 'var(--muted)', margin: '0 0 10px', fontFamily: "'JetBrains Mono', monospace" }}>{p.price}</p>
+                    <ul style={{ listStyle: 'none', margin: 0, padding: 0 }}>
+                      {p.features.map(f => (
+                        <li key={f} style={{ fontSize: '11px', color: 'var(--body)', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--semantic-success)" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                  </button>
+                ))}
+              </div>
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={loading || !tos}
-            className="btn-primary"
-            style={{ width: '100%', opacity: loading || !tos ? 0.6 : 1, cursor: loading || !tos ? 'not-allowed' : 'pointer' }}
-          >
-            {loading ? 'Creating workspace...' : `Create workspace — ${plan === 'PRO' ? '$29/mo' : 'Free'}`}
-          </button>
-        </form>
+            {/* Org name */}
+            <div style={{ marginBottom: '16px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--ink)', marginBottom: '6px' }}>
+                Organization name
+              </label>
+              <input
+                type="text"
+                placeholder="Acme Corp"
+                value={orgName}
+                onChange={e => setOrgName(e.target.value)}
+                required
+              />
+              {slug && (
+                <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '5px', fontFamily: "'JetBrains Mono', monospace" }}>
+                  URL: /org/<span style={{ color: 'var(--ink)' }}>{slug}</span>
+                </p>
+              )}
+            </div>
 
-        <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--muted)', marginTop: '20px' }}>
-          Already have a workspace?{' '}
-          <Link href="/login" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: '500' }}>Sign in</Link>
-        </p>
+            {/* Email */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: 'var(--ink)', marginBottom: '6px' }}>
+                Your work email
+              </label>
+              <input
+                type="email"
+                placeholder="you@company.com"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+              />
+              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '5px' }}>
+                Must match your Google account. You will be the organization admin.
+              </p>
+            </div>
 
+            {/* ToS */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  checked={tos}
+                  onChange={e => setTos(e.target.checked)}
+                  style={{ marginTop: '2px', accentColor: 'var(--primary)', flexShrink: 0, width: 'auto' }}
+                />
+                <span style={{ fontSize: '13px', color: 'var(--body)', lineHeight: '1.5' }}>
+                  I agree to the{' '}
+                  <Link href="/terms" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Terms of Service</Link>
+                  {' '}and{' '}
+                  <Link href="/privacy" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Privacy Policy</Link>
+                </span>
+              </label>
+            </div>
+
+            {error && (
+              <div style={{ marginBottom: '16px', padding: '10px 14px', background: 'var(--error-bg)', borderRadius: '8px', border: '1px solid var(--error-border)' }}>
+                <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: 0 }}>{error}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading || !tos}
+              className="btn-primary"
+              style={{ width: '100%', opacity: loading || !tos ? 0.55 : 1, cursor: loading || !tos ? 'not-allowed' : 'pointer' }}
+            >
+              {loading ? 'Creating workspace...' : `Create workspace — ${plan === 'PRO' ? '$29/mo' : 'Free'}`}
+            </button>
+          </form>
+
+        </div>
       </div>
     </div>
   )

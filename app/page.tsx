@@ -78,20 +78,11 @@ function HomePage() {
         top: 0,
         zIndex: 10,
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-          <div style={{
-            width: '26px', height: '26px',
-            background: 'var(--primary)', borderRadius: '7px',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-              <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>
-            </svg>
-          </div>
-          <span style={{ fontSize: '14px', fontWeight: '800', color: 'white', letterSpacing: '0.04em', textTransform: 'uppercase' }}>OPEN360</span>
-        </div>
+        <span style={{ fontSize: '15px', fontWeight: '800', color: 'white', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          OPEN<span style={{ color: 'var(--primary)' }}>360</span>
+        </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Link href="/login" style={{ fontSize: '14px', fontWeight: '400', color: 'rgba(255,255,255,0.6)', textDecoration: 'none', padding: '7px 14px' }}>
+          <Link href="/login" style={{ fontSize: '14px', fontWeight: '400', color: 'rgba(255,255,255,0.55)', textDecoration: 'none', padding: '7px 14px' }}>
             Sign in
           </Link>
           <Link href="/signup" style={{
@@ -111,30 +102,24 @@ function HomePage() {
         padding: '88px 32px 104px',
         position: 'relative',
         overflow: 'hidden',
+        borderBottom: '1px solid rgba(245,78,0,0.2)',
       }}>
         {/* Dot grid */}
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px)',
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px)',
           backgroundSize: '28px 28px',
-          pointerEvents: 'none',
-        }} />
-        {/* Orange glow */}
-        <div style={{
-          position: 'absolute', bottom: '-80px', left: '40%',
-          width: '500px', height: '400px',
-          background: 'radial-gradient(ellipse at center, rgba(245,78,0,0.22) 0%, transparent 65%)',
           pointerEvents: 'none',
         }} />
 
         <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
-          {/* Eyebrow pill */}
+          {/* Eyebrow */}
           <div style={{
             display: 'inline-flex', alignItems: 'center', gap: '7px',
             background: 'rgba(245,78,0,0.1)', border: '1px solid rgba(245,78,0,0.25)',
             borderRadius: '9999px', padding: '5px 14px', marginBottom: '36px',
           }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)', flexShrink: 0 }} />
+            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--primary)', flexShrink: 0 }} />
             <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace" }}>
               Open Source · Free to Start
             </span>
@@ -155,9 +140,9 @@ function HomePage() {
             right.
           </h1>
 
-          <p style={{ fontSize: '18px', fontWeight: '400', color: 'rgba(255,255,255,0.6)', lineHeight: '1.65', maxWidth: '500px', margin: '0 0 48px' }}>
+          <p style={{ fontSize: '18px', fontWeight: '400', color: 'rgba(255,255,255,0.55)', lineHeight: '1.65', maxWidth: '480px', margin: '0 0 48px' }}>
             Self-hostable, multi-tenant 360° review platform.
-            Set up your organization, run structured cycles,
+            Set up your org, run structured cycles,
             and deliver anonymous feedback at scale.
           </p>
 
@@ -171,9 +156,9 @@ function HomePage() {
               Create your workspace
             </Link>
             <Link href="https://github.com/RAFSuNX/OPEN360" target="_blank" rel="noopener" style={{
-              fontSize: '16px', fontWeight: '400', color: 'rgba(255,255,255,0.8)',
+              fontSize: '16px', fontWeight: '400', color: 'rgba(255,255,255,0.7)',
               textDecoration: 'none', padding: '11px 24px',
-              borderRadius: '28px', border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '28px', border: '1px solid rgba(255,255,255,0.18)',
               display: 'inline-flex', alignItems: 'center', gap: '8px',
               transition: 'border-color 0.15s',
             }}>
@@ -210,14 +195,15 @@ function HomePage() {
           <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: '700', color: 'var(--ink)', letterSpacing: '-1.5px', lineHeight: '1.08', margin: '0 0 56px', maxWidth: '560px' }}>
             Everything you need for great reviews
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
-            {features.map(({ title, body }) => (
+          {/* Flat bordered grid — cells divided by hairlines */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0', border: '1px solid var(--hairline)' }}>
+            {features.map(({ title, body }, i) => (
               <div key={title} style={{
-                padding: '28px 24px',
-                background: 'var(--canvas-soft)',
-                borderRadius: '8px',
-                borderLeft: '3px solid var(--primary)',
+                padding: '32px 28px',
+                borderRight: '1px solid var(--hairline)',
+                borderBottom: '1px solid var(--hairline)',
               }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)', marginBottom: '18px' }} />
                 <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.2px' }}>{title}</p>
                 <p style={{ fontSize: '14px', fontWeight: '400', color: 'var(--body)', margin: 0, lineHeight: '1.65' }}>{body}</p>
               </div>
@@ -242,10 +228,10 @@ function HomePage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '40px' }}>
             {steps.map(({ n, title, body }) => (
               <div key={n}>
-                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px', fontWeight: '700', color: 'var(--primary)', margin: '0 0 16px', letterSpacing: '0.06em' }}>{n}</p>
-                <div style={{ width: '24px', height: '2px', background: 'rgba(245,78,0,0.4)', marginBottom: '16px', borderRadius: '1px' }} />
+                <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: '700', color: 'var(--primary)', margin: '0 0 14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{n}</p>
+                <div style={{ width: '20px', height: '2px', background: 'rgba(245,78,0,0.35)', marginBottom: '14px' }} />
                 <p style={{ fontSize: '16px', fontWeight: '700', color: 'white', margin: '0 0 10px', letterSpacing: '-0.2px' }}>{title}</p>
-                <p style={{ fontSize: '14px', fontWeight: '400', color: 'rgba(255,255,255,0.5)', margin: 0, lineHeight: '1.65' }}>{body}</p>
+                <p style={{ fontSize: '14px', fontWeight: '400', color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: '1.65' }}>{body}</p>
               </div>
             ))}
           </div>
@@ -284,13 +270,13 @@ function HomePage() {
                 background: highlight ? '#1c1208' : 'var(--canvas-soft)',
                 borderRadius: '8px',
                 padding: '32px',
-                border: highlight ? '1px solid rgba(245,78,0,0.3)' : '1px solid var(--hairline)',
+                border: highlight ? '1px solid rgba(245,78,0,0.25)' : '1px solid var(--hairline)',
                 position: 'relative',
               }}>
                 {highlight && (
                   <span style={{
                     position: 'absolute', top: '-12px', left: '28px',
-                    fontSize: '11px', fontWeight: '700', color: 'white',
+                    fontSize: '10px', fontWeight: '700', color: 'white',
                     background: 'var(--primary)', borderRadius: '9999px',
                     padding: '3px 12px', textTransform: 'uppercase', letterSpacing: '0.08em',
                     fontFamily: "'JetBrains Mono', monospace",
@@ -298,14 +284,14 @@ function HomePage() {
                     Most Popular
                   </span>
                 )}
-                <p style={{ fontSize: '12px', fontWeight: '700', color: highlight ? 'rgba(255,255,255,0.4)' : 'var(--body)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{plan}</p>
+                <p style={{ fontSize: '11px', fontWeight: '700', color: highlight ? 'rgba(255,255,255,0.35)' : 'var(--body)', margin: '0 0 10px', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{plan}</p>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '4px', marginBottom: '28px' }}>
                   <span style={{ fontSize: '52px', fontWeight: '800', color: highlight ? 'white' : 'var(--ink)', letterSpacing: '-2px', lineHeight: '1' }}>{price}</span>
                   <span style={{ fontSize: '14px', color: highlight ? 'rgba(255,255,255,0.4)' : 'var(--body)' }}>/{period}</span>
                 </div>
-                <ul style={{ listStyle: 'none', margin: '0 0 32px', padding: 0 }}>
+                <ul style={{ listStyle: 'none', margin: '0 0 28px', padding: 0 }}>
                   {fs.map(f => (
-                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: highlight ? 'rgba(255,255,255,0.75)' : 'var(--ink)', marginBottom: '12px' }}>
+                    <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '14px', color: highlight ? 'rgba(255,255,255,0.7)' : 'var(--ink)', marginBottom: '12px' }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" strokeWidth="3" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>
                       {f}
                     </li>
@@ -318,7 +304,7 @@ function HomePage() {
                   background: highlight ? 'var(--primary)' : 'transparent',
                   color: highlight ? 'white' : 'var(--ink)',
                   border: highlight ? '1px solid var(--primary)' : '1px solid var(--hairline-strong)',
-                  transition: 'background 0.15s, border-color 0.15s',
+                  transition: 'background 0.15s',
                 }}>
                   {cta}
                 </Link>
@@ -329,12 +315,11 @@ function HomePage() {
       </section>
 
       {/* ─── CTA ─── */}
-      <section style={{ background: '#1c1208', padding: '100px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      <section style={{ background: '#1c1208', borderTop: '1px solid rgba(245,78,0,0.2)', padding: '100px 32px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div style={{
-          position: 'absolute', top: '50%', left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '700px', height: '400px',
-          background: 'radial-gradient(ellipse at center, rgba(245,78,0,0.18) 0%, transparent 65%)',
+          position: 'absolute', inset: 0,
+          backgroundImage: 'radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px)',
+          backgroundSize: '28px 28px',
           pointerEvents: 'none',
         }} />
         <div style={{ position: 'relative', zIndex: 1 }}>
@@ -348,9 +333,9 @@ function HomePage() {
             margin: '0 0 28px',
           }}>
             Ready to run<br />
-            <span style={{ color: 'var(--primary)' }}>better reviews?</span>
+            <span style={{ color: 'var(--primary)', fontStyle: 'italic' }}>better reviews?</span>
           </h2>
-          <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.5)', margin: '0 0 40px' }}>
+          <p style={{ fontSize: '17px', color: 'rgba(255,255,255,0.45)', margin: '0 0 40px' }}>
             Free to start. No credit card required.
           </p>
           <Link href="/signup" style={{
@@ -365,16 +350,13 @@ function HomePage() {
       </section>
 
       {/* ─── Footer ─── */}
-      <footer style={{ background: '#130d05', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '40px 32px' }}>
+      <footer style={{ background: '#130d05', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '36px 32px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <div style={{ width: '22px', height: '22px', background: 'var(--primary)', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
-                <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>
-              </svg>
-            </div>
-            <span style={{ fontSize: '13px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>OPEN360</span>
-            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', fontFamily: "'JetBrains Mono', monospace" }}>MIT</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              OPEN<span style={{ color: 'var(--primary)' }}>360</span>
+            </span>
+            <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.2)', fontFamily: "'JetBrains Mono', monospace" }}>MIT</span>
           </div>
           <div style={{ display: 'flex', gap: '28px' }}>
             {[
@@ -382,7 +364,7 @@ function HomePage() {
               { label: 'Sign in', href: '/login' },
               { label: 'Sign up', href: '/signup' },
             ].map(({ label, href }) => (
-              <Link key={label} href={href} style={{ fontSize: '13px', color: 'rgba(255,255,255,0.4)', textDecoration: 'none', transition: 'color 0.15s' }}>{label}</Link>
+              <Link key={label} href={href} style={{ fontSize: '13px', color: 'rgba(255,255,255,0.35)', textDecoration: 'none', transition: 'color 0.15s' }}>{label}</Link>
             ))}
           </div>
         </div>

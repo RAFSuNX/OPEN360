@@ -42,14 +42,19 @@ export default async function OrgAdminLayout({
         backdropFilter: 'blur(8px)',
         gap: '8px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: '20px' }}>
-          {logoUrl
-            ? <img src={logoUrl} alt={displayName} style={{ height: '24px', maxWidth: '80px', objectFit: 'contain' }} />
-            : <div style={{ width: '20px', height: '20px', background: 'var(--primary)', borderRadius: '5px', flexShrink: 0 }} />
-          }
-          <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--on-dark)', letterSpacing: '-0.01em' }}>
-            {displayName}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginRight: '20px' }}>
+          <span style={{ fontSize: '13px', fontWeight: '800', color: 'white', textTransform: 'uppercase', letterSpacing: '0.06em', flexShrink: 0 }}>
+            OPEN<span style={{ color: 'var(--primary)' }}>360</span>
           </span>
+          {displayName && (
+            <>
+              <span style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.15)', flexShrink: 0 }} />
+              {logoUrl
+                ? <img src={logoUrl} alt={displayName} style={{ height: '20px', maxWidth: '80px', objectFit: 'contain' }} />
+                : <span style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(255,255,255,0.7)', letterSpacing: '-0.01em' }}>{displayName}</span>
+              }
+            </>
+          )}
         </div>
 
         <div className="nav-links nav-dark" style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, overflow: 'hidden' }}>
