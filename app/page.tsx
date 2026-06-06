@@ -127,20 +127,20 @@ function HomePage() {
 
           {/* Headline */}
           <h1 style={{
-            fontSize: 'clamp(48px, 8vw, 112px)',
+            fontSize: 'clamp(52px, 9vw, 126px)',
             fontWeight: '800',
             color: 'white',
-            lineHeight: '0.96',
-            letterSpacing: '-2px',
+            lineHeight: '0.94',
+            letterSpacing: '-3px',
             margin: '0 0 36px',
-            maxWidth: '880px',
+            maxWidth: '900px',
           }}>
             Performance<br />
             reviews, <span style={{ color: 'var(--primary)', fontStyle: 'italic' }}>done</span><br />
             right.
           </h1>
 
-          <p style={{ fontSize: '18px', fontWeight: '400', color: 'rgba(255,255,255,0.55)', lineHeight: '1.65', maxWidth: '480px', margin: '0 0 48px' }}>
+          <p style={{ fontSize: '20px', fontWeight: '400', color: 'rgba(255,255,255,0.55)', lineHeight: '1.6', maxWidth: '500px', margin: '0 0 48px' }}>
             Self-hostable, multi-tenant 360° review platform.
             Set up your org, run structured cycles,
             and deliver anonymous feedback at scale.
@@ -192,7 +192,7 @@ function HomePage() {
       <section style={{ background: 'var(--canvas)', padding: '88px 32px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Features</p>
-          <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: '700', color: 'var(--ink)', letterSpacing: '-1.5px', lineHeight: '1.08', margin: '0 0 56px', maxWidth: '560px' }}>
+          <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'var(--ink)', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 56px', maxWidth: '600px' }}>
             Everything you need for great reviews
           </h2>
           {/* Flat bordered grid — cells divided by hairlines */}
@@ -204,8 +204,8 @@ function HomePage() {
                 borderBottom: '1px solid var(--hairline)',
               }}>
                 <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--primary)', marginBottom: '18px' }} />
-                <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.2px' }}>{title}</p>
-                <p style={{ fontSize: '14px', fontWeight: '400', color: 'var(--body)', margin: 0, lineHeight: '1.65' }}>{body}</p>
+                <p style={{ fontSize: '18px', fontWeight: '700', color: 'var(--ink)', margin: '0 0 10px', letterSpacing: '-0.3px' }}>{title}</p>
+                <p style={{ fontSize: '16px', fontWeight: '400', color: 'var(--body)', margin: 0, lineHeight: '1.6' }}>{body}</p>
               </div>
             ))}
           </div>
@@ -222,7 +222,7 @@ function HomePage() {
         }} />
         <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>How it works</p>
-          <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: '700', color: 'white', letterSpacing: '-1.5px', lineHeight: '1.08', margin: '0 0 64px' }}>
+          <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'white', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 64px' }}>
             Up and running in minutes
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '40px' }}>
@@ -230,8 +230,8 @@ function HomePage() {
               <div key={n}>
                 <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', fontWeight: '700', color: 'var(--primary)', margin: '0 0 14px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{n}</p>
                 <div style={{ width: '20px', height: '2px', background: 'rgba(245,78,0,0.35)', marginBottom: '14px' }} />
-                <p style={{ fontSize: '16px', fontWeight: '700', color: 'white', margin: '0 0 10px', letterSpacing: '-0.2px' }}>{title}</p>
-                <p style={{ fontSize: '14px', fontWeight: '400', color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: '1.65' }}>{body}</p>
+                <p style={{ fontSize: '18px', fontWeight: '700', color: 'white', margin: '0 0 10px', letterSpacing: '-0.3px' }}>{title}</p>
+                <p style={{ fontSize: '16px', fontWeight: '400', color: 'rgba(255,255,255,0.45)', margin: 0, lineHeight: '1.6' }}>{body}</p>
               </div>
             ))}
           </div>
@@ -242,7 +242,7 @@ function HomePage() {
       <section style={{ background: 'var(--canvas)', borderTop: '1px solid var(--hairline)', padding: '88px 32px' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 14px' }}>Pricing</p>
-          <h2 style={{ fontSize: 'clamp(32px, 4vw, 56px)', fontWeight: '700', color: 'var(--ink)', letterSpacing: '-1.5px', lineHeight: '1.08', margin: '0 0 56px' }}>
+          <h2 style={{ fontSize: 'clamp(36px, 5vw, 64px)', fontWeight: '300', color: 'var(--ink)', letterSpacing: '-1px', lineHeight: '1.1', margin: '0 0 56px' }}>
             Simple, honest pricing
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', maxWidth: '680px' }}>
@@ -325,11 +325,11 @@ function HomePage() {
         <div style={{ position: 'relative', zIndex: 1 }}>
           <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.1em', margin: '0 0 24px' }}>Get started today</p>
           <h2 style={{
-            fontSize: 'clamp(40px, 6vw, 88px)',
+            fontSize: 'clamp(44px, 7vw, 96px)',
             fontWeight: '800',
             color: 'white',
-            letterSpacing: '-2px',
-            lineHeight: '0.96',
+            letterSpacing: '-2.5px',
+            lineHeight: '0.94',
             margin: '0 0 28px',
           }}>
             Ready to run<br />
