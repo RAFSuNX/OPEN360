@@ -114,16 +114,9 @@ function HomePage() {
 
         <div style={{ maxWidth: '1100px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
           {/* Eyebrow */}
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: '7px',
-            background: 'rgba(245,78,0,0.1)', border: '1px solid rgba(245,78,0,0.25)',
-            borderRadius: '9999px', padding: '5px 14px', marginBottom: '36px',
-          }}>
-            <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--primary)', flexShrink: 0 }} />
-            <span style={{ fontSize: '11px', fontWeight: '700', color: 'var(--primary)', letterSpacing: '0.1em', textTransform: 'uppercase', fontFamily: "'JetBrains Mono', monospace" }}>
-              Open Source · Free to Start
-            </span>
-          </div>
+          <p style={{ fontSize: '16px', fontWeight: '800', color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0', margin: '0 0 24px' }}>
+            Open Source · Free to Start
+          </p>
 
           {/* Headline */}
           <h1 style={{
