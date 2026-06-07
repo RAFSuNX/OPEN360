@@ -9,7 +9,7 @@ interface Question {
 }
 
 interface Props {
-  assignmentId: string; revieweeName: string; cycleTitle: string; questions: Question[]
+  assignmentId: string; revieweeName: string; cycleTitle: string; questions: Question[]; orgSlug: string
 }
 
 function ProgressRing({ value, max }: { value: number; max: number }) {
@@ -32,7 +32,7 @@ function ProgressRing({ value, max }: { value: number; max: number }) {
   )
 }
 
-export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, questions }: Props) {
+export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, questions, orgSlug }: Props) {
   const router = useRouter()
   const { toast } = useToast()
   const [answers, setAnswers] = useState<Record<string, string>>({})
@@ -78,7 +78,7 @@ export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, que
       }
       setSubmitted(true)
       toast('Review submitted successfully', 'success')
-      setTimeout(() => router.push('/dashboard'), 1800)
+      setTimeout(() => router.push(`/org/${orgSlug}/dashboard`), 1800)
     } catch {
       setError('Submission failed. Please try again.')
     } finally {

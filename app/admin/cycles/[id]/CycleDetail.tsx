@@ -22,7 +22,7 @@ const statusBadge: Record<CycleStatus, { bg: string; color: string }> = {
   CLOSED: { bg: 'var(--surface-strong)', color: 'var(--body)' },
 }
 
-function DeleteCycleButton({ cycleId, cycleTitle }: { cycleId: string; cycleTitle: string }) {
+function DeleteCycleButton({ cycleId, cycleTitle, orgSlug }: { cycleId: string; cycleTitle: string; orgSlug: string }) {
   const router = useRouter()
   const { toast } = useToast()
   const [stage, setStage] = useState<0 | 1 | 2>(0)
@@ -60,7 +60,7 @@ function DeleteCycleButton({ cycleId, cycleTitle }: { cycleId: string; cycleTitl
         return
       }
       toast(`"${cycleTitle}" deleted`, 'default')
-      router.push('/admin/cycles')
+      router.push(`/org/${orgSlug}/admin/cycles`)
     } catch {
       toast('Delete failed. Please try again.', 'error')
       setStage(0)
@@ -111,7 +111,7 @@ function DeleteCycleButton({ cycleId, cycleTitle }: { cycleId: string; cycleTitl
   )
 }
 
-export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle: Cycle; initialAssignments: Assignment[] }) {
+export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }: { cycle: Cycle; initialAssignments: Assignment[]; orgSlug: string }) {
   const router = useRouter()
   const { toast } = useToast()
   const [cycle, setCycle] = useState(initialCycle)
@@ -185,7 +185,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
             <span style={{ background: badge.bg, color: badge.color, borderRadius: '9999px', padding: '4px 12px', fontSize: '12px', fontWeight: '600', letterSpacing: '0.5px' }}>
               {cycle.status}
             </span>
-            <DeleteCycleButton cycleId={cycle.id} cycleTitle={cycle.title} />
+            <DeleteCycleButton cycleId={cycle.id} cycleTitle={cycle.title} orgSlug={orgSlug} />
           </div>
         </div>
       </div>
@@ -236,7 +236,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments }: { cycle
                     <span style={{ fontSize: '12px', color: done < rAssignments.length ? 'var(--semantic-error)' : 'var(--semantic-success)' }}>
                       {done}/{rAssignments.length} submitted
                     </span>
-                    <button onClick={() => router.push(`/admin/results/${cycle.id}/${revieweeId}`)}
+                    <button onClick={() => router.push(`/org/${orgSlug}/admin/results/${cycle.id}/${revieweeId}`)}
                       className="btn-primary" style={{ padding: '6px 14px', fontSize: '12px' }}>
                       View Results
                     </button>

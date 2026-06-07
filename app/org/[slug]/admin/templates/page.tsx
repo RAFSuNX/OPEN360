@@ -20,7 +20,7 @@ export default async function OrgTemplatesPage({
           <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: 0 }}>
             Question Templates
           </h1>
-          <TemplateActions />
+          <TemplateActions orgSlug={slug} />
         </div>
         <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '8px', maxWidth: '560px' }}>
           Templates group questions for reuse across review cycles.
@@ -54,7 +54,7 @@ export default async function OrgTemplatesPage({
                 </p>
               </Link>
               <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                <TemplateCopyButton templateId={t.id} />
+              <TemplateCopyButton templateId={t.id} orgSlug={slug} />
                 {!t.isDefault && (
                   <TemplateDeleteButton templateId={t.id} templateName={t.name} />
                 )}

@@ -26,7 +26,7 @@ const inputStyle = {
   padding: '9px 12px', fontSize: '13px', fontFamily: 'inherit', outline: 'none',
 }
 
-export function CycleList({ initialCycles, templates }: { initialCycles: Cycle[]; templates: Template[] }) {
+export function CycleList({ initialCycles, templates, orgSlug }: { initialCycles: Cycle[]; templates: Template[]; orgSlug: string }) {
   const router = useRouter()
   const [cycles, setCycles] = useState(initialCycles)
   const [title, setTitle] = useState('')
@@ -99,7 +99,7 @@ export function CycleList({ initialCycles, templates }: { initialCycles: Cycle[]
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         {cycles.map(cycle => (
-          <div key={cycle.id} onClick={() => router.push(`/admin/cycles/${cycle.id}`)}
+          <div key={cycle.id} onClick={() => router.push(`/org/${orgSlug}/admin/cycles/${cycle.id}`)}
             className="card card-interactive" style={{ padding: '14px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
             <div>
               <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 3px' }}>{cycle.title}</p>

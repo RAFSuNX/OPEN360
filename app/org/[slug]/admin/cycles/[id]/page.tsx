@@ -24,5 +24,5 @@ export default async function OrgCycleDetailPage({
     orderBy: [{ revieweeId: 'asc' }, { relationship: 'asc' }],
   })
 
-  return <CycleDetail cycle={cycle} initialAssignments={assignments} />
+  return <CycleDetail cycle={cycle} initialAssignments={assignments} orgSlug={slug} />
 }

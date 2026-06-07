@@ -3,13 +3,14 @@ import { getOrgSettings } from '@/lib/org'
 import NavLink from '@/components/NavLink'
 
 const navItems = [
-  { href: 'admin',           label: 'Overview', exact: true },
-  { href: 'admin/employees', label: 'Employees' },
-  { href: 'admin/cycles',    label: 'Cycles' },
-  { href: 'admin/results',   label: 'Results' },
-  { href: 'admin/questions', label: 'Questions' },
-  { href: 'admin/templates', label: 'Templates' },
-  { href: 'admin/settings',  label: 'Settings' },
+  { href: 'admin',             label: 'Overview', exact: true },
+  { href: 'admin/employees',   label: 'Employees' },
+  { href: 'admin/cycles',      label: 'Cycles' },
+  { href: 'admin/results',     label: 'Results' },
+  { href: 'admin/analytics',   label: 'Analytics' },
+  { href: 'admin/questions',   label: 'Questions' },
+  { href: 'admin/templates',   label: 'Templates' },
+  { href: 'admin/settings',    label: 'Settings' },
 ]
 
 export default async function OrgAdminLayout({

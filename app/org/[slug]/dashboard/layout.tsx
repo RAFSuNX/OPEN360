@@ -1,5 +1,6 @@
 import { getOrgContext } from '@/lib/org-context'
 import { getOrgSettings } from '@/lib/org'
+import { db } from '@/lib/db'
 import NavLink from '@/components/NavLink'
 import Link from 'next/link'
 
@@ -15,6 +16,14 @@ export default async function OrgDashboardLayout({
   const settings = await getOrgSettings(org.id)
   const displayName = settings.org_name || org.name
   const logoUrl = settings.org_logo_url
+
+  const pendingCount = await db.reviewAssignment.count({
+    where: {
+      reviewerId: employee.id,
+      submitted: false,
+      cycle: { status: 'ACTIVE', orgId: org.id },
+    },
+  })
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)' }}>
@@ -46,7 +55,21 @@ export default async function OrgDashboardLayout({
 
         {/* Nav links */}
         <div className="nav-links nav-dark" style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, overflow: 'hidden' }}>
-          <NavLink href={`/org/${slug}/dashboard`} exact>My Reviews</NavLink>
+          <NavLink href={`/org/${slug}/dashboard`} exact>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              My Reviews
+              {pendingCount > 0 && (
+                <span style={{
+                  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                  minWidth: '18px', height: '18px', borderRadius: '9999px',
+                  background: 'var(--primary)', color: 'var(--on-primary)',
+                  fontSize: '10px', fontWeight: '700', padding: '0 4px',
+                }}>
+                  {pendingCount > 99 ? '99+' : pendingCount}
+                </span>
+              )}
+            </span>
+          </NavLink>
           <NavLink href={`/org/${slug}/dashboard/profile`}>Profile</NavLink>
           {employee.isAdmin && (
             <Link href={`/org/${slug}/admin`} style={{

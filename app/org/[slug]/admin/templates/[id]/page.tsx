@@ -26,7 +26,7 @@ export default async function OrgTemplateDetailPage({
           ← Templates
         </Link>
         <div style={{ display: 'flex', gap: '8px' }}>
-          <TemplateCopyButton templateId={template.id} />
+          <TemplateCopyButton templateId={template.id} orgSlug={slug} />
           {!template.isDefault && (
             <TemplateDeleteButton templateId={template.id} templateName={template.name} />
           )}

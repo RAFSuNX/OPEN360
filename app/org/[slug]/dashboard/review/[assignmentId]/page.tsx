@@ -24,6 +24,7 @@ export default async function OrgReviewPage({
         revieweeName={data.assignment.reviewee.name}
         cycleTitle={data.assignment.cycle.title}
         questions={data.questions}
+        orgSlug={slug}
       />
     </div>
   )

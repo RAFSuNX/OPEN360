@@ -11,5 +11,5 @@ export default async function OrgCyclesPage({
   const { slug } = await params
   const { org } = await requireOrgAdmin(slug)
   const [cycles, templates] = await Promise.all([listCycles(org.id), listTemplates(org.id)])
-  return <CycleList initialCycles={cycles} templates={templates} />
+  return <CycleList initialCycles={cycles} templates={templates} orgSlug={slug} />
 }

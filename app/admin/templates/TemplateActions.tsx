@@ -9,7 +9,7 @@ const inputStyle = {
   padding: '9px 12px', fontSize: '13px', fontFamily: 'inherit', outline: 'none',
 }
 
-export default function TemplateActions() {
+export default function TemplateActions({ orgSlug }: { orgSlug: string }) {
   const router = useRouter()
   const { toast } = useToast()
   const [name, setName] = useState('')
@@ -30,7 +30,7 @@ export default function TemplateActions() {
       if (!res.ok) { toast(data.error ?? 'Failed to create', 'error'); return }
       toast(`Template "${name}" created`, 'success')
       setName(''); setShowForm(false)
-      router.push(`/admin/templates/${data.id}`)
+      router.push(`/org/${orgSlug}/admin/templates/${data.id}`)
     } finally { setCreating(false) }
   }
 
@@ -56,7 +56,7 @@ export default function TemplateActions() {
   )
 }
 
-export function TemplateCopyButton({ templateId }: { templateId: string }) {
+export function TemplateCopyButton({ templateId, orgSlug }: { templateId: string; orgSlug: string }) {
   const router = useRouter()
   const { toast } = useToast()
   const [copying, setCopying] = useState(false)
@@ -68,7 +68,7 @@ export function TemplateCopyButton({ templateId }: { templateId: string }) {
       const data = await res.json()
       if (!res.ok) { toast(data.error ?? 'Failed to copy', 'error'); return }
       toast('Template copied', 'success')
-      router.push(`/admin/templates/${data.id}`)
+      router.push(`/org/${orgSlug}/admin/templates/${data.id}`)
     } finally { setCopying(false) }
   }
 
