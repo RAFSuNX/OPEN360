@@ -110,13 +110,13 @@ async function wouldCreateManagerCycle(orgId: string, employeeId: string, newMan
   let currentId: string | null = newManagerId
   const MAX_DEPTH = 50
   for (let i = 0; i < MAX_DEPTH; i++) {
+    if (!currentId) return false
     if (currentId === employeeId) return true
     const mgr = await db.employee.findFirst({
       where: { id: currentId, orgId },
       select: { managerId: true },
     })
     currentId = mgr?.managerId ?? null
-    if (!currentId) return false
   }
   return true // chain too deep — treat as cycle
 }
