@@ -14,6 +14,15 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
+# Migrator image — full node_modules, used only by the k8s initContainer to run prisma migrate deploy.
+# Never stripped or optimised; needs every Prisma dependency including wasm and effect.
+FROM base AS migrator
+RUN apk add --no-cache openssl
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY prisma ./prisma
+CMD ["node_modules/.bin/prisma", "migrate", "deploy"]
+
 FROM base AS runner
 RUN apk add --no-cache openssl
 WORKDIR /app
@@ -23,11 +32,6 @@ RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Full node_modules from deps stage — needed for `prisma migrate deploy` in the k8s initContainer.
-# Prisma 7 scatters wasm + engine binaries across multiple subdirectories; copying selectively misses them.
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
-COPY --chown=nextjs:nodejs prisma ./prisma
 
 USER nextjs
 EXPOSE 3000
