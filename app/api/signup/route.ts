@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
+import { Prisma } from '@prisma/client'
 import { db } from '@/lib/db'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
@@ -19,15 +20,16 @@ function generateSlug(name: string): string {
     .slice(0, 48)
 }
 
+const MAX_SLUG_ATTEMPTS = 20
+
 async function ensureUniqueSlug(base: string): Promise<string> {
   let slug = base
-  let attempt = 0
-  while (true) {
+  for (let attempt = 1; attempt <= MAX_SLUG_ATTEMPTS; attempt++) {
     const existing = await db.organization.findUnique({ where: { slug } })
     if (!existing) return slug
-    attempt++
     slug = `${base}-${attempt}`
   }
+  throw new Error('Could not generate a unique slug. Try a more specific organization name.')
 }
 
 export async function POST(req: NextRequest) {
@@ -86,6 +88,13 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ slug: org.slug }, { status: 201 })
   } catch (err) {
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
+      // Slug conflict from a concurrent signup — ask user to try again
+      return NextResponse.json({ error: 'Organization name already taken. Please try a different name.' }, { status: 409 })
+    }
+    if (err instanceof Error && err.message.includes('unique slug')) {
+      return NextResponse.json({ error: err.message }, { status: 409 })
+    }
     console.error('Signup error:', err)
     return NextResponse.json({ error: 'Failed to create organization. Please try again.' }, { status: 500 })
   }

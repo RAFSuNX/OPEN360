@@ -156,7 +156,7 @@ model ReviewResponse {
   relationship    Relationship
   createdAt       DateTime     @default(now()) @map("created_at")
 
-  cycle         ReviewCycle    @relation(fields: [cycleId], references: [id])
+  cycle         ReviewCycle    @relation(fields: [cycleId], references: [id], onDelete: Cascade)
   reviewee      Employee       @relation(fields: [revieweeId], references: [id])
   question      Question?      @relation(fields: [questionId], references: [id])
   cycleQuestion CycleQuestion? @relation(fields: [cycleQuestionId], references: [id])

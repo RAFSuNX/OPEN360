@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { decrypt } from '@/lib/crypto'
 import { Relationship } from '@prisma/client'
@@ -17,11 +16,9 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ cycleId: string; employeeId: string }> }
 ) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
 
   const { cycleId, employeeId } = await params
 

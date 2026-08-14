@@ -18,19 +18,31 @@ export async function getOrgContext(slug: string): Promise<OrgContext> {
   const session = await getServerSession(authOptions)
   if (!session?.user?.email) redirect(`/login?next=/org/${slug}`)
 
-  const org = await db.organization.findUnique({
-    where: { slug, isActive: true },
-    select: { id: true, name: true, slug: true, plan: true },
-  })
-  if (!org) redirect('/not-found')
-
+  // Single query: join employee + org in one round-trip
   const employee = await db.employee.findFirst({
-    where: { email: session.user.email, orgId: org.id, isActive: true },
-    select: { id: true, email: true, isAdmin: true, isSuperAdmin: true },
+    where: {
+      email: session.user.email,
+      isActive: true,
+      org: { slug, isActive: true },
+    },
+    select: {
+      id: true,
+      email: true,
+      isAdmin: true,
+      isSuperAdmin: true,
+      org: { select: { id: true, name: true, slug: true, plan: true } },
+    },
   })
-  if (!employee) redirect(`/login?error=not-member&next=/org/${slug}`)
 
-  return { org, employee, session }
+  if (!employee) {
+    // Distinguish "org not found" from "not a member" for a better redirect
+    const orgExists = await db.organization.findUnique({ where: { slug }, select: { id: true } })
+    if (!orgExists) redirect('/not-found')
+    redirect(`/login?error=not-member&next=/org/${slug}`)
+  }
+
+  const { org, ...employeeFields } = employee
+  return { org, employee: employeeFields, session }
 }
 
 /**

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { z } from 'zod'
-import { authOptions } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { listEmployees, createEmployee, updateEmployee, EmployeeExistsError } from '@/lib/services/employees'
 import { checkEmployeeLimit, PlanLimitError } from '@/lib/plan'
 import { db } from '@/lib/db'
@@ -31,17 +30,17 @@ const DeleteEmployeeSchema = z.object({
 })
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const employees = await listEmployees(orgId)
   return NextResponse.json(employees)
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId, email: actorEmail } = auth
 
   const parsed = CreateEmployeeSchema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
@@ -51,7 +50,7 @@ export async function POST(req: NextRequest) {
   try {
     await checkEmployeeLimit(orgId)
     const employee = await createEmployee(orgId, { name, email, employeeId, department, role, managerId })
-    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'employee.create', target: email })
+    void writeAudit({ orgId, actorEmail, action: 'employee.create', target: email })
     return NextResponse.json(employee, { status: 201 })
   } catch (e) {
     if (e instanceof EmployeeExistsError) return NextResponse.json({ error: e.message }, { status: 409 })
@@ -61,9 +60,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
 
   const parsed = UpdateEmployeeSchema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
@@ -83,14 +82,14 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId, email } = auth
 
   const parsed = DeleteEmployeeSchema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
 
   await db.employee.update({ where: { id: parsed.data.id, orgId }, data: { isActive: false } })
-  void writeAudit({ orgId, actorEmail: session.user.email!, action: 'employee.delete', target: parsed.data.id })
+  void writeAudit({ orgId, actorEmail: email, action: 'employee.delete', target: parsed.data.id })
   return NextResponse.json({ ok: true })
 }

@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { addTemplateItem } from '@/lib/services/templates'
 import { QuestionType } from '@prisma/client'
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const { id: templateId } = await params
   const { text, type, ratingScale, category, sortOrder } = await req.json()
   if (!text || !type || !category || sortOrder == null) {
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'type must be RATING or OPEN_TEXT' }, { status: 400 })
   }
   try {
-    const item = await addTemplateItem(templateId, { text, type: type as QuestionType, ratingScale, category, sortOrder })
+    const item = await addTemplateItem(orgId, templateId, { text, type: type as QuestionType, ratingScale, category, sortOrder })
     return NextResponse.json(item, { status: 201 })
   } catch (e) {
     if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })

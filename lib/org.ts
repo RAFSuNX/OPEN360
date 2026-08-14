@@ -10,6 +10,10 @@ export interface OrgSettings {
 
 const SETTING_KEYS = ['org_name', 'org_logo_url', 'org_logo_email', 'org_tagline', 'onboarding_complete'] as const
 
+// All keys that can be written via updateOrgSetting — superset of OrgSettings keys
+const WRITABLE_SETTING_KEYS = [...SETTING_KEYS, 'anonymity_threshold'] as const
+export type OrgSettingKey = (typeof WRITABLE_SETTING_KEYS)[number]
+
 export async function getOrgSettings(orgId: string): Promise<OrgSettings> {
   try {
     const settings = await db.setting.findMany({
@@ -28,7 +32,7 @@ export async function getOrgSettings(orgId: string): Promise<OrgSettings> {
   }
 }
 
-export async function updateOrgSetting(orgId: string, key: string, value: string) {
+export async function updateOrgSetting(orgId: string, key: OrgSettingKey, value: string) {
   return db.setting.upsert({
     where: { orgId_key: { orgId, key } },
     update: { value },

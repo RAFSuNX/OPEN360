@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { sendEmail } from '@/lib/email'
+import { sendEmail, buildReminderEmail } from '@/lib/email'
 import { getOrgSettings } from '@/lib/org'
 
 // Called by an external cron job — protect with CRON_SECRET
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   const cycles = await db.reviewCycle.findMany({
     where: { status: 'ACTIVE', endDate: { lte: deadlineCutoff, gte: now } },
-    select: { id: true, title: true, endDate: true, orgId: true },
+    select: { id: true, title: true, endDate: true, orgId: true, org: { select: { slug: true } } },
   })
 
   if (cycles.length === 0) return NextResponse.json({ sent: 0, message: 'No cycles near deadline' })
@@ -49,21 +49,24 @@ export async function GET(req: NextRequest) {
       byReviewer.get(key)!.push(a)
     }
 
+    const dashboardUrl = `${appUrl}/org/${cycle.org.slug}/dashboard`
+    const logoUrl = `${appUrl}/api/logo?org=${cycle.org.slug}`
+    const org = { orgName: orgSettings.org_name, orgLogoUrl: logoUrl, orgTagline: orgSettings.org_tagline }
+
     for (const [email, reviewerAssignments] of byReviewer) {
       const reviewer = reviewerAssignments[0].reviewer
-      const names = reviewerAssignments.map(a => a.reviewee.name)
+      // Use the first pending assignment ID for the direct review link
+      const firstAssignmentId = reviewerAssignments[0].id
       try {
-        await sendEmail({
-          to: email,
-          subject: `Reminder: ${names.length} review${names.length > 1 ? 's' : ''} due in ${daysLeft} day${daysLeft > 1 ? 's' : ''} — ${cycle.title}`,
-          html: `
-            <p>Hi ${reviewer.name},</p>
-            <p>You have <strong>${names.length} pending review${names.length > 1 ? 's' : ''}</strong> due in <strong>${daysLeft} day${daysLeft > 1 ? 's' : ''}</strong>.</p>
-            <ul>${names.map(n => `<li>${n}</li>`).join('')}</ul>
-            <p><a href="${appUrl}/dashboard">Go to my reviews</a></p>
-            <p style="color:#888;font-size:12px;">${orgSettings.org_name || 'OPEN360'} · ${cycle.title}</p>
-          `,
+        const { subject, html } = buildReminderEmail({
+          reviewerName: reviewer.name,
+          cycleTitle: cycle.title,
+          endDate: cycle.endDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+          appUrl: dashboardUrl,
+          assignmentId: firstAssignmentId,
+          org,
         })
+        await sendEmail({ to: email, subject, html })
         sent++
       } catch (err) {
         console.error(`Reminder failed for ${email}:`, err)

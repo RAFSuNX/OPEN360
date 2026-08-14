@@ -27,23 +27,27 @@ export const authOptions: NextAuthOptions = {
       return false
     },
 
-    async jwt({ token }) {
-      if (token.email) {
-        const employee = await db.employee.findFirst({
-          where: { email: token.email as string, isActive: true },
-          select: {
-            id: true,
-            isAdmin: true,
-            isSuperAdmin: true,
-            orgId: true,
-            org: { select: { slug: true } },
-          },
-        })
-        token.employeeId  = employee?.id ?? null
-        token.isAdmin     = employee?.isAdmin ?? false
-        token.isSuperAdmin = employee?.isSuperAdmin ?? false
-        token.orgId       = employee?.orgId ?? null
-        token.orgSlug     = employee?.org?.slug ?? null
+    async jwt({ token, trigger }) {
+      // Only hit the DB on sign-in, explicit session update, or the first time
+      // (employeeId absent = stale token from before this field existed)
+      if (trigger === 'signIn' || trigger === 'signUp' || trigger === 'update' || !token.employeeId) {
+        if (token.email) {
+          const employee = await db.employee.findFirst({
+            where: { email: token.email as string, isActive: true },
+            select: {
+              id: true,
+              isAdmin: true,
+              isSuperAdmin: true,
+              orgId: true,
+              org: { select: { slug: true } },
+            },
+          })
+          token.employeeId   = employee?.id ?? null
+          token.isAdmin      = employee?.isAdmin ?? false
+          token.isSuperAdmin = employee?.isSuperAdmin ?? false
+          token.orgId        = employee?.orgId ?? null
+          token.orgSlug      = employee?.org?.slug ?? null
+        }
       }
       return token
     },
@@ -83,4 +87,24 @@ export async function requireAuth() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
   return session
+}
+
+/**
+ * API-route helper — replaces the repeated 3-line auth check in every admin route.
+ * Returns { session, orgId } on success, or a 401/403 NextResponse to return directly.
+ */
+export async function getAdminSession(): Promise<
+  | { ok: true; orgId: string; email: string }
+  | { ok: false; response: Response }
+> {
+  const { NextResponse } = await import('next/server')
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.isAdmin) {
+    return { ok: false, response: NextResponse.json({ error: 'Unauthorized' }, { status: 401 }) }
+  }
+  const orgId = session.user.orgId
+  if (!orgId) {
+    return { ok: false, response: NextResponse.json({ error: 'No organization found for this account' }, { status: 403 }) }
+  }
+  return { ok: true, orgId, email: session.user.email ?? '' }
 }

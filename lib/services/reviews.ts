@@ -17,7 +17,7 @@ export async function getAssignmentWithQuestions(assignmentId: string, reviewerI
     where: { id: assignmentId },
     include: {
       reviewee: { select: { name: true } },
-      cycle: { select: { title: true, status: true } },
+      cycle: { select: { title: true, status: true, orgId: true } },
     },
   })
 
@@ -32,9 +32,9 @@ export async function getAssignmentWithQuestions(assignmentId: string, reviewerI
     return { assignment, questions: cycleQuestions }
   }
 
-  // Legacy fallback: global active questions
+  // Legacy fallback: scoped to this org only
   const questions = await db.question.findMany({
-    where: { isActive: true },
+    where: { isActive: true, orgId: assignment.cycle.orgId },
     orderBy: { sortOrder: 'asc' },
   })
 
@@ -74,7 +74,7 @@ export async function submitReview(
     if (unknown.length > 0) throw new Error('Answers contain unknown question IDs')
     if (submittedIds.length !== cycleQuestions.length) throw new Error('Must answer all questions')
   } else {
-    const activeQuestions = await db.question.findMany({ where: { isActive: true }, select: { id: true } })
+    const activeQuestions = await db.question.findMany({ where: { isActive: true, orgId: assignment.cycle.orgId }, select: { id: true } })
     const activeIds = new Set(activeQuestions.map(q => q.id))
     const unknown = submittedIds.filter(id => !activeIds.has(id))
     if (unknown.length > 0) throw new Error('Answers contain unknown or inactive question IDs')

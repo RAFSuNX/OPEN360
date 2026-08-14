@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { copyTemplate } from '@/lib/services/templates'
 
 export async function POST(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const { id } = await params
   try {
     const copy = await copyTemplate(orgId, id)

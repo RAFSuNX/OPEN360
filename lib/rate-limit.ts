@@ -1,8 +1,5 @@
-/**
- * Simple in-memory rate limiter for Next.js API routes.
- * Uses a sliding window algorithm.
- * For production, replace with a Redis-backed implementation.
- */
+// ponytail: in-memory store — per-process only, bypassed on multi-instance/serverless deployments.
+// Production upgrade: replace with @upstash/ratelimit + @upstash/redis (drop-in, same interface).
 
 interface RateLimitEntry {
   count: number
@@ -11,14 +8,12 @@ interface RateLimitEntry {
 
 const store = new Map<string, RateLimitEntry>()
 
-// Clean up old entries every 5 minutes
-if (typeof setInterval !== 'undefined') {
-  setInterval(() => {
-    const now = Date.now()
-    for (const [key, entry] of store.entries()) {
-      if (entry.resetAt < now) store.delete(key)
-    }
-  }, 5 * 60 * 1000)
+// Purge expired entries on each call instead of relying on setInterval,
+// which never fires in short-lived serverless environments.
+function purgeExpired(now: number) {
+  for (const [key, entry] of store.entries()) {
+    if (entry.resetAt < now) store.delete(key)
+  }
 }
 
 export interface RateLimitResult {
@@ -35,6 +30,8 @@ export interface RateLimitResult {
  */
 export function rateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now()
+  purgeExpired(now)
+
   const entry = store.get(key)
 
   if (!entry || entry.resetAt < now) {

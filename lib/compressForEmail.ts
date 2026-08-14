@@ -1,4 +1,7 @@
 export function compressLogoForEmail(dataUrl: string): Promise<string> {
+  // Browser-only: Image + Canvas are not available in Node — return as-is server-side
+  if (typeof window === 'undefined') return Promise.resolve(dataUrl)
+
   return new Promise((resolve) => {
     const img = new Image()
     img.onload = () => {

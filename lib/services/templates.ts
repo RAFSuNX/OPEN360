@@ -1,9 +1,9 @@
 import { db } from '@/lib/db'
 import { QuestionType } from '@prisma/client'
 
-async function assertTemplateEditable(templateId: string) {
+async function assertTemplateEditable(templateId: string, orgId: string) {
   const t = await db.questionTemplate.findUnique({ where: { id: templateId } })
-  if (!t) throw new Error('Template not found')
+  if (!t || t.orgId !== orgId) throw new Error('Template not found')
   if (t.isDefault) throw new Error('Cannot edit the default template')
   const blocking = await db.reviewCycle.count({
     where: { templateId, status: { in: ['ACTIVE', 'CLOSED'] } },
@@ -30,17 +30,17 @@ export async function createTemplate(orgId: string, name: string, description?: 
   return db.questionTemplate.create({ data: { orgId, name, description } })
 }
 
-export async function updateTemplate(id: string, data: { name?: string; description?: string }) {
-  await assertTemplateEditable(id)
+export async function updateTemplate(orgId: string, id: string, data: { name?: string; description?: string }) {
+  await assertTemplateEditable(id, orgId)
   return db.questionTemplate.update({ where: { id }, data })
 }
 
-export async function deleteTemplate(id: string) {
+export async function deleteTemplate(orgId: string, id: string) {
   const t = await db.questionTemplate.findUnique({
     where: { id },
     include: { cycles: { select: { id: true, title: true } } },
   })
-  if (!t) throw new Error('Template not found')
+  if (!t || t.orgId !== orgId) throw new Error('Template not found')
   if (t.isDefault) throw new Error('Cannot delete the default template')
   if (t.cycles.length > 0) {
     throw new Error(`Template is used by: ${t.cycles.map(c => c.title).join(', ')}`)
@@ -72,18 +72,18 @@ export async function copyTemplate(orgId: string, id: string) {
   })
 }
 
-export async function addTemplateItem(templateId: string, data: {
+export async function addTemplateItem(orgId: string, templateId: string, data: {
   text: string
   type: QuestionType
   ratingScale?: number
   category: string
   sortOrder: number
 }) {
-  await assertTemplateEditable(templateId)
+  await assertTemplateEditable(templateId, orgId)
   return db.questionTemplateItem.create({ data: { ...data, templateId } })
 }
 
-export async function updateTemplateItem(itemId: string, data: {
+export async function updateTemplateItem(orgId: string, itemId: string, data: {
   text?: string
   type?: QuestionType
   ratingScale?: number | null
@@ -92,13 +92,13 @@ export async function updateTemplateItem(itemId: string, data: {
 }) {
   const item = await db.questionTemplateItem.findUnique({ where: { id: itemId } })
   if (!item) throw new Error('Item not found')
-  await assertTemplateEditable(item.templateId)
+  await assertTemplateEditable(item.templateId, orgId)
   return db.questionTemplateItem.update({ where: { id: itemId }, data })
 }
 
-export async function deleteTemplateItem(itemId: string) {
+export async function deleteTemplateItem(orgId: string, itemId: string) {
   const item = await db.questionTemplateItem.findUnique({ where: { id: itemId } })
   if (!item) throw new Error('Item not found')
-  await assertTemplateEditable(item.templateId)
+  await assertTemplateEditable(item.templateId, orgId)
   return db.questionTemplateItem.delete({ where: { id: itemId } })
 }

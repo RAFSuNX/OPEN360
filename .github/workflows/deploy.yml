@@ -48,14 +48,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Update image tag in deployment manifest
+      - name: Update image tag in server-hub manifests
         run: |
-          sed -i "s|image: .*rafsunx/open360.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}|g" k8s/deployment.yaml
+          git clone https://x-access-token:${{ secrets.GH_PAT }}@github.com/RAFSuNX/server-hub.git /tmp/server-hub
+          # Update image tag in both the main container and the migrate initContainer
+          sed -i "s|image: ghcr.io/rafsunx/open360:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}|g" \
+            /tmp/server-hub/k8s/open360/02-deployment.yaml
 
-      - name: Commit updated manifest
+      - name: Commit and push to server-hub
         run: |
+          cd /tmp/server-hub
           git config user.name "rafsunx"
           git config user.email "git@rafsunx.com"
-          git add k8s/deployment.yaml
+          git add k8s/open360/02-deployment.yaml
           git diff --staged --quiet || git commit -m "ci: update image to ${{ github.sha }}"
           git push

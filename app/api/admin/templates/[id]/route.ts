@@ -1,12 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { getTemplate, updateTemplate, deleteTemplate } from '@/lib/services/templates'
 
 export async function GET(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const { id } = await params
   const t = await getTemplate(orgId, id)
   if (!t) return NextResponse.json({ error: 'Not found' }, { status: 404 })
@@ -14,12 +13,13 @@ export async function GET(_: NextRequest, { params }: { params: Promise<{ id: st
 }
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const { id } = await params
   const { name, description } = await req.json()
   try {
-    return NextResponse.json(await updateTemplate(id, { name, description }))
+    return NextResponse.json(await updateTemplate(orgId, id, { name, description }))
   } catch (e) {
     if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })
     throw e
@@ -27,11 +27,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 }
 
 export async function DELETE(_: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const { id } = await params
   try {
-    await deleteTemplate(id)
+    await deleteTemplate(orgId, id)
     return NextResponse.json({ ok: true })
   } catch (e) {
     if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })

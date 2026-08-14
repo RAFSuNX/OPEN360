@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { listAssignments, autoAssign, deleteAssignment, sendCycleEmails, sendResultsEmails } from '@/lib/services/assignments'
 import { updateCycleStatus, snapshotTemplateForCycle, getCycle } from '@/lib/services/cycles'
 import { CycleStatus } from '@prisma/client'
 import { writeAudit } from '@/lib/audit'
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
 
   const cycleId = req.nextUrl.searchParams.get('cycleId')
   if (!cycleId) return NextResponse.json({ error: 'cycleId is required' }, { status: 400 })
@@ -19,16 +18,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId, email } = auth
 
   const { cycleId, action } = await req.json()
   if (!cycleId || !action) return NextResponse.json({ error: 'cycleId and action are required' }, { status: 400 })
 
   if (action === 'auto-assign') {
     const count = await autoAssign(orgId, cycleId)
-    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'assignment.auto_assign', target: cycleId })
+    void writeAudit({ orgId, actorEmail: email, action: 'assignment.auto_assign', target: cycleId })
     return NextResponse.json({ assigned: count })
   }
 
@@ -40,14 +39,14 @@ export async function POST(req: NextRequest) {
     await snapshotTemplateForCycle(orgId, cycleId)
     await updateCycleStatus(orgId, cycleId, CycleStatus.ACTIVE)
     const sent = await sendCycleEmails(orgId, cycleId)
-    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'cycle.activate', target: cycleId })
+    void writeAudit({ orgId, actorEmail: email, action: 'cycle.activate', target: cycleId })
     return NextResponse.json({ activated: true, emailsSent: sent })
   }
 
   if (action === 'close') {
     await updateCycleStatus(orgId, cycleId, CycleStatus.CLOSED)
     const sent = await sendResultsEmails(orgId, cycleId)
-    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'cycle.close', target: cycleId })
+    void writeAudit({ orgId, actorEmail: email, action: 'cycle.close', target: cycleId })
     return NextResponse.json({ closed: true, emailsSent: sent })
   }
 
@@ -55,9 +54,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
 
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })

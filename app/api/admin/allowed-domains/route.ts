@@ -1,10 +1,11 @@
-import { requireAdmin } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET() {
-  const session = await requireAdmin()
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const domains = await db.allowedDomain.findMany({
     where: { orgId },
     orderBy: { addedAt: 'asc' },
@@ -13,8 +14,9 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const session = await requireAdmin()
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
 
   const { domain } = await req.json()
   if (!domain || typeof domain !== 'string') {
@@ -34,8 +36,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await requireAdmin()
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
 
   const { domain } = await req.json()
   if (!domain) return NextResponse.json({ error: 'Domain is required' }, { status: 400 })

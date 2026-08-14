@@ -59,21 +59,32 @@ export async function buildResults(
   const getResponseQId = (r: typeof responses[number]) =>
     useCycleQuestions ? r.cycleQuestionId : r.questionId
 
-  const submittedCounts = await db.reviewAssignment.groupBy({
-    by: ['relationship'],
-    where: { cycleId, revieweeId, submitted: true },
-    _count: { _all: true },
-  })
-  const countByRel = Object.fromEntries(submittedCounts.map(r => [r.relationship, r._count._all]))
+  const [submittedCounts, assignedCounts] = await Promise.all([
+    db.reviewAssignment.groupBy({
+      by: ['relationship'],
+      where: { cycleId, revieweeId, submitted: true },
+      _count: { _all: true },
+    }),
+    db.reviewAssignment.groupBy({
+      by: ['relationship'],
+      where: { cycleId, revieweeId },
+      _count: { _all: true },
+    }),
+  ])
+  const countByRel  = Object.fromEntries(submittedCounts.map(r => [r.relationship, r._count._all]))
+  const assignedByRel = Object.fromEntries(assignedCounts.map(r => [r.relationship, r._count._all]))
 
   const result: Record<string, RelationshipResult> = {}
 
   for (const rel of [Relationship.SELF, Relationship.MANAGER, Relationship.PEER, Relationship.DIRECT_REPORT]) {
     const relResponses = responses.filter(r => r.relationship === rel)
     const submittedCount = countByRel[rel] ?? 0
+    const assignedCount  = assignedByRel[rel] ?? 0
 
     const thresholdRequired = !forAdmin && (rel === Relationship.PEER || rel === Relationship.DIRECT_REPORT)
-    if (thresholdRequired && submittedCount < threshold) {
+    // Only enforce threshold when enough reviewers are assigned to make anonymity meaningful.
+    // If fewer are assigned than the threshold, there's no privacy to protect — show the results.
+    if (thresholdRequired && assignedCount >= threshold && submittedCount < threshold) {
       result[rel] = {
         relationship: rel,
         visible: false,

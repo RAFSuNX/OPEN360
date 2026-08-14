@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
 import { z } from 'zod'
-import { authOptions } from '@/lib/auth'
+import { getAdminSession } from '@/lib/auth'
 import { listCycles, createCycle, updateCycleStatus, deleteCycle } from '@/lib/services/cycles'
 import { CycleStatus } from '@prisma/client'
 import { writeAudit } from '@/lib/audit'
@@ -23,17 +22,17 @@ const DeleteCycleSchema = z.object({
 })
 
 export async function GET() {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
   const cycles = await listCycles(orgId)
   return NextResponse.json(cycles)
 }
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId, email } = auth
 
   const parsed = CreateCycleSchema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
@@ -42,7 +41,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const cycle = await createCycle(orgId, { title, startDate, endDate, templateId })
-    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'cycle.create', target: title })
+    void writeAudit({ orgId, actorEmail: email, action: 'cycle.create', target: title })
     return NextResponse.json(cycle, { status: 201 })
   } catch (e) {
     if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })
@@ -51,9 +50,9 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId } = auth
 
   const parsed = UpdateCycleSchema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
@@ -64,16 +63,16 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
-  const session = await getServerSession(authOptions)
-  if (!session?.user?.isAdmin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  const orgId = session.user.orgId
+  const auth = await getAdminSession()
+  if (!auth.ok) return auth.response
+  const { orgId, email } = auth
 
   const parsed = DeleteCycleSchema.safeParse(await req.json())
   if (!parsed.success) return NextResponse.json({ error: 'Invalid input' }, { status: 400 })
 
   try {
     await deleteCycle(orgId, parsed.data.id)
-    void writeAudit({ orgId, actorEmail: session.user.email!, action: 'cycle.delete', target: parsed.data.id })
+    void writeAudit({ orgId, actorEmail: email, action: 'cycle.delete', target: parsed.data.id })
     return NextResponse.json({ ok: true })
   } catch (e) {
     if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })

@@ -1,5 +1,8 @@
 import { Prisma } from '@prisma/client'
+import { z } from 'zod'
 import { db } from '@/lib/db'
+
+const emailSchema = z.string().email()
 
 export class EmployeeExistsError extends Error {
   constructor(email: string) {
@@ -69,6 +72,10 @@ export async function importEmployeesFromCsv(orgId: string, rows: CsvRow[]): Pro
       errors.push(`Row missing name or email: ${JSON.stringify(row)}`)
       continue
     }
+    if (!emailSchema.safeParse(row.email).success) {
+      errors.push(`Invalid email address: ${row.email}`)
+      continue
+    }
     let managerId: string | null = null
     if (row.manager_email) {
       managerId = emailToId.get(row.manager_email) ?? null
@@ -99,6 +106,21 @@ export async function importEmployeesFromCsv(orgId: string, rows: CsvRow[]): Pro
   return { imported: validRows.length, errors }
 }
 
+async function wouldCreateManagerCycle(orgId: string, employeeId: string, newManagerId: string): Promise<boolean> {
+  let currentId: string | null = newManagerId
+  const MAX_DEPTH = 50
+  for (let i = 0; i < MAX_DEPTH; i++) {
+    if (currentId === employeeId) return true
+    const mgr = await db.employee.findFirst({
+      where: { id: currentId, orgId },
+      select: { managerId: true },
+    })
+    currentId = mgr?.managerId ?? null
+    if (!currentId) return false
+  }
+  return true // chain too deep — treat as cycle
+}
+
 export async function updateEmployee(orgId: string, id: string, data: {
   name?: string
   employeeId?: string | null
@@ -107,11 +129,27 @@ export async function updateEmployee(orgId: string, id: string, data: {
   managerId?: string | null
   isAdmin?: boolean
 }) {
+  if (data.managerId) {
+    if (data.managerId === id) throw new Error('An employee cannot be their own manager')
+    if (await wouldCreateManagerCycle(orgId, id, data.managerId)) {
+      throw new Error('This manager assignment would create a circular reporting chain')
+    }
+  }
   return db.employee.update({ where: { id, orgId }, data })
 }
 
 export async function deactivateEmployee(orgId: string, id: string) {
-  return db.employee.update({ where: { id, orgId }, data: { isActive: false } })
+  return db.$transaction([
+    // Void pending assignments where this employee is a reviewer in active cycles
+    db.reviewAssignment.deleteMany({
+      where: {
+        reviewerId: id,
+        submitted: false,
+        cycle: { orgId, status: 'ACTIVE' },
+      },
+    }),
+    db.employee.update({ where: { id, orgId }, data: { isActive: false } }),
+  ])
 }
 
 export async function getEmployee(orgId: string, id: string) {

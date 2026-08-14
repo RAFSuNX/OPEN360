@@ -77,9 +77,7 @@ export async function snapshotTemplateForCycle(orgId: string, cycleId: string) {
 }
 
 export async function deleteCycle(orgId: string, id: string) {
-  await db.$transaction([
-    db.reviewResponse.deleteMany({ where: { cycleId: id } }),
-    db.reviewAssignment.deleteMany({ where: { cycleId: id } }),
-    db.reviewCycle.delete({ where: { id, orgId } }),
-  ])
+  // Schema has onDelete: Cascade on reviewResponse, reviewAssignment, cycleQuestion → reviewCycle.
+  // After running `prisma migrate dev`, a single delete cascades everything.
+  await db.reviewCycle.delete({ where: { id, orgId } })
 }
