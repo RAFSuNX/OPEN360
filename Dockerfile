@@ -15,13 +15,13 @@ COPY . .
 RUN npm run build
 
 # Migrator image — full node_modules, used only by the k8s initContainer to run prisma migrate deploy.
-# Never stripped or optimised; needs every Prisma dependency including wasm and effect.
+# prisma.config.ts is intentionally excluded — migrations only need schema.prisma + DATABASE_URL env var.
 FROM base AS migrator
 RUN apk add --no-cache openssl
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY prisma ./prisma
-CMD ["node_modules/.bin/prisma", "migrate", "deploy"]
+CMD ["node_modules/.bin/prisma", "migrate", "deploy", "--schema", "prisma/schema.prisma"]
 
 FROM base AS runner
 RUN apk add --no-cache openssl
