@@ -1,8 +1,21 @@
 import { NextAuthOptions, getServerSession } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
+import CredentialsProvider from 'next-auth/providers/credentials'
 import { JWT } from 'next-auth/jwt'
 import { redirect } from 'next/navigation'
+import { createHash } from 'node:crypto'
 import { db } from '@/lib/db'
+
+async function isEmailAllowed(email: string): Promise<boolean> {
+  const allowed = await db.allowlist.findFirst({ where: { email } })
+  if (allowed) return true
+  const domain = email.split('@')[1]
+  if (domain) {
+    const domainAllowed = await db.allowedDomain.findFirst({ where: { domain } })
+    if (domainAllowed) return true
+  }
+  return false
+}
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -10,21 +23,43 @@ export const authOptions: NextAuthOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
+    CredentialsProvider({
+      id: 'otp',
+      name: 'Email OTP',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        code:  { label: 'Code',  type: 'text'  },
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.code) return null
+        const email = credentials.email.toLowerCase()
+        const codeHash = createHash('sha256').update(credentials.code).digest('hex')
+
+        const token = await db.otpToken.findFirst({
+          where: {
+            email,
+            codeHash,
+            usedAt: null,
+            expiresAt: { gt: new Date() },
+          },
+          orderBy: { createdAt: 'desc' },
+        })
+        if (!token) return null
+
+        // Mark used
+        await db.otpToken.update({ where: { id: token.id }, data: { usedAt: new Date() } })
+
+        return { id: email, email, name: email }
+      },
+    }),
   ],
   callbacks: {
-    async signIn({ user }) {
+    async signIn({ user, account }) {
       const email = user.email
       if (!email) return false
-      // Check individual email allowlist (any org)
-      const allowed = await db.allowlist.findFirst({ where: { email } })
-      if (allowed) return true
-      // Check domain allowlist (any org)
-      const domain = email.split('@')[1]
-      if (domain) {
-        const domainAllowed = await db.allowedDomain.findFirst({ where: { domain } })
-        if (domainAllowed) return true
-      }
-      return false
+      // OTP provider already verified — skip allowlist check
+      if (account?.provider === 'otp') return true
+      return isEmailAllowed(email)
     },
 
     async jwt({ token, trigger }) {
