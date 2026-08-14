@@ -5,6 +5,7 @@ import { JWT } from 'next-auth/jwt'
 import { redirect } from 'next/navigation'
 import { createHash } from 'node:crypto'
 import { db } from '@/lib/db'
+import { redis } from '@/lib/redis'
 
 async function isEmailAllowed(email: string): Promise<boolean> {
   const allowed = await db.allowlist.findFirst({ where: { email } })
@@ -33,21 +34,13 @@ export const authOptions: NextAuthOptions = {
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.code) return null
         const email = credentials.email.toLowerCase()
-        const codeHash = createHash('sha256').update(credentials.code).digest('hex')
+        const codeHash = createHash('sha256').update(credentials.code.trim()).digest('hex')
 
-        const token = await db.otpToken.findFirst({
-          where: {
-            email,
-            codeHash,
-            usedAt: null,
-            expiresAt: { gt: new Date() },
-          },
-          orderBy: { createdAt: 'desc' },
-        })
-        if (!token) return null
+        const stored = await redis.get(`otp:${email}`)
+        if (!stored || stored !== codeHash) return null
 
-        // Mark used
-        await db.otpToken.update({ where: { id: token.id }, data: { usedAt: new Date() } })
+        // Delete after use — one-time only
+        await redis.del(`otp:${email}`)
 
         return { id: email, email, name: email }
       },

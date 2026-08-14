@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { createHash, randomInt } from 'node:crypto'
+import { redis } from '@/lib/redis'
 import { db } from '@/lib/db'
 import { sendEmail } from '@/lib/email'
 import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
 const Schema = z.object({ email: z.string().email().toLowerCase() })
+
+const OTP_TTL = 10 * 60 // 10 minutes in seconds
 
 function hashCode(code: string) {
   return createHash('sha256').update(code).digest('hex')
@@ -27,17 +30,14 @@ export async function POST(req: NextRequest) {
     const domain = email.split('@')[1]
     const domainAllowed = domain ? await db.allowedDomain.findFirst({ where: { domain } }) : null
     if (!domainAllowed) {
-      // Don't reveal whether email exists — same response either way
+      // Don't reveal whether email exists — return ok either way
       return NextResponse.json({ ok: true })
     }
   }
 
   const code = String(randomInt(100000, 999999))
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000) // 10 min
-
-  await db.otpToken.create({
-    data: { email, codeHash: hashCode(code), expiresAt },
-  })
+  // Store hash in Redis with TTL — key is per-email, one active code at a time
+  await redis.set(`otp:${email}`, hashCode(code), 'EX', OTP_TTL)
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   await sendEmail({
@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         <div style="background:#f4f1ea;border-radius:10px;padding:24px;text-align:center;margin-bottom:24px">
           <span style="font-size:36px;font-weight:700;letter-spacing:8px;font-family:monospace">${code}</span>
         </div>
-        <p style="color:#999;font-size:12px">If you didn't request this, you can safely ignore this email.</p>
+        <p style="color:#999;font-size:12px">If you didn't request this, you can safely ignore this email. Sent from <a href="${appUrl}">${appUrl}</a></p>
       </div>
     `,
   })
