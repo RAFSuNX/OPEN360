@@ -24,11 +24,9 @@ COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Prisma CLI + migration engine — required for `prisma migrate deploy` in k8s initContainer.
-# The standalone bundle includes @prisma/client but not the CLI or migration engine.
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=deps --chown=nextjs:nodejs /app/node_modules/@prisma ./node_modules/@prisma
+# Full node_modules from deps stage — needed for `prisma migrate deploy` in the k8s initContainer.
+# Prisma 7 scatters wasm + engine binaries across multiple subdirectories; copying selectively misses them.
+COPY --from=deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --chown=nextjs:nodejs prisma ./prisma
 
 USER nextjs
