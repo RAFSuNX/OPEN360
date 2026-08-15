@@ -45,9 +45,10 @@ function LoginContent() {
       email: email.trim().toLowerCase(),
       code: code.trim(),
       redirect: false,
+      callbackUrl: '/',
     })
     if (result?.ok) {
-      window.location.href = result.url ?? '/'
+      window.location.href = '/'
     } else {
       setOtpError('Invalid or expired code. Please try again.')
       setStep('otp-sent')
