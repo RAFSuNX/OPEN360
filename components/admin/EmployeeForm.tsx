@@ -2,7 +2,7 @@
 import { useState } from 'react'
 
 interface Manager { id: string; name: string }
-interface Props { managers: Manager[]; onSuccess: () => void }
+interface Props { managers: Manager[]; onSuccess: () => void; orgSlug?: string }
 
 const inputStyle = {
   width: '100%', background: 'var(--surface-card)', color: 'var(--ink)',
@@ -10,14 +10,15 @@ const inputStyle = {
   padding: '9px 12px', fontSize: '13px', fontFamily: 'inherit', outline: 'none',
 }
 
-export function EmployeeForm({ managers, onSuccess }: Props) {
+export function EmployeeForm({ managers, onSuccess, orgSlug }: Props) {
   const [form, setForm] = useState({ name: '', email: '', employeeId: '', department: '', role: '', managerId: '' })
   const [error, setError] = useState('')
+  const [planLimit, setPlanLimit] = useState(false)
   const [loading, setLoading] = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    setLoading(true); setError('')
+    setLoading(true); setError(''); setPlanLimit(false)
     try {
       const res = await fetch('/api/admin/employees', {
         method: 'POST',
@@ -29,7 +30,11 @@ export function EmployeeForm({ managers, onSuccess }: Props) {
         onSuccess()
       } else {
         const data = await res.json()
-        setError(data.error || 'Failed to add employee')
+        if (res.status === 403) {
+          setPlanLimit(true)
+        } else {
+          setError(data.error || 'Failed to add employee')
+        }
       }
     } catch {
       setError('Network error. Please try again.')
@@ -42,6 +47,19 @@ export function EmployeeForm({ managers, onSuccess }: Props) {
     <form onSubmit={handleSubmit} className="card" style={{ padding: '20px', minWidth: '280px' }}>
       <p className="section-label" style={{ marginBottom: '16px' }}>Add Employee</p>
       {error && <p className="text-error" style={{ marginBottom: '12px' }}>{error}</p>}
+      {planLimit && (
+        <div style={{ marginBottom: '12px', padding: '12px 14px', background: 'var(--error-bg)', border: '1px solid var(--error-border)', borderRadius: '8px' }}>
+          <p style={{ fontSize: '13px', color: 'var(--semantic-error)', margin: '0 0 8px', fontWeight: '600' }}>
+            Employee limit reached (Free plan: 10 max)
+          </p>
+          <a
+            href={orgSlug ? `/org/${orgSlug}/admin/settings` : '/admin/settings'}
+            style={{ fontSize: '13px', color: 'var(--primary)', fontWeight: '600', textDecoration: 'none' }}
+          >
+            Upgrade to Pro →
+          </a>
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         <input required placeholder="Full name" value={form.name}
           onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={inputStyle} />

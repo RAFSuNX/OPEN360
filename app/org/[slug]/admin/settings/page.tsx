@@ -2,6 +2,7 @@ import { requireOrgAdmin } from '@/lib/org-context'
 import { getOrgSettings } from '@/lib/org'
 import { getAuditLogs } from '@/lib/audit'
 import { SettingsForm } from '@/app/admin/settings/SettingsForm'
+import { BillingSection } from './BillingSection'
 
 export default async function OrgSettingsPage({
   params,
@@ -29,6 +30,8 @@ export default async function OrgSettingsPage({
           </span>
         </p>
       </div>
+
+      <BillingSection plan={org.plan} slug={slug} />
 
       <SettingsForm initialSettings={settingsMap} />
 

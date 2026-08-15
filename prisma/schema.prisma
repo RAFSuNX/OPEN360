@@ -10,12 +10,13 @@ datasource db {
 // ─── Platform ────────────────────────────────────────────────────────────────
 
 model Organization {
-  id        String   @id @default(uuid())
-  name      String
-  slug      String   @unique
-  plan      OrgPlan  @default(FREE)
-  isActive  Boolean  @default(true) @map("is_active")
-  createdAt DateTime @default(now()) @map("created_at")
+  id               String   @id @default(uuid())
+  name             String
+  slug             String   @unique
+  plan             OrgPlan  @default(FREE)
+  isActive         Boolean  @default(true) @map("is_active")
+  stripeCustomerId String?  @map("stripe_customer_id")
+  createdAt        DateTime @default(now()) @map("created_at")
 
   employees         Employee[]
   reviewCycles      ReviewCycle[]
