@@ -69,8 +69,11 @@ export async function POST(req: NextRequest) {
           isAdmin: true,
         },
       })
-      await tx.setting.create({
-        data: { orgId: org.id, key: 'onboarding_complete', value: 'false' },
+      await tx.setting.createMany({
+        data: [
+          { orgId: org.id, key: 'onboarding_complete', value: 'true' },
+          { orgId: org.id, key: 'org_name', value: orgName },
+        ],
       })
       return { org }
     })
