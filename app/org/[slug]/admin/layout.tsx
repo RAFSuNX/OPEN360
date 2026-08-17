@@ -1,6 +1,7 @@
 import { requireOrgAdmin } from '@/lib/org-context'
 import { getOrgSettings } from '@/lib/org'
 import NavLink from '@/components/NavLink'
+import Link from 'next/link'
 
 const navItems = [
   { href: 'admin',             label: 'Overview', exact: true },
@@ -46,10 +47,12 @@ export default async function OrgAdminLayout({
             OPEN<span style={{ color: 'var(--primary)' }}>360</span>
           </span>
           <span style={{ width: '1px', height: '14px', background: 'rgba(255,255,255,0.12)' }} />
-          {logoUrl
-            ? <img src={logoUrl} alt={displayName} style={{ height: '18px', maxWidth: '72px', objectFit: 'contain' }} />
-            : <span style={{ fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.55)' }}>{displayName}</span>
-          }
+          <Link href="/orgs" style={{ textDecoration: 'none' }}>
+            {logoUrl
+              ? <img src={logoUrl} alt={displayName} style={{ height: '18px', maxWidth: '72px', objectFit: 'contain' }} />
+              : <span style={{ fontSize: '13px', fontWeight: '500', color: 'rgba(255,255,255,0.55)' }}>{displayName}</span>
+            }
+          </Link>
         </div>
 
         {/* Nav links */}
