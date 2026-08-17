@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     if (orgId) {
       await db.organization.update({
         where: { id: orgId },
-        data: { plan: 'PRO', stripeCustomerId: session.customer as string },
+        data: { plan: 'EXTENDED', stripeCustomerId: session.customer as string },
       })
     }
   }

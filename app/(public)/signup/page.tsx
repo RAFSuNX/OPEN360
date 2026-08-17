@@ -20,8 +20,8 @@ const PLANS = [
     features: ['Up to 10 employees', 'Unlimited review cycles', 'Email notifications', 'All question types'],
   },
   {
-    id: 'PRO',
-    label: 'Pro',
+    id: 'EXTENDED',
+    label: 'Extended',
     price: '$29 / month',
     features: ['Unlimited employees', 'Priority support', 'Advanced analytics', 'Custom branding'],
     highlight: true,
@@ -39,7 +39,7 @@ export default function SignupPage() {
 
   const [orgName, setOrgName] = useState('')
   const [email, setEmail]     = useState('')
-  const [plan, setPlan]       = useState<'FREE' | 'PRO'>('FREE')
+  const [plan, setPlan]       = useState<'FREE' | 'EXTENDED'>('FREE')
   const [tos, setTos]         = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState('')
@@ -148,7 +148,7 @@ export default function SignupPage() {
                   <button
                     key={p.id}
                     type="button"
-                    onClick={() => setPlan(p.id as 'FREE' | 'PRO')}
+                    onClick={() => setPlan(p.id as 'FREE' | 'EXTENDED')}
                     style={{
                       padding: '16px',
                       border: plan === p.id ? '2px solid var(--primary)' : '1px solid var(--hairline)',
@@ -247,7 +247,7 @@ export default function SignupPage() {
               className="btn-primary"
               style={{ width: '100%', opacity: loading || !tos ? 0.55 : 1, cursor: loading || !tos ? 'not-allowed' : 'pointer' }}
             >
-              {loading ? 'Creating workspace...' : `Create workspace — ${plan === 'PRO' ? '$29/mo' : 'Free'}`}
+              {loading ? 'Creating workspace...' : `Create workspace — ${plan === 'EXTENDED' ? '$29/mo' : 'Free'}`}
             </button>
           </form>
 

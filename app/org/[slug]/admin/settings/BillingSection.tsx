@@ -34,13 +34,13 @@ function BillingContent({ plan, slug }: { plan: string; slug: string }) {
           <p className="section-label" style={{ marginBottom: '8px' }}>Plan & Billing</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
             <h2 style={{ fontSize: '18px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>
-              {plan === 'PRO' ? 'Pro' : 'Free'} Plan
+              {plan === 'EXTENDED' ? 'Extended' : 'Free'} Plan
             </h2>
             <span style={{
               fontSize: '10px', fontWeight: '700', letterSpacing: '0.08em',
               padding: '2px 8px', borderRadius: '9999px',
-              background: plan === 'PRO' ? 'var(--primary)' : 'var(--surface-strong)',
-              color: plan === 'PRO' ? 'white' : 'var(--muted)',
+              background: plan === 'EXTENDED' ? 'var(--primary)' : 'var(--surface-strong)',
+              color: plan === 'EXTENDED' ? 'white' : 'var(--muted)',
             }}>
               {plan}
             </span>
@@ -48,11 +48,11 @@ function BillingContent({ plan, slug }: { plan: string; slug: string }) {
 
           {plan === 'FREE' ? (
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
-              Free plan — up to 10 employees. Upgrade to Pro for unlimited.
+              Free plan — up to 10 employees. Upgrade to Extended Plan for unlimited.
             </p>
           ) : (
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
-              You're on the Pro plan. All features unlocked.
+              You're on the Extended plan. All features unlocked.
             </p>
           )}
         </div>
@@ -65,7 +65,7 @@ function BillingContent({ plan, slug }: { plan: string; slug: string }) {
               className="btn-primary"
               style={{ opacity: loading ? 0.65 : 1, cursor: loading ? 'not-allowed' : 'pointer' }}
             >
-              {loading ? 'Loading...' : 'Upgrade to Pro — $29/mo'}
+              {loading ? 'Loading...' : 'Upgrade to Extended Plan — $29/mo'}
             </button>
           </div>
         )}
@@ -74,7 +74,7 @@ function BillingContent({ plan, slug }: { plan: string; slug: string }) {
       {plan === 'FREE' && (
         <div style={{ marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--hairline)' }}>
           <p style={{ fontSize: '11px', fontWeight: '700', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
-            Pro includes
+            Extended Plan includes
           </p>
           <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
             {PRO_FEATURES.map(f => (
@@ -91,7 +91,7 @@ function BillingContent({ plan, slug }: { plan: string; slug: string }) {
 
       {justUpgraded && (
         <div style={{ marginTop: '16px', padding: '12px 16px', background: 'var(--semantic-success-bg, #edfaf3)', borderRadius: '8px', fontSize: '13px', color: 'var(--semantic-success)', fontWeight: '500' }}>
-          🎉 You're now on Pro! All limits have been removed.
+          🎉 You're now on Extended Plan! All limits have been removed.
         </div>
       )}
     </div>

@@ -23,11 +23,11 @@ export async function checkEmployeeLimit(orgId: string): Promise<void> {
 
   if (org.plan === 'FREE' && org._count.employees >= FREE_LIMITS.employees) {
     throw new PlanLimitError(
-      `Free plan is limited to ${FREE_LIMITS.employees} employees. Upgrade to Pro to add more.`
+      `Free plan is limited to ${FREE_LIMITS.employees} employees. Upgrade to Extended Plan to add more.`
     )
   }
 }
 
 export function isPro(plan: string): boolean {
-  return plan === 'PRO'
+  return plan === 'EXTENDED'
 }

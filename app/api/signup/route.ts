@@ -7,7 +7,7 @@ import { rateLimit, getClientIp } from '@/lib/rate-limit'
 const SignupSchema = z.object({
   orgName: z.string().min(1).max(200).trim(),
   adminEmail: z.string().email().max(300).toLowerCase(),
-  plan: z.enum(['FREE', 'PRO']).default('FREE'),
+  plan: z.enum(['FREE', 'EXTENDED']).default('FREE'),
 })
 
 function generateSlug(name: string): string {

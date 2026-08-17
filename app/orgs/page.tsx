@@ -76,8 +76,8 @@ export default async function OrgsPage() {
                     </span>
                     <span style={{
                       fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '9999px',
-                      background: m.org.plan === 'PRO' ? 'var(--primary)' : 'var(--surface-strong)',
-                      color: m.org.plan === 'PRO' ? 'white' : 'var(--muted)',
+                      background: m.org.plan === 'EXTENDED' ? 'var(--primary)' : 'var(--surface-strong)',
+                      color: m.org.plan === 'EXTENDED' ? 'white' : 'var(--muted)',
                       letterSpacing: '0.06em',
                     }}>
                       {m.org.plan}

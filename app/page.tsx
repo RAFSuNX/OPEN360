@@ -224,11 +224,11 @@ function HomePage() {
                 highlight: false,
               },
               {
-                plan: 'Pro',
+                plan: 'Extended',
                 price: '$29',
                 period: 'per month',
                 features: ['Unlimited employees', 'Everything in Free', 'Priority support', 'Advanced analytics', 'Custom branding', 'SSO (coming soon)'],
-                cta: 'Start Pro trial',
+                cta: 'Start Extended trial',
                 href: '/signup?plan=PRO',
                 highlight: true,
               },

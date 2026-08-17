@@ -32,7 +32,7 @@ model Organization {
 
 enum OrgPlan {
   FREE
-  PRO
+  EXTENDED
 }
 
 // ─── Access Control ───────────────────────────────────────────────────────────

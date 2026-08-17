@@ -14,7 +14,7 @@ export async function POST() {
     select: { plan: true, slug: true, stripeCustomerId: true, name: true },
   })
   if (!org) return NextResponse.json({ error: 'Org not found' }, { status: 404 })
-  if (org.plan === 'PRO') return NextResponse.json({ error: 'Already on Pro' }, { status: 400 })
+  if (org.plan === 'EXTENDED') return NextResponse.json({ error: 'Already on Extended Plan' }, { status: 400 })
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
 

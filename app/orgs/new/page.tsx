@@ -16,7 +16,7 @@ export default function NewOrgPage() {
   const { status } = useSession()
   const router = useRouter()
   const [orgName, setOrgName] = useState('')
-  const [plan, setPlan] = useState<'FREE' | 'PRO'>('FREE')
+  const [plan, setPlan] = useState<'FREE' | 'EXTENDED'>('FREE')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -73,7 +73,7 @@ export default function NewOrgPage() {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             {/* Plan */}
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-              {(['FREE', 'PRO'] as const).map(p => (
+              {(['FREE', 'EXTENDED'] as const).map(p => (
                 <button
                   key={p}
                   type="button"
@@ -88,7 +88,7 @@ export default function NewOrgPage() {
                     transition: 'all 0.15s',
                   }}
                 >
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '2px' }}>{p === 'FREE' ? 'Free' : 'Pro'}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--ink)', marginBottom: '2px' }}>{p === 'FREE' ? 'Free' : 'Extended'}</div>
                   <div style={{ fontSize: '11px', color: plan === p ? 'var(--primary)' : 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>
                     {p === 'FREE' ? '$0 / month' : '$29 / month'}
                   </div>

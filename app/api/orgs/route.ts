@@ -7,7 +7,7 @@ import { db } from '@/lib/db'
 
 const Schema = z.object({
   orgName: z.string().min(1).max(200).trim(),
-  plan: z.enum(['FREE', 'PRO']).default('FREE'),
+  plan: z.enum(['FREE', 'EXTENDED']).default('FREE'),
 })
 
 function generateSlug(name: string): string {

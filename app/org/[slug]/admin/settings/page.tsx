@@ -25,7 +25,7 @@ export default async function OrgSettingsPage({
           Settings
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '6px' }}>
-          Plan: <span style={{ fontWeight: '600', color: org.plan === 'PRO' ? 'var(--primary)' : 'var(--ink)' }}>
+          Plan: <span style={{ fontWeight: '600', color: org.plan === 'EXTENDED' ? 'var(--primary)' : 'var(--ink)' }}>
             {org.plan}
           </span>
         </p>
