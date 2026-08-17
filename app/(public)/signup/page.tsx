@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { useState, useEffect } from 'react'
+import { signIn, useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 
 function generateSlug(name: string): string {
@@ -28,6 +29,14 @@ const PLANS = [
 ]
 
 export default function SignupPage() {
+  const { data: session } = useSession()
+  const router = useRouter()
+
+  // Logged-in users who already have an org must create additional orgs from /orgs/new
+  useEffect(() => {
+    if (session?.user?.id) router.replace('/orgs')
+  }, [session, router])
+
   const [orgName, setOrgName] = useState('')
   const [email, setEmail]     = useState('')
   const [plan, setPlan]       = useState<'FREE' | 'PRO'>('FREE')

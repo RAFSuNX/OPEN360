@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { Prisma } from '@prisma/client'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { rateLimit, getClientIp } from '@/lib/rate-limit'
 
-const SignupSchema = z.object({
+const Schema = z.object({
   orgName: z.string().min(1).max(200).trim(),
-  adminEmail: z.string().email().max(300).toLowerCase(),
   plan: z.enum(['FREE', 'PRO']).default('FREE'),
 })
 
 function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
+  return name.toLowerCase().trim()
     .replace(/[^a-z0-9\s-]/g, '')
     .replace(/\s+/g, '-')
     .replace(/-+/g, '-')
@@ -33,58 +31,46 @@ async function ensureUniqueSlug(base: string): Promise<string> {
 }
 
 export async function POST(req: NextRequest) {
-  // Rate limit: 5 signups per IP per hour
-  const ip = getClientIp(req)
-  const rl = rateLimit(`signup:${ip}`, 5, 60 * 60 * 1000)
-  if (!rl.allowed) {
-    return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 })
-  }
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const parsed = SignupSchema.safeParse(await req.json())
+  const email = session.user.email
+
+  const parsed = Schema.safeParse(await req.json())
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
-  const { orgName, adminEmail, plan } = parsed.data
+  const { orgName, plan } = parsed.data
 
   const baseSlug = generateSlug(orgName)
-  if (!baseSlug) {
-    return NextResponse.json({ error: 'Organization name must contain letters or numbers' }, { status: 400 })
-  }
+  if (!baseSlug) return NextResponse.json({ error: 'Organization name must contain letters or numbers' }, { status: 400 })
   const slug = await ensureUniqueSlug(baseSlug)
 
   try {
     const { org } = await db.$transaction(async tx => {
-      const org = await tx.organization.create({
-        data: { name: orgName, slug, plan },
-      })
-      await tx.allowlist.create({
-        data: { orgId: org.id, email: adminEmail },
-      })
+      const org = await tx.organization.create({ data: { name: orgName, slug, plan } })
+      await tx.allowlist.create({ data: { orgId: org.id, email } })
       await tx.employee.create({
         data: {
           orgId: org.id,
-          name: adminEmail.split('@')[0],
-          email: adminEmail,
+          name: email.split('@')[0],
+          email,
           isAdmin: true,
         },
       })
-      await tx.setting.create({
-        data: { orgId: org.id, key: 'onboarding_complete', value: 'false' },
-      })
+      await tx.setting.create({ data: { orgId: org.id, key: 'onboarding_complete', value: 'false' } })
       return { org }
     })
-
     return NextResponse.json({ slug: org.slug }, { status: 201 })
   } catch (err) {
     if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === 'P2002') {
-      // Slug conflict from a concurrent signup — ask user to try again
-      return NextResponse.json({ error: 'Organization name already taken. Please try a different name.' }, { status: 409 })
+      return NextResponse.json({ error: 'Organization name already taken. Try a different name.' }, { status: 409 })
     }
     if (err instanceof Error && err.message.includes('unique slug')) {
       return NextResponse.json({ error: err.message }, { status: 409 })
     }
-    console.error('Signup error:', err)
+    console.error('Create org error:', err)
     return NextResponse.json({ error: 'Failed to create organization. Please try again.' }, { status: 500 })
   }
 }

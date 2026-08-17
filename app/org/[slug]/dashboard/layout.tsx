@@ -84,15 +84,26 @@ export default async function OrgDashboardLayout({
           )}
         </div>
 
-        {/* User email */}
-        <div style={{ flexShrink: 0, marginLeft: '16px' }}>
+        {/* User + switch org */}
+        <div style={{ flexShrink: 0, marginLeft: '16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
           <span className="nav-email" style={{
             fontSize: '11px', color: 'rgba(255,255,255,0.45)',
             fontFamily: "'JetBrains Mono', monospace",
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '200px', display: 'block',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '180px', display: 'block',
           }}>
             {session.user.email}
           </span>
+          <Link href="/orgs" title="Switch workspace" style={{
+            display: 'flex', alignItems: 'center', gap: '4px',
+            fontSize: '11px', color: 'rgba(255,255,255,0.35)', textDecoration: 'none',
+            padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)',
+            whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s',
+          }}>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M8 3H5a2 2 0 00-2 2v3m18 0V5a2 2 0 00-2-2h-3m0 18h3a2 2 0 002-2v-3M3 16v3a2 2 0 002 2h3"/>
+            </svg>
+            Switch
+          </Link>
         </div>
       </nav>
 

@@ -10,20 +10,21 @@ export default async function RootPage() {
   const session = await getServerSession(authOptions)
 
   if (session?.user?.email) {
-    const employee = await db.employee.findFirst({
+    const employees = await db.employee.findMany({
       where: { email: session.user.email, isActive: true },
       include: { org: { select: { slug: true } } },
+      orderBy: { org: { createdAt: 'asc' } },
     })
-    if (employee) {
-      const slug = employee.org.slug
-      if (employee.isAdmin) {
-        const org = await getOrgSettings(employee.orgId)
-        if (!isOnboardingComplete(org)) redirect(`/org/${slug}/onboarding`)
-        redirect(`/org/${slug}/admin`)
-      }
-      redirect(`/org/${slug}/dashboard`)
+    if (employees.length === 0) redirect('/signup')
+    if (employees.length > 1) redirect('/orgs')
+    const employee = employees[0]
+    const slug = employee.org.slug
+    if (employee.isAdmin) {
+      const org = await getOrgSettings(employee.orgId)
+      if (!isOnboardingComplete(org)) redirect(`/org/${slug}/onboarding`)
+      redirect(`/org/${slug}/admin`)
     }
-    redirect('/signup')
+    redirect(`/org/${slug}/dashboard`)
   }
 
   return <HomePage />

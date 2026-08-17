@@ -57,10 +57,9 @@ export const authOptions: NextAuthOptions = {
 
     async jwt({ token, trigger }) {
       // Only hit the DB on sign-in, explicit session update, or the first time
-      // (employeeId absent = stale token from before this field existed)
       if (trigger === 'signIn' || trigger === 'signUp' || trigger === 'update' || !token.employeeId) {
         if (token.email) {
-          const employee = await db.employee.findFirst({
+          const employees = await db.employee.findMany({
             where: { email: token.email as string, isActive: true },
             select: {
               id: true,
@@ -70,11 +69,15 @@ export const authOptions: NextAuthOptions = {
               org: { select: { slug: true } },
             },
           })
-          token.employeeId   = employee?.id ?? null
-          token.isAdmin      = employee?.isAdmin ?? false
-          token.isSuperAdmin = employee?.isSuperAdmin ?? false
-          token.orgId        = employee?.orgId ?? null
-          token.orgSlug      = employee?.org?.slug ?? null
+          // For single-org users, store org context in token for convenience.
+          // For multi-org users, leave orgId/orgSlug null — org context is derived from URL slug.
+          const single = employees.length === 1 ? employees[0] : null
+          token.employeeId   = single?.id ?? (employees[0]?.id ?? null)
+          token.isAdmin      = single?.isAdmin ?? false
+          token.isSuperAdmin = employees.some(e => e.isSuperAdmin)
+          token.orgId        = single?.orgId ?? null
+          token.orgSlug      = single?.org?.slug ?? null
+          token.multiOrg     = employees.length > 1
         }
       }
       return token
@@ -88,12 +91,14 @@ export const authOptions: NextAuthOptions = {
           isSuperAdmin: boolean
           orgId: string
           orgSlug: string
+          multiOrg: boolean
         }
-        session.user.id          = t.employeeId ?? ''
-        session.user.isAdmin     = t.isAdmin ?? false
+        session.user.id           = t.employeeId ?? ''
+        session.user.isAdmin      = t.isAdmin ?? false
         session.user.isSuperAdmin = t.isSuperAdmin ?? false
-        session.user.orgId       = t.orgId ?? ''
-        session.user.orgSlug     = t.orgSlug ?? ''
+        session.user.orgId        = t.orgId ?? ''
+        session.user.orgSlug      = t.orgSlug ?? ''
+        session.user.multiOrg     = t.multiOrg ?? false
       }
       return session
     },
@@ -107,7 +112,9 @@ export const authOptions: NextAuthOptions = {
 export async function requireAdmin() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect('/login')
-  if (!session.user.isAdmin) redirect(`/org/${session.user.orgSlug}/dashboard`)
+  if (!session.user.isAdmin) {
+    redirect(session.user.orgSlug ? `/org/${session.user.orgSlug}/dashboard` : '/orgs')
+  }
   return session
 }
 

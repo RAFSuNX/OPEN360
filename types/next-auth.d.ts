@@ -11,6 +11,7 @@ declare module 'next-auth' {
       isSuperAdmin: boolean
       orgId: string
       orgSlug: string
+      multiOrg: boolean
     }
   }
 }
@@ -22,5 +23,6 @@ declare module 'next-auth/jwt' {
     isSuperAdmin?: boolean
     orgId?: string | null
     orgSlug?: string | null
+    multiOrg?: boolean
   }
 }
