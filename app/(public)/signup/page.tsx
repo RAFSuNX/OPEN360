@@ -34,7 +34,8 @@ export default function SignupPage() {
 
   // Logged-in users who already have an org must create additional orgs from /orgs/new
   useEffect(() => {
-    if (session?.user?.id) router.replace('/orgs')
+    // Only redirect if user genuinely has an org (orgId reflects real DB state)
+    if (session?.user?.orgId || session?.user?.multiOrg) router.replace('/orgs')
   }, [session, router])
 
   const [orgName, setOrgName] = useState('')

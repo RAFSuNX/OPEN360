@@ -14,7 +14,7 @@ export default async function OrgsPage() {
     orderBy: { org: { createdAt: 'asc' } },
   })
 
-  if (memberships.length === 0) redirect('/signup')
+  if (memberships.length === 0) redirect('/orgs/new')
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', flexDirection: 'column' }}>
