@@ -15,7 +15,8 @@ export default async function RootPage() {
       include: { org: { select: { slug: true } } },
       orderBy: { org: { createdAt: 'asc' } },
     })
-    if (employees.length === 0) redirect('/signup')
+    // 0 employees with a live session = stale JWT. Sign out so they start fresh.
+    if (employees.length === 0) redirect('/api/auth/signout?callbackUrl=/signup')
     if (employees.length > 1) redirect('/orgs')
     const employee = employees[0]
     const slug = employee.org.slug
