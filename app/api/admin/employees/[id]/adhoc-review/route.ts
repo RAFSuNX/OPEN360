@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getAdminSession } from '@/lib/auth'
 import { db } from '@/lib/db'
 import { mapAssignments } from '@/lib/assignments'
+import { snapshotTemplateForCycle } from '@/lib/services/cycles'
 import { sendEmail, buildReviewInviteEmail } from '@/lib/email'
 import { Relationship } from '@prisma/client'
 
@@ -52,10 +53,20 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (isNaN(parsedEnd.getTime())) return NextResponse.json({ error: 'Invalid end date' }, { status: 400 })
   if (parsedEnd <= now) return NextResponse.json({ error: 'End date must be in the future' }, { status: 400 })
 
+  // Find the org's first template to snapshot questions from
+  const template = await db.questionTemplate.findFirst({
+    where: { orgId },
+    orderBy: { createdAt: 'asc' },
+    select: { id: true },
+  })
+  if (!template) return NextResponse.json({ error: 'No question template found. Create a template before sending ad-hoc reviews.' }, { status: 400 })
+
   const cycleTitle = title || `Ad-hoc: ${reviewee.name} - ${now.toLocaleDateString()}`
   const cycle = await db.reviewCycle.create({
-    data: { orgId, title: cycleTitle, startDate: now, endDate: parsedEnd, status: 'ACTIVE' },
+    data: { orgId, title: cycleTitle, startDate: now, endDate: parsedEnd, status: 'ACTIVE', templateId: template.id },
   })
+
+  await snapshotTemplateForCycle(orgId, cycle.id)
 
   // Create assignments
   await db.reviewAssignment.createMany({
