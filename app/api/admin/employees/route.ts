@@ -50,6 +50,12 @@ export async function POST(req: NextRequest) {
   try {
     await checkEmployeeLimit(orgId)
     const employee = await createEmployee(orgId, { name, email, employeeId, department, role, managerId })
+    // Auto-allowlist the employee's email so they can log in immediately
+    await db.allowlist.upsert({
+      where: { orgId_email: { orgId, email } },
+      update: {},
+      create: { orgId, email },
+    })
     void writeAudit({ orgId, actorEmail, action: 'employee.create', target: email })
     return NextResponse.json(employee, { status: 201 })
   } catch (e) {

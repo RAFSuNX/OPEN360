@@ -55,8 +55,8 @@ export default async function OrgAdminLayout({
           </Link>
         </div>
 
-        {/* Nav links */}
-        <div className="nav-links nav-dark" style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, overflow: 'hidden' }}>
+        {/* Nav links — scrollable so they never hide behind the user badge */}
+        <div className="nav-links nav-dark" style={{ display: 'flex', alignItems: 'center', gap: '2px', flex: 1, overflowX: 'auto', scrollbarWidth: 'none' }}>
           {navItems.map(({ href, label, exact }) => (
             <NavLink key={href} href={`/org/${slug}/${href}`} exact={exact}>{label}</NavLink>
           ))}
