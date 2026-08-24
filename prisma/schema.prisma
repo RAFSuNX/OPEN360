@@ -199,6 +199,7 @@ model QuestionTemplateItem {
   template       QuestionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   cycleQuestions CycleQuestion[]
 
+  @@index([templateId, sortOrder])
   @@map("question_template_items")
 }
 
@@ -237,7 +238,7 @@ model Question {
   org       Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
   responses ReviewResponse[]
 
-  @@unique([orgId, sortOrder])
+  @@index([orgId, sortOrder])
   @@index([orgId])
   @@map("questions")
 }
