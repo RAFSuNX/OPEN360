@@ -14,7 +14,9 @@ export default async function OrgsPage() {
     orderBy: { org: { createdAt: 'asc' } },
   })
 
-  if (memberships.length === 0) redirect('/orgs/new')
+  // 0 memberships with an active session = stale JWT from a wiped/old DB.
+  // Sign out to clear the token so the user can start fresh.
+  if (memberships.length === 0) redirect('/api/auth/signout?callbackUrl=/signup')
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--canvas)', display: 'flex', flexDirection: 'column' }}>
