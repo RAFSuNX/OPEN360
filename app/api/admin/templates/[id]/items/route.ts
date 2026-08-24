@@ -8,7 +8,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!auth.ok) return auth.response
   const { orgId } = auth
   const { id: templateId } = await params
-  const { text, type, ratingScale, category, sortOrder } = await req.json()
+  const { text, selfText, type, ratingScale, category, applicableRole, sortOrder } = await req.json()
   if (!text || !type || !category || sortOrder == null) {
     return NextResponse.json({ error: 'text, type, category, and sortOrder are required' }, { status: 400 })
   }
@@ -16,7 +16,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: 'type must be RATING or OPEN_TEXT' }, { status: 400 })
   }
   try {
-    const item = await addTemplateItem(orgId, templateId, { text, type: type as QuestionType, ratingScale, category, sortOrder })
+    const item = await addTemplateItem(orgId, templateId, { text, selfText, type: type as QuestionType, ratingScale, category, applicableRole, sortOrder })
     return NextResponse.json(item, { status: 201 })
   } catch (e) {
     if (e instanceof Error) return NextResponse.json({ error: e.message }, { status: 400 })

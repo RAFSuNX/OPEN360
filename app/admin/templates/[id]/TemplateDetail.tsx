@@ -4,8 +4,8 @@ import { useRouter } from 'next/navigation'
 import { useToast } from '@/components/Toast'
 
 interface TemplateItem {
-  id: string; text: string; type: 'RATING' | 'OPEN_TEXT'
-  ratingScale: number | null; category: string; sortOrder: number
+  id: string; text: string; selfText: string | null; type: 'RATING' | 'OPEN_TEXT'
+  ratingScale: number | null; category: string; applicableRole: string | null; sortOrder: number
 }
 
 interface Template {
@@ -13,15 +13,15 @@ interface Template {
   isDefault: boolean; items: TemplateItem[]
 }
 
+const CATEGORIES = ['Communication', 'Collaboration', 'Leadership', 'Problem Solving', 'Accountability', 'Execution', 'Growth', 'Emotional Intelligence', 'Overall']
+
 const inputStyle = {
   background: 'var(--surface-card)', color: 'var(--ink)',
   border: '1px solid var(--hairline-strong)', borderRadius: '8px',
   padding: '9px 12px', fontSize: '13px', fontFamily: 'inherit', outline: 'none',
 }
 
-const CATEGORIES = ['Communication', 'Collaboration', 'Leadership', 'Problem Solving', 'Accountability', 'Execution', 'Growth', 'Emotional Intelligence', 'Overall']
-
-export default function TemplateDetail({ template: initial }: { template: Template }) {
+export default function TemplateDetail({ template: initial, roles }: { template: Template; roles: string[] }) {
   const router = useRouter()
   const { toast } = useToast()
   const [template, setTemplate] = useState(initial)
@@ -29,7 +29,7 @@ export default function TemplateDetail({ template: initial }: { template: Templa
   const [name, setName] = useState(initial.name)
   const [savingName, setSavingName] = useState(false)
   const [addingItem, setAddingItem] = useState(false)
-  const [newItem, setNewItem] = useState({ text: '', type: 'RATING' as 'RATING' | 'OPEN_TEXT', ratingScale: 5, category: '' })
+  const [newItem, setNewItem] = useState({ text: '', selfText: '', type: 'RATING' as 'RATING' | 'OPEN_TEXT', ratingScale: 5, category: '', applicableRole: '' })
   const [savingItem, setSavingItem] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editItemData, setEditItemData] = useState<Partial<TemplateItem>>({})
@@ -58,12 +58,17 @@ export default function TemplateDetail({ template: initial }: { template: Templa
     try {
       const res = await fetch(`/api/admin/templates/${template.id}/items`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...newItem, sortOrder }),
+        body: JSON.stringify({
+          ...newItem,
+          selfText: newItem.selfText || null,
+          applicableRole: newItem.applicableRole || null,
+          sortOrder,
+        }),
       })
       if (!res.ok) { const d = await res.json(); toast(d.error, 'error'); return }
       const item = await res.json()
       setTemplate(t => ({ ...t, items: [...t.items, item] }))
-      setNewItem({ text: '', type: 'RATING', ratingScale: 5, category: '' })
+      setNewItem({ text: '', selfText: '', type: 'RATING', ratingScale: 5, category: '', applicableRole: '' })
       setAddingItem(false)
       toast('Question added', 'success')
     } finally { setSavingItem(false) }
@@ -139,12 +144,26 @@ export default function TemplateDetail({ template: initial }: { template: Templa
         <div className="card" style={{ padding: '20px', marginBottom: '16px', background: 'var(--canvas-soft)' }}>
           <p style={{ fontSize: '13px', fontWeight: '600', color: 'var(--ink)', margin: '0 0 14px' }}>New Question</p>
           <form onSubmit={addItem} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px' }}>Question text</label>
-              <textarea rows={2} value={newItem.text} onChange={e => setNewItem(p => ({ ...p, text: e.target.value }))} required
-                style={{ ...inputStyle, width: '100%', resize: 'vertical' as const }} />
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div style={{ flex: '2 1 260px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px' }}>Question text (peer / manager wording)</label>
+                <textarea rows={2} value={newItem.text} onChange={e => setNewItem(p => ({ ...p, text: e.target.value }))} required
+                  placeholder="[Name] demonstrates..." style={{ ...inputStyle, width: '100%', resize: 'vertical' as const }} />
+              </div>
+              <div style={{ flex: '2 1 260px' }}>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px' }}>Self-assessment wording <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0 }}>(shown to reviewer when doing own review)</span></label>
+                <textarea rows={2} value={newItem.selfText} onChange={e => setNewItem(p => ({ ...p, selfText: e.target.value }))}
+                  placeholder="I demonstrate..." style={{ ...inputStyle, width: '100%', resize: 'vertical' as const }} />
+              </div>
             </div>
             <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px' }}>Applies to</label>
+                <select value={newItem.applicableRole} onChange={e => setNewItem(p => ({ ...p, applicableRole: e.target.value }))} style={inputStyle}>
+                  <option value="">All employees</option>
+                  {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                </select>
+              </div>
               <div>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px' }}>Type</label>
                 <select value={newItem.type} onChange={e => setNewItem(p => ({ ...p, type: e.target.value as 'RATING' | 'OPEN_TEXT' }))} style={inputStyle}>
@@ -154,10 +173,8 @@ export default function TemplateDetail({ template: initial }: { template: Templa
               </div>
               <div style={{ flex: '1 1 160px' }}>
                 <label style={{ display: 'block', fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '4px' }}>Category</label>
-                <select value={newItem.category} onChange={e => setNewItem(p => ({ ...p, category: e.target.value }))} required style={{ ...inputStyle, width: '100%' }}>
-                  <option value="">Select category</option>
-                  {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                </select>
+                <input value={newItem.category} onChange={e => setNewItem(p => ({ ...p, category: e.target.value }))} required
+                  placeholder="e.g. Core Values & Culture" style={{ ...inputStyle, width: '100%' }} />
               </div>
               {newItem.type === 'RATING' && (
                 <div>
@@ -183,15 +200,31 @@ export default function TemplateDetail({ template: initial }: { template: Templa
           <div key={item.id} className="card" style={{ padding: '16px 20px' }}>
             {editingItemId === item.id ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                <textarea rows={2} value={editItemData.text ?? item.text}
-                  onChange={e => setEditItemData(p => ({ ...p, text: e.target.value }))}
-                  style={{ ...inputStyle, width: '100%', resize: 'vertical' as const }} />
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ flex: '2 1 220px' }}>
+                    <label style={{ display: 'block', fontSize: '10px', color: 'var(--muted)', marginBottom: '3px' }}>Peer / manager wording</label>
+                    <textarea rows={2} value={editItemData.text ?? item.text}
+                      onChange={e => setEditItemData(p => ({ ...p, text: e.target.value }))}
+                      style={{ ...inputStyle, width: '100%', resize: 'vertical' as const }} />
+                  </div>
+                  <div style={{ flex: '2 1 220px' }}>
+                    <label style={{ display: 'block', fontSize: '10px', color: 'var(--muted)', marginBottom: '3px' }}>Self-assessment wording</label>
+                    <textarea rows={2} value={editItemData.selfText ?? item.selfText ?? ''}
+                      onChange={e => setEditItemData(p => ({ ...p, selfText: e.target.value || null }))}
+                      placeholder="I..." style={{ ...inputStyle, width: '100%', resize: 'vertical' as const }} />
+                  </div>
+                </div>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <select value={editItemData.category ?? item.category}
-                    onChange={e => setEditItemData(p => ({ ...p, category: e.target.value }))}
+                  <select
+                    value={editItemData.applicableRole !== undefined ? (editItemData.applicableRole ?? '') : (item.applicableRole ?? '')}
+                    onChange={e => setEditItemData(p => ({ ...p, applicableRole: e.target.value || null }))}
                     style={{ ...inputStyle, width: 'auto' }}>
-                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">All employees</option>
+                    {roles.map(r => <option key={r} value={r}>{r}</option>)}
                   </select>
+                  <input value={editItemData.category ?? item.category}
+                    onChange={e => setEditItemData(p => ({ ...p, category: e.target.value }))}
+                    style={{ ...inputStyle, width: '160px' }} placeholder="Category" />
                   <input type="number" value={editItemData.sortOrder ?? item.sortOrder}
                     onChange={e => setEditItemData(p => ({ ...p, sortOrder: Number(e.target.value) }))}
                     style={{ ...inputStyle, width: '80px' }} placeholder="Order" />
@@ -210,8 +243,18 @@ export default function TemplateDetail({ template: initial }: { template: Templa
                     <span className="badge" style={{ fontSize: '10px', background: item.type === 'RATING' ? 'var(--canvas-soft)' : 'var(--surface-strong)' }}>
                       {item.type === 'RATING' ? `Rating 1-${item.ratingScale}` : 'Open text'}
                     </span>
+                    {item.applicableRole && (
+                      <span className="badge" style={{ fontSize: '10px', background: '#fef0eb', color: 'var(--primary)' }}>
+                        {item.applicableRole}
+                      </span>
+                    )}
                   </div>
                   <p style={{ fontSize: '14px', color: 'var(--ink)', margin: 0, lineHeight: '1.5' }}>{item.text}</p>
+                  {item.selfText && (
+                    <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0', lineHeight: '1.4', fontStyle: 'italic' }}>
+                      Self: {item.selfText}
+                    </p>
+                  )}
                 </div>
                 {!blocked && (
                   <div style={{ display: 'flex', gap: '4px', flexShrink: 0 }}>

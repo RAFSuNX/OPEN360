@@ -3,6 +3,7 @@ import { Relationship } from '@prisma/client'
 interface EmployeeNode {
   id: string
   managerId: string | null
+  department?: string | null
 }
 
 interface Assignment {
@@ -24,9 +25,12 @@ export function mapAssignments(revieweeId: string, employees: EmployeeNode[]): A
     assignments.push({ reviewerId: reviewee.managerId, relationship: Relationship.MANAGER })
   }
 
-  // Peers: same manager, not self, only if manager exists
+  // Peers: same manager first; fall back to same department if no manager set
   if (reviewee.managerId) {
     const peers = employees.filter(e => e.managerId === reviewee.managerId && e.id !== revieweeId)
+    peers.forEach(p => assignments.push({ reviewerId: p.id, relationship: Relationship.PEER }))
+  } else if (reviewee.department) {
+    const peers = employees.filter(e => e.department === reviewee.department && e.id !== revieweeId)
     peers.forEach(p => assignments.push({ reviewerId: p.id, relationship: Relationship.PEER }))
   }
 

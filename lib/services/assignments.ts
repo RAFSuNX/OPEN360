@@ -36,7 +36,7 @@ export async function autoAssign(orgId: string, cycleId: string) {
 
   const employees = await db.employee.findMany({
     where: { orgId, isActive: true },
-    select: { id: true, managerId: true },
+    select: { id: true, managerId: true, department: true },
   })
 
   const data = employees.flatMap(emp =>
