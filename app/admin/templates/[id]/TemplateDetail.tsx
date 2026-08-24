@@ -33,8 +33,43 @@ export default function TemplateDetail({ template: initial, roles }: { template:
   const [savingItem, setSavingItem] = useState(false)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
   const [editItemData, setEditItemData] = useState<Partial<TemplateItem>>({})
+  const [draggingIdx, setDraggingIdx] = useState<number | null>(null)
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null)
 
   const blocked = template.isDefault
+
+  function handleDragStart(idx: number) {
+    setDraggingIdx(idx)
+  }
+
+  function handleDragOver(e: React.DragEvent, idx: number) {
+    e.preventDefault()
+    if (idx !== dragOverIdx) setDragOverIdx(idx)
+  }
+
+  function handleDrop(e: React.DragEvent, dropIdx: number) {
+    e.preventDefault()
+    if (draggingIdx === null || draggingIdx === dropIdx) {
+      setDraggingIdx(null); setDragOverIdx(null); return
+    }
+    const items = [...template.items]
+    const [moved] = items.splice(draggingIdx, 1)
+    items.splice(dropIdx, 0, moved)
+    const reordered = items.map((item, i) => ({ ...item, sortOrder: i }))
+
+    const originalOrders = new Map(template.items.map(item => [item.id, item.sortOrder]))
+    const changed = reordered.filter(item => originalOrders.get(item.id) !== item.sortOrder)
+
+    setTemplate(t => ({ ...t, items: reordered }))
+    setDraggingIdx(null); setDragOverIdx(null)
+
+    Promise.all(changed.map(item =>
+      fetch(`/api/admin/templates/${template.id}/items/${item.id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sortOrder: item.sortOrder }),
+      })
+    )).then(() => toast('Order saved', 'success')).catch(() => toast('Failed to save order', 'error'))
+  }
 
   async function saveName(e: React.FormEvent) {
     e.preventDefault()
@@ -197,7 +232,21 @@ export default function TemplateDetail({ template: initial, roles }: { template:
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {template.items.map((item, idx) => (
-          <div key={item.id} className="card" style={{ padding: '16px 20px' }}>
+          <div
+            key={item.id}
+            className="card"
+            draggable={!blocked && editingItemId !== item.id}
+            onDragStart={() => handleDragStart(idx)}
+            onDragOver={e => handleDragOver(e, idx)}
+            onDrop={e => handleDrop(e, idx)}
+            onDragEnd={() => { setDraggingIdx(null); setDragOverIdx(null) }}
+            style={{
+              padding: '16px 20px',
+              opacity: draggingIdx === idx ? 0.4 : 1,
+              borderColor: dragOverIdx === idx && draggingIdx !== idx ? 'var(--primary)' : undefined,
+              transition: 'opacity 0.15s, border-color 0.15s',
+            }}
+          >
             {editingItemId === item.id ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -234,6 +283,18 @@ export default function TemplateDetail({ template: initial, roles }: { template:
               </div>
             ) : (
               <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                {!blocked && (
+                  <div
+                    title="Drag to reorder"
+                    style={{ cursor: 'grab', paddingTop: '2px', flexShrink: 0, color: 'var(--muted-soft)', lineHeight: 1 }}
+                  >
+                    <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor">
+                      <circle cx="3" cy="3"  r="1.5"/><circle cx="9" cy="3"  r="1.5"/>
+                      <circle cx="3" cy="9"  r="1.5"/><circle cx="9" cy="9"  r="1.5"/>
+                      <circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/>
+                    </svg>
+                  </div>
+                )}
                 <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted-soft)', fontFamily: "'JetBrains Mono', monospace", minWidth: '24px', paddingTop: '2px' }}>
                   {String(idx + 1).padStart(2, '0')}
                 </span>
