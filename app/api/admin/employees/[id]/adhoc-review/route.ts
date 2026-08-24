@@ -82,9 +82,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     skipDuplicates: true,
   })
 
-  // Send emails to all non-self reviewers
+  // Send emails to ALL reviewers including the reviewee for their self-assessment
   const assignments = await db.reviewAssignment.findMany({
-    where: { cycleId: cycle.id, NOT: { relationship: Relationship.SELF } },
+    where: { cycleId: cycle.id },
     include: {
       reviewer: { select: { name: true, email: true } },
       reviewee: { select: { name: true } },

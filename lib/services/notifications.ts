@@ -11,7 +11,7 @@ export async function notifyAdminIfCycleComplete(orgId: string, cycleId: string)
   if (!cycle || cycle.status !== 'ACTIVE') return
 
   const pending = await db.reviewAssignment.count({
-    where: { cycleId, submitted: false, NOT: { relationship: Relationship.SELF } },
+    where: { cycleId, submitted: false },
   })
   if (pending > 0) return
 
