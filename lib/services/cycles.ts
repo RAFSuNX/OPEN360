@@ -51,9 +51,11 @@ export async function snapshotTemplateForCycle(orgId: string, cycleId: string) {
         cycleId,
         sourceTemplateItemId: item.id,
         text: item.text,
+        selfText: item.selfText,
         type: item.type,
         ratingScale: item.ratingScale,
         category: item.category,
+        applicableRole: item.applicableRole,
         sortOrder: item.sortOrder,
       })),
     })
@@ -67,9 +69,11 @@ export async function snapshotTemplateForCycle(orgId: string, cycleId: string) {
         cycleId,
         sourceTemplateItemId: null,
         text: q.text,
+        selfText: q.selfText,
         type: q.type,
         ratingScale: q.ratingScale,
         category: q.category,
+        applicableRole: q.applicableRole,
         sortOrder: q.sortOrder,
       })),
     })

@@ -62,9 +62,11 @@ export async function copyTemplate(orgId: string, id: string) {
       items: {
         create: source.items.map(item => ({
           text: item.text,
+          selfText: item.selfText,
           type: item.type,
           ratingScale: item.ratingScale,
           category: item.category,
+          applicableRole: item.applicableRole,
           sortOrder: item.sortOrder,
         })),
       },
@@ -74,9 +76,11 @@ export async function copyTemplate(orgId: string, id: string) {
 
 export async function addTemplateItem(orgId: string, templateId: string, data: {
   text: string
+  selfText?: string
   type: QuestionType
   ratingScale?: number
   category: string
+  applicableRole?: string
   sortOrder: number
 }) {
   await assertTemplateEditable(templateId, orgId)
@@ -85,9 +89,11 @@ export async function addTemplateItem(orgId: string, templateId: string, data: {
 
 export async function updateTemplateItem(orgId: string, itemId: string, data: {
   text?: string
+  selfText?: string | null
   type?: QuestionType
   ratingScale?: number | null
   category?: string
+  applicableRole?: string | null
   sortOrder?: number
 }) {
   const item = await db.questionTemplateItem.findUnique({ where: { id: itemId } })

@@ -15,20 +15,16 @@ const WRITABLE_SETTING_KEYS = [...SETTING_KEYS, 'anonymity_threshold'] as const
 export type OrgSettingKey = (typeof WRITABLE_SETTING_KEYS)[number]
 
 export async function getOrgSettings(orgId: string): Promise<OrgSettings> {
-  try {
-    const settings = await db.setting.findMany({
-      where: { orgId, key: { in: [...SETTING_KEYS] } },
-    })
-    const map = Object.fromEntries(settings.map(s => [s.key, s.value]))
-    return {
-      org_name:            map['org_name']            ?? '',
-      org_logo_url:        map['org_logo_url']        ?? '',
-      org_logo_email:      map['org_logo_email']      ?? '',
-      org_tagline:         map['org_tagline']         ?? '',
-      onboarding_complete: map['onboarding_complete'] ?? 'false',
-    }
-  } catch {
-    return { org_name: '', org_logo_url: '', org_logo_email: '', org_tagline: '', onboarding_complete: 'false' }
+  const settings = await db.setting.findMany({
+    where: { orgId, key: { in: [...SETTING_KEYS] } },
+  })
+  const map = Object.fromEntries(settings.map(s => [s.key, s.value]))
+  return {
+    org_name:            map['org_name']            ?? '',
+    org_logo_url:        map['org_logo_url']        ?? '',
+    org_logo_email:      map['org_logo_email']      ?? '',
+    org_tagline:         map['org_tagline']         ?? '',
+    onboarding_complete: map['onboarding_complete'] ?? 'false',
   }
 }
 
@@ -41,5 +37,5 @@ export async function updateOrgSetting(orgId: string, key: OrgSettingKey, value:
 }
 
 export function isOnboardingComplete(org: OrgSettings): boolean {
-  return org.onboarding_complete === 'true' && org.org_name.trim().length > 0
+  return org.onboarding_complete === 'true'
 }

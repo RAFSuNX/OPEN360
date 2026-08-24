@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response
   const { orgId } = auth
 
-  const { text, type, category, ratingScale, sortOrder } = await req.json()
+  const { text, selfText, type, category, applicableRole, ratingScale, sortOrder } = await req.json()
   if (!text || !type || !category) {
     return NextResponse.json({ error: 'text, type, and category are required' }, { status: 400 })
   }
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'type must be RATING or OPEN_TEXT' }, { status: 400 })
   }
 
-  const question = await createQuestion(orgId, { text, type, category, ratingScale, sortOrder })
+  const question = await createQuestion(orgId, { text, selfText, type, category, applicableRole, ratingScale, sortOrder })
   return NextResponse.json(question, { status: 201 })
 }
 
@@ -33,14 +33,16 @@ export async function PATCH(req: NextRequest) {
   if (!auth.ok) return auth.response
   const { orgId } = auth
 
-  const { id, isActive, text, type, category, ratingScale } = await req.json()
+  const { id, isActive, text, selfText, type, category, applicableRole, ratingScale } = await req.json()
   if (!id) return NextResponse.json({ error: 'id is required' }, { status: 400 })
 
-  if (text !== undefined || type !== undefined || category !== undefined || ratingScale !== undefined) {
+  if (text !== undefined || type !== undefined || category !== undefined || ratingScale !== undefined || selfText !== undefined || applicableRole !== undefined) {
     const question = await updateQuestion(orgId, id, {
       text: text ?? undefined,
+      selfText: selfText ?? undefined,
       type: type ?? undefined,
       category: category ?? undefined,
+      applicableRole: applicableRole ?? undefined,
       ratingScale: type === 'OPEN_TEXT' ? null : (ratingScale ?? undefined),
       ...(typeof isActive === 'boolean' ? { isActive } : {}),
     })

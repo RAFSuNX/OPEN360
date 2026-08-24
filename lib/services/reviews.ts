@@ -16,29 +16,42 @@ export async function getAssignmentWithQuestions(assignmentId: string, reviewerI
   const assignment = await db.reviewAssignment.findUnique({
     where: { id: assignmentId },
     include: {
-      reviewee: { select: { name: true } },
+      reviewee: { select: { name: true, role: true } },
       cycle: { select: { title: true, status: true, orgId: true } },
     },
   })
 
   if (!assignment || assignment.reviewerId !== reviewerId) return null
 
+  const isSelf = assignment.relationship === 'SELF'
+  const revieweeRole = assignment.reviewee.role
+  const roleFilter = revieweeRole
+    ? [{ applicableRole: null as null }, { applicableRole: revieweeRole }]
+    : [{ applicableRole: null as null }]
+
   const cycleQuestions = await db.cycleQuestion.findMany({
-    where: { cycleId: assignment.cycleId },
+    where: { cycleId: assignment.cycleId, OR: roleFilter },
     orderBy: { sortOrder: 'asc' },
   })
 
   if (cycleQuestions.length > 0) {
-    return { assignment, questions: cycleQuestions }
+    const questions = cycleQuestions.map(q => ({
+      ...q,
+      text: (isSelf && q.selfText) ? q.selfText : q.text,
+    }))
+    return { assignment, questions }
   }
 
   // Legacy fallback: scoped to this org only
   const questions = await db.question.findMany({
-    where: { isActive: true, orgId: assignment.cycle.orgId },
+    where: { isActive: true, orgId: assignment.cycle.orgId, OR: roleFilter },
     orderBy: { sortOrder: 'asc' },
   })
 
-  return { assignment, questions }
+  return {
+    assignment,
+    questions: questions.map(q => ({ ...q, text: (isSelf && q.selfText) ? q.selfText : q.text })),
+  }
 }
 
 export async function submitReview(
@@ -55,8 +68,17 @@ export async function submitReview(
   if (assignment.submitted) throw new Error('Already submitted')
   if (assignment.cycle.status !== 'ACTIVE') throw new Error('Cycle is not active')
 
+  const reviewee = await db.employee.findUnique({
+    where: { id: assignment.revieweeId },
+    select: { role: true },
+  })
+  const revieweeRole = reviewee?.role
+  const roleFilter = revieweeRole
+    ? [{ applicableRole: null as null }, { applicableRole: revieweeRole }]
+    : [{ applicableRole: null as null }]
+
   const cycleQuestions = await db.cycleQuestion.findMany({
-    where: { cycleId: assignment.cycleId },
+    where: { cycleId: assignment.cycleId, OR: roleFilter },
     select: { id: true },
   })
   const useCycleQuestions = cycleQuestions.length > 0
@@ -74,7 +96,10 @@ export async function submitReview(
     if (unknown.length > 0) throw new Error('Answers contain unknown question IDs')
     if (submittedIds.length !== cycleQuestions.length) throw new Error('Must answer all questions')
   } else {
-    const activeQuestions = await db.question.findMany({ where: { isActive: true, orgId: assignment.cycle.orgId }, select: { id: true } })
+    const activeQuestions = await db.question.findMany({
+      where: { isActive: true, orgId: assignment.cycle.orgId, OR: roleFilter },
+      select: { id: true },
+    })
     const activeIds = new Set(activeQuestions.map(q => q.id))
     const unknown = submittedIds.filter(id => !activeIds.has(id))
     if (unknown.length > 0) throw new Error('Answers contain unknown or inactive question IDs')

@@ -186,13 +186,15 @@ model QuestionTemplate {
 }
 
 model QuestionTemplateItem {
-  id          String       @id @default(uuid())
-  templateId  String       @map("template_id")
-  text        String
-  type        QuestionType
-  ratingScale Int?         @map("rating_scale")
-  category    String
-  sortOrder   Int          @map("sort_order")
+  id             String       @id @default(uuid())
+  templateId     String       @map("template_id")
+  text           String
+  selfText       String?      @map("self_text")
+  type           QuestionType
+  ratingScale    Int?         @map("rating_scale")
+  category       String
+  applicableRole String?      @map("applicable_role")
+  sortOrder      Int          @map("sort_order")
 
   template       QuestionTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
   cycleQuestions CycleQuestion[]
@@ -205,9 +207,11 @@ model CycleQuestion {
   cycleId              String       @map("cycle_id")
   sourceTemplateItemId String?      @map("source_template_item_id")
   text                 String
+  selfText             String?      @map("self_text")
   type                 QuestionType
   ratingScale          Int?         @map("rating_scale")
   category             String
+  applicableRole       String?      @map("applicable_role")
   sortOrder            Int          @map("sort_order")
 
   cycle              ReviewCycle           @relation(fields: [cycleId], references: [id], onDelete: Cascade)
@@ -219,14 +223,16 @@ model CycleQuestion {
 }
 
 model Question {
-  id          String       @id @default(uuid())
-  orgId       String       @map("org_id")
-  text        String
-  type        QuestionType
-  ratingScale Int?         @map("rating_scale")
-  category    String
-  sortOrder   Int          @default(0) @map("sort_order")
-  isActive    Boolean      @default(true) @map("is_active")
+  id             String       @id @default(uuid())
+  orgId          String       @map("org_id")
+  text           String
+  selfText       String?      @map("self_text")
+  type           QuestionType
+  ratingScale    Int?         @map("rating_scale")
+  category       String
+  applicableRole String?      @map("applicable_role")
+  sortOrder      Int          @default(0) @map("sort_order")
+  isActive       Boolean      @default(true) @map("is_active")
 
   org       Organization   @relation(fields: [orgId], references: [id], onDelete: Cascade)
   responses ReviewResponse[]

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef } from 'react'
+import { signOut } from 'next-auth/react'
 import { ImageCropModal } from '@/components/ImageCropModal'
 import { compressLogoForEmail } from '@/lib/compressForEmail'
 
@@ -103,9 +104,18 @@ export function SettingsForm({ initialSettings }: Props) {
 
       {msg && <p style={{ fontSize: '13px', color: msg.includes('saved') ? 'var(--semantic-success)' : 'var(--semantic-error)' }}>{msg}</p>}
 
-      <button onClick={save} disabled={saving} className="btn-primary" style={{ alignSelf: 'flex-start', padding: '10px 24px' }}>
-        {saving ? 'Saving...' : 'Save settings'}
-      </button>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button onClick={save} disabled={saving} className="btn-primary" style={{ padding: '10px 24px' }}>
+          {saving ? 'Saving...' : 'Save settings'}
+        </button>
+        <button
+          onClick={() => signOut({ callbackUrl: '/login' })}
+          className="btn-secondary"
+          style={{ padding: '10px 24px', color: 'var(--semantic-error)', borderColor: 'var(--semantic-error)' }}
+        >
+          Sign out
+        </button>
+      </div>
     </div>
     </>
   )

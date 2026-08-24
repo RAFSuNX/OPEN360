@@ -10,8 +10,10 @@ export async function listQuestions(orgId: string) {
 
 export async function createQuestion(orgId: string, data: {
   text: string
+  selfText?: string
   type: QuestionType
   category: string
+  applicableRole?: string
   ratingScale?: number
   sortOrder?: number
 }) {
@@ -20,8 +22,10 @@ export async function createQuestion(orgId: string, data: {
     data: {
       orgId,
       text: data.text,
+      selfText: data.selfText ?? null,
       type: data.type,
       category: data.category,
+      applicableRole: data.applicableRole ?? null,
       ratingScale: data.type === 'RATING' ? (data.ratingScale ?? 5) : null,
       sortOrder,
     },
@@ -43,8 +47,10 @@ export async function toggleQuestionActive(orgId: string, id: string, isActive: 
 
 export async function updateQuestion(orgId: string, id: string, data: {
   text?: string
+  selfText?: string | null
   type?: 'RATING' | 'OPEN_TEXT'
   category?: string
+  applicableRole?: string | null
   ratingScale?: number | null
   isActive?: boolean
 }) {
