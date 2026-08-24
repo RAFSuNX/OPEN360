@@ -163,7 +163,7 @@ export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, que
                         {String(globalIdx + 1).padStart(2, '0')}
                       </span>
                       <div style={{ flex: 1 }}>
-                        <p style={{ fontSize: '14px', color: 'var(--ink)', margin: '0 0 14px', lineHeight: '1.55' }}>{q.text}</p>
+                        <p style={{ fontSize: '14px', color: 'var(--ink)', margin: '0 0 14px', lineHeight: '1.55' }}>{q.text.replace(/\[Name\]/g, revieweeName)}</p>
 
                         {q.type === 'RATING' && (
                           <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
