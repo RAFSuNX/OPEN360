@@ -5,6 +5,7 @@ import { buildResults } from '@/lib/services/results'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import MyResults from '@/components/dashboard/MyResults'
+import ExportPdfButton from '@/components/admin/ExportPdfButton'
 
 export default async function OrgAdminEmployeeResultsPage({
   params,
@@ -51,7 +52,12 @@ export default async function OrgAdminEmployeeResultsPage({
         </p>
       </div>
 
-      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ marginBottom: '16px', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+        <ExportPdfButton
+          employeeName={employee.name}
+          cycleTitle={cycle.title}
+          results={results}
+        />
         <a
           href={`/api/admin/results/${cycleId}/${employeeId}/export`}
           style={{
