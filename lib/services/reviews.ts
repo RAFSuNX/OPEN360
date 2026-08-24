@@ -34,24 +34,28 @@ export async function getAssignmentWithQuestions(assignmentId: string, reviewerI
     orderBy: { sortOrder: 'asc' },
   })
 
-  if (cycleQuestions.length > 0) {
-    const questions = cycleQuestions.map(q => ({
-      ...q,
-      text: (isSelf && q.selfText) ? q.selfText : q.text,
-    }))
-    return { assignment, questions }
-  }
-
-  // Legacy fallback: scoped to this org only
-  const questions = await db.question.findMany({
-    where: { isActive: true, orgId: assignment.cycle.orgId, OR: roleFilter },
-    orderBy: { sortOrder: 'asc' },
+  const swapText = <T extends { text: string; selfText?: string | null }>(q: T) => ({
+    ...q,
+    text: (isSelf && q.selfText) ? q.selfText : q.text,
   })
 
-  return {
-    assignment,
-    questions: questions.map(q => ({ ...q, text: (isSelf && q.selfText) ? q.selfText : q.text })),
+  if (cycleQuestions.length > 0) {
+    return { assignment, questions: cycleQuestions.map(swapText) }
   }
+
+  // Cycle not yet snapshotted — null signals "not ready" to the page
+  const totalCycleQuestions = await db.cycleQuestion.count({ where: { cycleId: assignment.cycleId } })
+  if (totalCycleQuestions === 0) return null
+
+  // Cycle was snapshotted but this reviewee's role has no matching questions
+  // Fall back to all generic questions (applicable_role IS NULL) so form is never empty
+  const genericQuestions = await db.cycleQuestion.findMany({
+    where: { cycleId: assignment.cycleId, applicableRole: null },
+    orderBy: { sortOrder: 'asc' },
+  })
+  if (genericQuestions.length === 0) return null
+
+  return { assignment, questions: genericQuestions.map(swapText) }
 }
 
 export async function submitReview(
@@ -77,11 +81,18 @@ export async function submitReview(
     ? [{ applicableRole: null as null }, { applicableRole: revieweeRole }]
     : [{ applicableRole: null as null }]
 
-  const cycleQuestions = await db.cycleQuestion.findMany({
+  let expectedQuestions = await db.cycleQuestion.findMany({
     where: { cycleId: assignment.cycleId, OR: roleFilter },
     select: { id: true },
   })
-  const useCycleQuestions = cycleQuestions.length > 0
+  // If no role-specific questions found, fall back to generic only (mirrors getAssignmentWithQuestions)
+  if (expectedQuestions.length === 0) {
+    expectedQuestions = await db.cycleQuestion.findMany({
+      where: { cycleId: assignment.cycleId, applicableRole: null },
+      select: { id: true },
+    })
+  }
+  if (expectedQuestions.length === 0) throw new Error('No questions found for this review. Contact your admin.')
 
   const invalid = answers.find(a => !a.questionId || typeof a.answer !== 'string' || !a.answer.trim())
   if (invalid) throw new Error('All answers must be non-empty strings')
@@ -90,21 +101,10 @@ export async function submitReview(
   const uniqueIds = new Set(submittedIds)
   if (uniqueIds.size !== submittedIds.length) throw new Error('Duplicate answers for the same question')
 
-  if (useCycleQuestions) {
-    const validIds = new Set(cycleQuestions.map(q => q.id))
-    const unknown = submittedIds.filter(id => !validIds.has(id))
-    if (unknown.length > 0) throw new Error('Answers contain unknown question IDs')
-    if (submittedIds.length !== cycleQuestions.length) throw new Error('Must answer all questions')
-  } else {
-    const activeQuestions = await db.question.findMany({
-      where: { isActive: true, orgId: assignment.cycle.orgId, OR: roleFilter },
-      select: { id: true },
-    })
-    const activeIds = new Set(activeQuestions.map(q => q.id))
-    const unknown = submittedIds.filter(id => !activeIds.has(id))
-    if (unknown.length > 0) throw new Error('Answers contain unknown or inactive question IDs')
-    if (submittedIds.length !== activeQuestions.length) throw new Error('Must answer all active questions')
-  }
+  const validIds = new Set(expectedQuestions.map(q => q.id))
+  const unknown = submittedIds.filter(id => !validIds.has(id))
+  if (unknown.length > 0) throw new Error('Answers contain unknown question IDs')
+  if (submittedIds.length !== expectedQuestions.length) throw new Error('Must answer all questions')
 
   await db.$transaction(async tx => {
     const updated = await tx.reviewAssignment.updateMany({
@@ -117,8 +117,8 @@ export async function submitReview(
       data: answers.map(a => ({
         cycleId: assignment.cycleId,
         revieweeId: assignment.revieweeId,
-        questionId: useCycleQuestions ? null : a.questionId,
-        cycleQuestionId: useCycleQuestions ? a.questionId : null,
+        questionId: null,
+        cycleQuestionId: a.questionId,
         answerEncrypted: encrypt(a.answer),
         relationship: assignment.relationship,
       })),

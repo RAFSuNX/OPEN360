@@ -46,6 +46,7 @@ export async function snapshotTemplateForCycle(orgId: string, cycleId: string) {
       where: { templateId: cycle.templateId },
       orderBy: { sortOrder: 'asc' },
     })
+    if (items.length === 0) throw new Error('Template has no questions. Add questions to the template before activating.')
     await db.cycleQuestion.createMany({
       data: items.map(item => ({
         cycleId,
@@ -64,6 +65,7 @@ export async function snapshotTemplateForCycle(orgId: string, cycleId: string) {
       where: { orgId, isActive: true },
       orderBy: { sortOrder: 'asc' },
     })
+    if (questions.length === 0) throw new Error('No questions found. Assign a template to this cycle before activating.')
     await db.cycleQuestion.createMany({
       data: questions.map(q => ({
         cycleId,
