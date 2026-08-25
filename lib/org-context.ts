@@ -27,6 +27,7 @@ export async function getOrgContext(slug: string): Promise<OrgContext> {
     },
     select: {
       id: true,
+      name: true,
       email: true,
       isAdmin: true,
       isSuperAdmin: true,
