@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation'
 
 export type OrgContext = {
   org: { id: string; name: string; slug: string; plan: string }
-  employee: { id: string; email: string; isAdmin: boolean; isSuperAdmin: boolean }
+  employee: { id: string; name: string; email: string; isAdmin: boolean; isSuperAdmin: boolean }
   session: Session
 }
 
