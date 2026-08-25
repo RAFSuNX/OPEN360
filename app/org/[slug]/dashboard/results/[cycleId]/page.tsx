@@ -25,7 +25,7 @@ export default async function OrgResultsPage({
           ← Back to dashboard
         </Link>
       </div>
-      <MyResults results={results} cycleTitle={cycle.title} />
+      <MyResults results={results} cycleTitle={cycle.title} employeeName={employee.name} />
     </div>
   )
 }

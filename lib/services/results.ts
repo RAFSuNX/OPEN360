@@ -41,8 +41,18 @@ export async function buildResults(
   const cycle = await db.reviewCycle.findFirst({ where: { id: cycleId, orgId } })
   if (!cycle) return {}
 
+  // Get reviewee's role so we only show questions that were actually asked
+  const reviewee = await db.employee.findUnique({
+    where: { id: revieweeId },
+    select: { role: true },
+  })
+  const revieweeRole = reviewee?.role
+  const roleFilter = revieweeRole
+    ? [{ applicableRole: null as null }, { applicableRole: revieweeRole }]
+    : [{ applicableRole: null as null }]
+
   const cycleQuestionsRaw = await db.cycleQuestion.findMany({
-    where: { cycleId },
+    where: { cycleId, OR: roleFilter },
     orderBy: { sortOrder: 'asc' },
   })
   const useCycleQuestions = cycleQuestionsRaw.length > 0
@@ -116,7 +126,11 @@ export async function buildResults(
       return { id: q.id, text: q.text, type: q.type, category: q.category, answers: decrypted }
     })
 
-    result[rel] = { relationship: rel, visible: true, questions: questionResults }
+    const answered = questionResults.filter(q =>
+      (q.type === 'RATING' && q.average !== undefined) ||
+      (q.answers && q.answers.length > 0)
+    )
+    result[rel] = { relationship: rel, visible: true, questions: answered }
   }
 
   return result

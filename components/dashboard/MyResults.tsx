@@ -13,6 +13,7 @@ interface RelationshipResult {
 interface Props {
   results: Record<string, RelationshipResult>
   cycleTitle?: string
+  employeeName?: string
 }
 
 const REL_ORDER: Relationship[] = [Relationship.SELF, Relationship.MANAGER, Relationship.PEER, Relationship.DIRECT_REPORT]
@@ -53,7 +54,9 @@ function RatingBar({ value, max = 5 }: { value: number; max?: number }) {
   )
 }
 
-export default function MyResults({ results, cycleTitle }: Props) {
+export default function MyResults({ results, cycleTitle, employeeName }: Props) {
+  const resolveName = (text: string) =>
+    employeeName ? text.replace(/\[Name\]/g, employeeName) : text
   return (
     <div>
       {cycleTitle && (
@@ -88,7 +91,7 @@ export default function MyResults({ results, cycleTitle }: Props) {
                     return (
                       <div key={q.id}>
                         <span className="badge" style={{ fontSize: '10px', marginBottom: '6px' }}>{q.category}</span>
-                        <p style={{ fontSize: '14px', color: 'var(--body)', margin: '0 0 12px', lineHeight: '1.5' }}>{q.text}</p>
+                        <p style={{ fontSize: '14px', color: 'var(--body)', margin: '0 0 12px', lineHeight: '1.5' }}>{resolveName(q.text)}</p>
 
                         {q.type === 'RATING' && (
                           q.average !== undefined

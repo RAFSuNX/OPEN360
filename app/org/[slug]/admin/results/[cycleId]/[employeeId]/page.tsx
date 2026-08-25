@@ -77,7 +77,7 @@ export default async function OrgAdminEmployeeResultsPage({
           </p>
         </div>
       ) : (
-        <MyResults results={results} cycleTitle={undefined} />
+        <MyResults results={results} cycleTitle={undefined} employeeName={employee.name} />
       )}
     </div>
   )
