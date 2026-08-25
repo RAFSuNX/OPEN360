@@ -22,6 +22,12 @@ export async function GET(
 
   const { cycleId, employeeId } = await params
 
+  const reviewee = await db.employee.findFirst({
+    where: { id: employeeId, orgId },
+    select: { name: true },
+  })
+  const revieweeName = reviewee?.name ?? ''
+
   const responses = await db.reviewResponse.findMany({
     where: { cycleId, revieweeId: employeeId, cycle: { orgId } },
     include: { question: true, cycleQuestion: true },
@@ -70,7 +76,7 @@ export async function GET(
         answerCell = answers.join(' | ')
       }
       rows.push(
-        [question.text, question.category, question.type, rel, answerCell].map(csvEscape).join(',')
+        [question.text.replace(/\[Name\]/g, revieweeName), question.category, question.type, rel, answerCell].map(csvEscape).join(',')
       )
     }
   }

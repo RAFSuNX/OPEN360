@@ -67,7 +67,8 @@ export default function ExportPdfButton({ employeeName, cycleTitle, results }: P
           y += 5; lastCat = q.category
         }
 
-        const lines = doc.splitTextToSize(q.text, usable - 4) as string[]
+        const qText = q.text.replace(/\[Name\]/g, employeeName)
+        const lines = doc.splitTextToSize(qText, usable - 4) as string[]
         const blockH = lines.length * 4.5 + (q.type === 'RATING' ? 8 : (q.answers ?? []).reduce((a, ans) => a + doc.splitTextToSize(ans, usable - 10).length * 4, 0) + 4)
         checkY(blockH)
 
