@@ -18,14 +18,15 @@ model Organization {
   stripeCustomerId String?  @map("stripe_customer_id")
   createdAt        DateTime @default(now()) @map("created_at")
 
-  employees         Employee[]
-  reviewCycles      ReviewCycle[]
-  questionTemplates QuestionTemplate[]
-  questions         Question[]
-  settings          Setting[]
-  allowlist         Allowlist[]
-  allowedDomains    AllowedDomain[]
-  auditLogs         AuditLog[]
+  employees            Employee[]
+  reviewCycles         ReviewCycle[]
+  questionTemplates    QuestionTemplate[]
+  questions            Question[]
+  settings             Setting[]
+  allowlist            Allowlist[]
+  allowedDomains       AllowedDomain[]
+  auditLogs            AuditLog[]
+  externalReviewLinks  ExternalReviewerLink[]
 
   @@map("organizations")
 }
@@ -76,6 +77,7 @@ model Employee {
   isAdmin      Boolean  @default(false) @map("is_admin")
   isSuperAdmin Boolean  @default(false) @map("is_super_admin")
   isActive     Boolean  @default(true) @map("is_active")
+  isExternal   Boolean  @default(false) @map("is_external")
   managerId    String?  @map("manager_id")
   createdAt    DateTime @default(now()) @map("created_at")
 
@@ -83,14 +85,32 @@ model Employee {
   manager       Employee?    @relation("EmployeeManager", fields: [managerId], references: [id])
   directReports Employee[]   @relation("EmployeeManager")
 
-  reviewsAsReviewee ReviewAssignment[] @relation("AssignmentReviewee")
-  reviewsAsReviewer ReviewAssignment[] @relation("AssignmentReviewer")
-  responsesReceived ReviewResponse[]
+  reviewsAsReviewee    ReviewAssignment[]     @relation("AssignmentReviewee")
+  reviewsAsReviewer    ReviewAssignment[]     @relation("AssignmentReviewer")
+  responsesReceived    ReviewResponse[]
+  externalReviewLinks  ExternalReviewerLink[]
 
   @@unique([orgId, email])
   @@unique([orgId, employeeId])
   @@index([orgId])
   @@map("employees")
+}
+
+model ExternalReviewerLink {
+  id           String       @id @default(uuid())
+  orgId        String       @map("org_id")
+  revieweeId   String       @map("reviewee_id")
+  reviewerName String       @map("reviewer_name")
+  reviewerEmail String      @map("reviewer_email")
+  relationship Relationship
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  org      Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  reviewee Employee     @relation(fields: [revieweeId], references: [id], onDelete: Cascade)
+
+  @@unique([revieweeId, reviewerEmail])
+  @@index([orgId])
+  @@map("external_reviewer_links")
 }
 
 // ─── Review Cycles ────────────────────────────────────────────────────────────

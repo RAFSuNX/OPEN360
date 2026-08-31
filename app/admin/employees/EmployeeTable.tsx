@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { EmployeeForm } from '@/components/admin/EmployeeForm'
 import { CsvImport } from '@/components/admin/CsvImport'
 import { EmployeeProfileModal } from '@/components/EmployeeProfileModal'
@@ -24,6 +24,43 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
   const [editForm, setEditForm] = useState({ name: '', employeeId: '', department: '', role: '', managerId: '', isAdmin: false })
   const [saveLoading, setSaveLoading] = useState(false)
   const [saveError, setSaveError] = useState('')
+
+  // External reviewers state
+  interface ExtLink { id: string; reviewerName: string; reviewerEmail: string; relationship: string }
+  const [extLinks, setExtLinks] = useState<ExtLink[]>([])
+  const [extForm, setExtForm] = useState({ name: '', email: '', relationship: 'PEER' })
+  const [extLoading, setExtLoading] = useState(false)
+
+  useEffect(() => {
+    if (!editing) return
+    fetch(`/api/admin/employees/${editing.id}/external-reviewers`)
+      .then(r => r.json()).then(setExtLinks).catch(() => {})
+  }, [editing?.id])
+
+  async function addExternal(e: React.FormEvent) {
+    e.preventDefault()
+    if (!editing || !extForm.name.trim() || !extForm.email.trim()) return
+    setExtLoading(true)
+    const res = await fetch(`/api/admin/employees/${editing.id}/external-reviewers`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name: extForm.name.trim(), email: extForm.email.trim(), relationship: extForm.relationship }),
+    })
+    if (res.ok) {
+      const link = await res.json()
+      setExtLinks(prev => [...prev.filter(l => l.reviewerEmail !== link.reviewerEmail), link])
+      setExtForm({ name: '', email: '', relationship: 'PEER' })
+    }
+    setExtLoading(false)
+  }
+
+  async function removeExternal(email: string) {
+    if (!editing) return
+    await fetch(`/api/admin/employees/${editing.id}/external-reviewers`, {
+      method: 'DELETE', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    })
+    setExtLinks(prev => prev.filter(l => l.reviewerEmail !== email))
+  }
 
   // Ad-hoc review state
   const [reviewTarget, setReviewTarget] = useState<Employee | null>(null)
@@ -197,6 +234,39 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
               <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                 <button onClick={saveEdit} disabled={saveLoading} className="btn-primary" style={{ flex: 1 }}>{saveLoading ? 'Saving...' : 'Save changes'}</button>
                 <button onClick={() => setEditing(null)} className="btn-secondary">Cancel</button>
+              </div>
+
+              {/* External Reviewers */}
+              <div style={{ borderTop: '1px solid var(--hairline)', marginTop: '20px', paddingTop: '16px' }}>
+                <p style={{ fontSize: '11px', fontWeight: '600', letterSpacing: '0.88px', textTransform: 'uppercase' as const, color: 'var(--muted)', marginBottom: '10px' }}>
+                  External Reviewers
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '12px' }}>
+                  People outside the org who review this employee each cycle. They log in with a magic link.
+                </p>
+                {extLinks.map(l => (
+                  <div key={l.reviewerEmail} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px', fontSize: '12px' }}>
+                    <span style={{ flex: 1, color: 'var(--ink)' }}>{l.reviewerName}</span>
+                    <span style={{ color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px' }}>{l.reviewerEmail}</span>
+                    <span className="badge" style={{ fontSize: '10px' }}>{l.relationship}</span>
+                    <button onClick={() => removeExternal(l.reviewerEmail)}
+                      style={{ background: 'none', border: 'none', color: 'var(--semantic-error)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, padding: '0 2px' }}>×</button>
+                  </div>
+                ))}
+                <form onSubmit={addExternal} style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' as const }}>
+                  <input placeholder="Name" value={extForm.name} onChange={e => setExtForm(f => ({ ...f, name: e.target.value }))}
+                    style={{ ...inputStyle, flex: '1 1 100px' }} required />
+                  <input placeholder="Email" type="email" value={extForm.email} onChange={e => setExtForm(f => ({ ...f, email: e.target.value }))}
+                    style={{ ...inputStyle, flex: '2 1 160px' }} required />
+                  <select value={extForm.relationship} onChange={e => setExtForm(f => ({ ...f, relationship: e.target.value }))}
+                    style={{ ...inputStyle, flex: '0 0 auto' }}>
+                    <option value="PEER">Peer</option>
+                    <option value="DIRECT_REPORT">Direct Report</option>
+                  </select>
+                  <button type="submit" disabled={extLoading} className="btn-secondary" style={{ fontSize: '12px', padding: '7px 12px' }}>
+                    {extLoading ? '...' : '+ Add'}
+                  </button>
+                </form>
               </div>
             </div>
           </div>

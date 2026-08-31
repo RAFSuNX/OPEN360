@@ -35,7 +35,7 @@ export async function autoAssign(orgId: string, cycleId: string) {
   if (!cycle) throw new Error('Cycle not found')
 
   const employees = await db.employee.findMany({
-    where: { orgId, isActive: true },
+    where: { orgId, isActive: true, isExternal: false },
     select: { id: true, managerId: true, department: true },
   })
 
@@ -47,6 +47,28 @@ export async function autoAssign(orgId: string, cycleId: string) {
       relationship: a.relationship,
     }))
   )
+
+  // Add external reviewers for each employee
+  const externalLinks = await db.externalReviewerLink.findMany({
+    where: { orgId },
+    select: { revieweeId: true, reviewerEmail: true, reviewerName: true, relationship: true },
+  })
+
+  for (const link of externalLinks) {
+    // Upsert external employee record so ReviewAssignment FK works
+    const ext = await db.employee.upsert({
+      where: { orgId_email: { orgId, email: link.reviewerEmail } },
+      update: { name: link.reviewerName, isExternal: true },
+      create: { orgId, name: link.reviewerName, email: link.reviewerEmail, isExternal: true },
+    })
+    // Ensure they're on the allowlist so they can log in
+    await db.allowlist.upsert({
+      where: { orgId_email: { orgId, email: link.reviewerEmail } },
+      update: {},
+      create: { orgId, email: link.reviewerEmail },
+    })
+    data.push({ cycleId, revieweeId: link.revieweeId, reviewerId: ext.id, relationship: link.relationship })
+  }
 
   const result = await db.reviewAssignment.createMany({ data, skipDuplicates: true })
   return result.count

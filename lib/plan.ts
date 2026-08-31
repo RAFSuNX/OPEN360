@@ -16,7 +16,7 @@ export async function checkEmployeeLimit(orgId: string): Promise<void> {
     where: { id: orgId },
     select: {
       plan: true,
-      _count: { select: { employees: { where: { isActive: true } } } },
+      _count: { select: { employees: { where: { isActive: true, isExternal: false } } } },
     },
   })
   if (!org) throw new Error('Organization not found')
