@@ -9,7 +9,7 @@ const CreateCycleSchema = z.object({
   title: z.string().min(1).max(300),
   startDate: z.string().datetime({ offset: true }).or(z.string().date()),
   endDate: z.string().datetime({ offset: true }).or(z.string().date()),
-  templateId: z.string().uuid().optional(),
+  templateId: z.string().optional(),
 })
 
 const UpdateCycleSchema = z.object({
