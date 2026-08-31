@@ -3,13 +3,16 @@ import { mapAssignments } from '@/lib/assignments'
 import { sendEmail, buildReviewInviteEmail, buildResultsReadyEmail } from '@/lib/email'
 import { getOrgSettings } from '@/lib/org'
 
-const EMAIL_CONCURRENCY = 10
+const EMAIL_CONCURRENCY = 3
 
 async function sendConcurrent(tasks: (() => Promise<void>)[]): Promise<number> {
   let sent = 0
   for (let i = 0; i < tasks.length; i += EMAIL_CONCURRENCY) {
     const results = await Promise.allSettled(tasks.slice(i, i + EMAIL_CONCURRENCY).map(t => t()))
-    sent += results.filter(r => r.status === 'fulfilled').length
+    for (const r of results) {
+      if (r.status === 'fulfilled') sent++
+      else console.error('[email] send failed:', r.reason)
+    }
   }
   return sent
 }
