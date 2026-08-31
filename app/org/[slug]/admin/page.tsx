@@ -11,7 +11,7 @@ export default async function OrgAdminPage({
   const { org } = await requireOrgAdmin(slug)
 
   const [employeeCount, cycleCount, activeCount, activeCycles, recentAudit] = await Promise.all([
-    db.employee.count({ where: { orgId: org.id, isActive: true } }),
+    db.employee.count({ where: { orgId: org.id, isActive: true, isExternal: false } }),
     db.reviewCycle.count({ where: { orgId: org.id } }),
     db.reviewCycle.count({ where: { orgId: org.id, status: 'ACTIVE' } }),
     db.reviewCycle.findMany({
