@@ -22,7 +22,8 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response
   const { orgId, email } = auth
 
-  const { cycleId, action, employeeId } = await req.json()
+  const body = await req.json()
+  const { cycleId, action, employeeId, revieweeId, reviewerId, relationship } = body
   if (!cycleId || !action) return NextResponse.json({ error: 'cycleId and action are required' }, { status: 400 })
 
   if (action === 'auto-assign') {
@@ -41,6 +42,21 @@ export async function POST(req: NextRequest) {
     const sent = await sendCycleEmails(orgId, cycleId)
     void writeAudit({ orgId, actorEmail: email, action: 'cycle.activate', target: cycleId })
     return NextResponse.json({ activated: true, emailsSent: sent })
+  }
+
+  if (action === 'add') {
+    if (!revieweeId || !reviewerId || !relationship) {
+      return NextResponse.json({ error: 'revieweeId, reviewerId, relationship required' }, { status: 400 })
+    }
+    if (!['SELF','MANAGER','PEER','DIRECT_REPORT'].includes(relationship)) {
+      return NextResponse.json({ error: 'invalid relationship' }, { status: 400 })
+    }
+    const { db } = await import('@/lib/db')
+    const assignment = await db.reviewAssignment.create({
+      data: { cycleId, revieweeId, reviewerId, relationship },
+      include: { reviewer: { select: { name: true, email: true } }, reviewee: { select: { name: true, email: true } } },
+    })
+    return NextResponse.json(assignment, { status: 201 })
   }
 
   if (action === 'send-employee') {

@@ -6,6 +6,7 @@ export type AuditAction =
   | 'employee.delete'
   | 'cycle.create'
   | 'cycle.activate'
+  | 'cycle.send_employee'
   | 'cycle.close'
   | 'cycle.delete'
   | 'assignment.auto_assign'

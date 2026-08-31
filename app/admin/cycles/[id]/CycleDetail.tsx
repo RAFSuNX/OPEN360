@@ -111,7 +111,9 @@ function DeleteCycleButton({ cycleId, cycleTitle, orgSlug }: { cycleId: string; 
   )
 }
 
-export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }: { cycle: Cycle; initialAssignments: Assignment[]; orgSlug: string }) {
+interface Employee { id: string; name: string; email: string; isExternal: boolean }
+
+export function CycleDetail({ cycle: initialCycle, initialAssignments, employees = [], orgSlug }: { cycle: Cycle; initialAssignments: Assignment[]; employees?: Employee[]; orgSlug: string }) {
   const router = useRouter()
   const { toast } = useToast()
   const [cycle, setCycle] = useState(initialCycle)
@@ -179,6 +181,28 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }
       const res = await fetch(`/api/admin/assignments?id=${encodeURIComponent(id)}`, { method: 'DELETE' })
       if (res.ok) setAssignments(a => a.filter(x => x.id !== id))
     } finally { setLoading(false) }
+  }
+
+  const [addingFor, setAddingFor] = useState<string | null>(null)
+  const [addForm, setAddForm] = useState({ reviewerId: '', relationship: 'PEER' })
+  const [addLoading, setAddLoading] = useState(false)
+
+  async function addAssignment(revieweeId: string) {
+    if (!addForm.reviewerId) return
+    setAddLoading(true)
+    try {
+      const res = await fetch('/api/admin/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cycleId: cycle.id, action: 'add', revieweeId, reviewerId: addForm.reviewerId, relationship: addForm.relationship }),
+      })
+      if (!res.ok) { const d = await res.json(); toast(d.error ?? 'Failed', 'error'); return }
+      const a = await res.json()
+      setAssignments(prev => [...prev, a])
+      setAddForm({ reviewerId: '', relationship: 'PEER' })
+      setAddingFor(null)
+      toast('Reviewer added', 'success')
+    } finally { setAddLoading(false) }
   }
 
   const submitted = assignments.filter(a => a.submitted).length
@@ -290,16 +314,27 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }
                   <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>{reviewee.name}</p>
                   <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '2px 0 0', fontFamily: "'JetBrains Mono', monospace" }}>{reviewee.email}</p>
                 </div>
-                {cycle.status !== 'CLOSED' && (
-                  <button
-                    onClick={() => sendForEmployee(revieweeId, reviewee.name)}
-                    disabled={sendingEmployeeId === revieweeId}
-                    className="btn-secondary"
-                    style={{ fontSize: '12px', padding: '6px 14px' }}
-                  >
-                    {sendingEmployeeId === revieweeId ? 'Sending...' : 'Send Invites'}
-                  </button>
-                )}
+                <div style={{ display: 'flex', gap: '6px' }}>
+                  {cycle.status !== 'CLOSED' && (
+                    <button
+                      onClick={() => { setAddingFor(addingFor === revieweeId ? null : revieweeId); setAddForm({ reviewerId: '', relationship: 'PEER' }) }}
+                      className="btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 14px' }}
+                    >
+                      {addingFor === revieweeId ? 'Cancel' : '+ Reviewer'}
+                    </button>
+                  )}
+                  {cycle.status !== 'CLOSED' && (
+                    <button
+                      onClick={() => sendForEmployee(revieweeId, reviewee.name)}
+                      disabled={sendingEmployeeId === revieweeId}
+                      className="btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 14px' }}
+                    >
+                      {sendingEmployeeId === revieweeId ? 'Sending...' : 'Send Invites'}
+                    </button>
+                  )}
+                </div>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {relOrder.filter(rel => byRel[rel]?.length).map(rel => (
@@ -335,6 +370,33 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }
                   </div>
                 ))}
               </div>
+
+              {/* Inline add-reviewer form */}
+              {addingFor === revieweeId && (
+                <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--hairline)', display: 'flex', gap: '8px', flexWrap: 'wrap' as const, alignItems: 'center' }}>
+                  <select value={addForm.reviewerId} onChange={e => setAddForm(f => ({ ...f, reviewerId: e.target.value }))}
+                    style={{ flex: '2 1 180px', background: 'var(--surface-card)', color: 'var(--ink)', border: '1px solid var(--hairline-strong)', borderRadius: '8px', padding: '7px 10px', fontSize: '13px', fontFamily: 'inherit' }}>
+                    <option value="">Select reviewer…</option>
+                    {employees
+                      .filter(e => e.id !== revieweeId && !assignments.some(a => a.revieweeId === revieweeId && a.reviewerId === e.id))
+                      .map(e => (
+                        <option key={e.id} value={e.id}>
+                          {e.name}{e.isExternal ? ' (ext)' : ''} — {e.email}
+                        </option>
+                      ))}
+                  </select>
+                  <select value={addForm.relationship} onChange={e => setAddForm(f => ({ ...f, relationship: e.target.value }))}
+                    style={{ flex: '0 0 auto', background: 'var(--surface-card)', color: 'var(--ink)', border: '1px solid var(--hairline-strong)', borderRadius: '8px', padding: '7px 10px', fontSize: '13px', fontFamily: 'inherit' }}>
+                    <option value="PEER">Peer</option>
+                    <option value="MANAGER">Manager</option>
+                    <option value="DIRECT_REPORT">Direct Report</option>
+                  </select>
+                  <button onClick={() => addAssignment(revieweeId)} disabled={addLoading || !addForm.reviewerId}
+                    className="btn-primary" style={{ fontSize: '12px', padding: '7px 14px' }}>
+                    {addLoading ? '...' : 'Add'}
+                  </button>
+                </div>
+              )}
             </div>
           )
         })}
