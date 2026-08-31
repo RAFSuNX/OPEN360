@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 
-// Stripe sends raw body — Next.js must not parse it
-export const config = { api: { bodyParser: false } }
+// Stripe sends raw body — disable Next.js body parsing
+export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET
