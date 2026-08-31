@@ -39,6 +39,24 @@ export async function autoAssign(orgId: string, cycleId: string) {
     select: { id: true, managerId: true, department: true },
   })
 
+  const activeIds = new Set(employees.map(e => e.id))
+
+  // Remove unsubmitted assignments where reviewer or reviewee is no longer in the active employee list
+  const externalIds = new Set(
+    (await db.employee.findMany({ where: { orgId, isExternal: true }, select: { id: true } })).map(e => e.id)
+  )
+  const keepIds = new Set([...activeIds, ...externalIds])
+  await db.reviewAssignment.deleteMany({
+    where: {
+      cycleId,
+      submitted: false,
+      OR: [
+        { revieweeId: { notIn: [...activeIds] } },          // reviewee removed → drop whole group
+        { reviewerId: { notIn: [...keepIds] } },             // reviewer removed (non-external) → drop
+      ],
+    },
+  })
+
   const data = employees.flatMap(emp =>
     mapAssignments(emp.id, employees).map(a => ({
       cycleId,
