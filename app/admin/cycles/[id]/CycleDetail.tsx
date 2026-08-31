@@ -317,6 +317,23 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, employees
                 <div style={{ display: 'flex', gap: '6px' }}>
                   {cycle.status !== 'CLOSED' && (
                     <button
+                      onClick={async () => {
+                        const res = await fetch('/api/admin/assignments', {
+                          method: 'POST', headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ cycleId: cycle.id, action: 'add-all-peers', revieweeId }),
+                        })
+                        const d = await res.json()
+                        if (res.ok) { toast(`Added ${d.added} peers from full org`, 'success'); await refreshAssignments() }
+                        else toast(d.error ?? 'Failed', 'error')
+                      }}
+                      className="btn-secondary"
+                      style={{ fontSize: '12px', padding: '6px 14px' }}
+                    >
+                      + Full Org as Peers
+                    </button>
+                  )}
+                  {cycle.status !== 'CLOSED' && (
+                    <button
                       onClick={() => { setAddingFor(addingFor === revieweeId ? null : revieweeId); setAddForm({ reviewerId: '', relationship: 'PEER' }) }}
                       className="btn-secondary"
                       style={{ fontSize: '12px', padding: '6px 14px' }}

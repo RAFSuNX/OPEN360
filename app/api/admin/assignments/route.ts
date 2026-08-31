@@ -59,6 +59,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(assignment, { status: 201 })
   }
 
+  if (action === 'add-all-peers') {
+    if (!revieweeId) return NextResponse.json({ error: 'revieweeId required' }, { status: 400 })
+    const { db } = await import('@/lib/db')
+    const allEmployees = await db.employee.findMany({
+      where: { orgId, isActive: true },
+      select: { id: true },
+    })
+    const existing = new Set(
+      (await db.reviewAssignment.findMany({ where: { cycleId, revieweeId }, select: { reviewerId: true } }))
+        .map(a => a.reviewerId)
+    )
+    const toAdd = allEmployees.filter(e => e.id !== revieweeId && !existing.has(e.id))
+    if (toAdd.length === 0) return NextResponse.json({ added: 0 })
+    await db.reviewAssignment.createMany({
+      data: toAdd.map(e => ({ cycleId, revieweeId, reviewerId: e.id, relationship: 'PEER' })),
+      skipDuplicates: true,
+    })
+    return NextResponse.json({ added: toAdd.length })
+  }
+
   if (action === 'send-employee') {
     if (!employeeId) return NextResponse.json({ error: 'employeeId required' }, { status: 400 })
     // Snapshot questions if not done yet, activate cycle so reviewers can submit
