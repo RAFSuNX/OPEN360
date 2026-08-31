@@ -16,19 +16,21 @@ export interface OrgBranding {
 function emailHeader(org: OrgBranding): string {
   const name = escHtml(org.orgName || '')
   const orgBrand = org.orgLogoUrl?.startsWith('http')
-    ? `<img src="${escHtml(org.orgLogoUrl)}" alt="${name}" style="height:28px;max-width:140px;object-fit:contain;display:block;" />`
-    : name ? `<span style="font-size:14px;font-weight:600;color:#26251e;">${name}</span>` : ''
+    ? `<img src="${escHtml(org.orgLogoUrl)}" alt="${name}" style="height:28px;max-width:140px;object-fit:contain;vertical-align:middle;" />`
+    : name ? `<span style="font-size:13px;font-weight:600;color:#ffffff;white-space:nowrap;">${name}</span>` : ''
 
   return `
-    <div style="border-bottom:1px solid #e6e5e0;padding:16px 32px;background:#1c1208;display:flex;align-items:center;gap:0;">
-      <span style="font-size:14px;font-weight:800;color:white;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">
-        OPEN<span style="color:#f54e00;">360</span>
-      </span>
-      ${orgBrand ? `
-        <span style="width:1px;height:18px;background:rgba(255,255,255,0.2);margin:0 14px;display:inline-block;vertical-align:middle;"></span>
-        ${orgBrand}
-      ` : ''}
-    </div>
+    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#1c1208;border-bottom:1px solid #333;">
+      <tr>
+        <td style="padding:16px 32px;">
+          <span style="font-size:14px;font-weight:800;color:#ffffff;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;font-family:Arial,sans-serif;">
+            OPEN<span style="color:#f54e00;">360</span>
+          </span>${orgBrand ? `
+          <span style="display:inline-block;width:1px;height:16px;background:rgba(255,255,255,0.25);margin:0 12px;vertical-align:middle;"></span>
+          ${orgBrand}` : ''}
+        </td>
+      </tr>
+    </table>
   `
 }
 

@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
     }
 
     const dashboardUrl = `${appUrl}/org/${cycle.org.slug}/dashboard`
-    const logoUrl = `${appUrl}/api/logo?org=${cycle.org.slug}`
+    const logoUrl = orgSettings.org_logo_email ? `${appUrl}/api/logo?org=${cycle.org.slug}` : ''
     const org = { orgName: orgSettings.org_name, orgLogoUrl: logoUrl, orgTagline: orgSettings.org_tagline }
 
     for (const [email, reviewerAssignments] of byReviewer) {
