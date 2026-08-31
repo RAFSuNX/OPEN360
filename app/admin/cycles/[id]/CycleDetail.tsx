@@ -256,50 +256,60 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }
       )}
 
       <div style={{ overflowX: 'auto' }}>
-      <table className="data-table">
-        <thead>
-          <tr>
-            <th>Reviewee</th><th>Reviewer</th><th>Relationship</th><th>Status</th><th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {assignments.map(a => (
-            <tr key={a.id}>
-              <td style={{ fontWeight: '500', color: 'var(--ink)' }}>{a.reviewee.name}</td>
-              <td>
-                <div>
-                  <p style={{ margin: 0, fontSize: '13px' }}>{a.reviewer.name}</p>
-                  <p style={{ margin: 0, fontSize: '11px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>{a.reviewer.email}</p>
-                </div>
-              </td>
-              <td><span className="badge" style={{ fontSize: '10px' }}>{a.relationship.replace('_', ' ')}</span></td>
-              <td>
-                <span style={{ fontSize: '12px', fontWeight: '500', color: a.submitted ? 'var(--semantic-success)' : 'var(--semantic-error)' }}>
-                  {a.submitted ? 'Submitted' : 'Pending'}
-                </span>
-              </td>
-              <td>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  {!a.submitted && cycle.status === 'ACTIVE' && (
-                    <button
-                      onClick={() => sendReminderToAssignment(a.id, a.reviewer.email)}
-                      disabled={remindingId === a.id}
-                      style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>
-                      {remindingId === a.id ? 'Sending...' : 'Remind'}
-                    </button>
-                  )}
-                  {cycle.status === 'DRAFT' && (
-                    <button onClick={() => removeAssignment(a.id)} disabled={loading}
-                      style={{ fontSize: '11px', color: 'var(--semantic-error)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                      Remove
-                    </button>
-                  )}
-                </div>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {reviewees.map(([revieweeId, reviewee]) => {
+          const empAssignments = assignments.filter(a => a.revieweeId === revieweeId)
+          const byRel: Record<string, typeof empAssignments> = {}
+          for (const a of empAssignments) {
+            if (!byRel[a.relationship]) byRel[a.relationship] = []
+            byRel[a.relationship].push(a)
+          }
+          const relOrder = ['SELF', 'MANAGER', 'PEER', 'DIRECT_REPORT'] as const
+          const relLabel: Record<string, string> = { SELF: 'Self', MANAGER: 'Manager', PEER: 'Peers', DIRECT_REPORT: 'Direct Reports' }
+          return (
+            <div key={revieweeId} className="card" style={{ padding: '16px 20px' }}>
+              <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid var(--hairline)' }}>
+                <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>{reviewee.name}</p>
+                <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '2px 0 0', fontFamily: "'JetBrains Mono', monospace" }}>{reviewee.email}</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {relOrder.filter(rel => byRel[rel]?.length).map(rel => (
+                  <div key={rel} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', minWidth: '96px', paddingTop: '2px' }}>
+                      {relLabel[rel]}
+                    </span>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
+                      {byRel[rel].map(a => (
+                        <div key={a.id} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontSize: '13px', color: 'var(--ink)', flex: 1 }}>{a.reviewer.name}</span>
+                          <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace" }}>{a.reviewer.email}</span>
+                          <span style={{ fontSize: '11px', fontWeight: '500', color: a.submitted ? 'var(--semantic-success)' : 'var(--semantic-error)', minWidth: '60px', textAlign: 'right' as const }}>
+                            {a.submitted ? 'Submitted' : 'Pending'}
+                          </span>
+                          <div style={{ display: 'flex', gap: '8px', minWidth: '80px', justifyContent: 'flex-end' }}>
+                            {!a.submitted && cycle.status === 'ACTIVE' && (
+                              <button onClick={() => sendReminderToAssignment(a.id, a.reviewer.email)} disabled={remindingId === a.id}
+                                style={{ fontSize: '11px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500' }}>
+                                {remindingId === a.id ? '...' : 'Remind'}
+                              </button>
+                            )}
+                            {cycle.status === 'DRAFT' && (
+                              <button onClick={() => removeAssignment(a.id)} disabled={loading}
+                                style={{ fontSize: '11px', color: 'var(--semantic-error)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
+                                Remove
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+      </div>
       </div>
       {assignments.length === 0 && (
         <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px', padding: '32px' }}>
