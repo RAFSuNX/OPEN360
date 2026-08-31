@@ -30,6 +30,7 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
   // External reviewers state
   interface ExtLink { id: string; reviewerName: string; reviewerEmail: string; relationship: string }
   const [extLinks, setExtLinks] = useState<ExtLink[]>([])
+  const [extPool, setExtPool] = useState<{ reviewerName: string; reviewerEmail: string }[]>([])
   const [extForm, setExtForm] = useState({ name: '', email: '', relationship: 'PEER' })
   const [extLoading, setExtLoading] = useState(false)
 
@@ -37,6 +38,8 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
     if (!editing) return
     fetch(`/api/admin/employees/${editing.id}/external-reviewers`)
       .then(r => r.json()).then(setExtLinks).catch(() => {})
+    fetch('/api/admin/employees/external-pool')
+      .then(r => r.json()).then(setExtPool).catch(() => {})
   }, [editing?.id])
 
   async function addExternal(e: React.FormEvent) {
@@ -269,7 +272,22 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
                       style={{ background: 'none', border: 'none', color: 'var(--semantic-error)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, padding: '0 2px' }}>×</button>
                   </div>
                 ))}
-                <form onSubmit={addExternal} style={{ display: 'flex', gap: '6px', marginTop: '8px', flexWrap: 'wrap' as const }}>
+                {/* Known externals from other employees — quick pick */}
+                {extPool.filter(p => !extLinks.some(l => l.reviewerEmail === p.reviewerEmail)).length > 0 && (
+                  <div style={{ marginBottom: '8px' }}>
+                    <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '0 0 6px' }}>Quick-add from known externals:</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap' as const, gap: '6px' }}>
+                      {extPool.filter(p => !extLinks.some(l => l.reviewerEmail === p.reviewerEmail)).map(p => (
+                        <button key={p.reviewerEmail} type="button"
+                          onClick={() => setExtForm(f => ({ ...f, name: p.reviewerName, email: p.reviewerEmail }))}
+                          style={{ fontSize: '11px', padding: '4px 10px', borderRadius: '20px', border: '1px solid var(--hairline-strong)', background: extForm.email === p.reviewerEmail ? 'var(--primary)' : 'var(--surface-card)', color: extForm.email === p.reviewerEmail ? 'white' : 'var(--ink)', cursor: 'pointer', fontFamily: 'inherit' }}>
+                          {p.reviewerName}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <form onSubmit={addExternal} style={{ display: 'flex', gap: '6px', marginTop: '4px', flexWrap: 'wrap' as const }}>
                   <input placeholder="Name" value={extForm.name} onChange={e => setExtForm(f => ({ ...f, name: e.target.value }))}
                     style={{ ...inputStyle, flex: '1 1 100px' }} required />
                   <input placeholder="Email" type="email" value={extForm.email} onChange={e => setExtForm(f => ({ ...f, email: e.target.value }))}
