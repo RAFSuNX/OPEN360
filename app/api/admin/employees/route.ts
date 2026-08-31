@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
   try {
     await checkEmployeeLimit(orgId)
-    const employee = await createEmployee(orgId, { name, email, employeeId, department, role, managerId })
+    const employee = await createEmployee(orgId, { name, email, employeeId: employeeId ?? undefined, department: department ?? undefined, role: role ?? undefined, managerId: managerId ?? undefined })
     // Auto-allowlist the employee's email so they can log in immediately
     await db.allowlist.upsert({
       where: { orgId_email: { orgId, email } },
@@ -83,7 +83,7 @@ export async function PATCH(req: NextRequest) {
     }
   }
 
-  const employee = await updateEmployee(orgId, id, { name, employeeId, department, role, managerId, isAdmin })
+  const employee = await updateEmployee(orgId, id, { name, employeeId: employeeId ?? undefined, department: department ?? undefined, role: role ?? undefined, managerId: managerId ?? undefined, isAdmin })
   return NextResponse.json(employee)
 }
 
