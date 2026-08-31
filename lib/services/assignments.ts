@@ -4,10 +4,12 @@ import { sendEmail, buildReviewInviteEmail, buildResultsReadyEmail } from '@/lib
 import { getOrgSettings } from '@/lib/org'
 
 const EMAIL_CONCURRENCY = 3
+const EMAIL_BATCH_DELAY_MS = 15000
 
 async function sendConcurrent(tasks: (() => Promise<void>)[]): Promise<number> {
   let sent = 0
   for (let i = 0; i < tasks.length; i += EMAIL_CONCURRENCY) {
+    if (i > 0) await new Promise(r => setTimeout(r, EMAIL_BATCH_DELAY_MS))
     const results = await Promise.allSettled(tasks.slice(i, i + EMAIL_CONCURRENCY).map(t => t()))
     for (const r of results) {
       if (r.status === 'fulfilled') sent++
