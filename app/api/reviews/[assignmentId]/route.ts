@@ -2,7 +2,22 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { z } from 'zod'
 import { authOptions } from '@/lib/auth'
+import { db } from '@/lib/db'
 import { getAssignmentWithQuestions, submitReview } from '@/lib/services/reviews'
+
+// Always do a fresh DB lookup by email to avoid stale JWT employeeId
+async function getReviewerId(email: string, assignmentId: string): Promise<string | null> {
+  const assignment = await db.reviewAssignment.findUnique({
+    where: { id: assignmentId },
+    select: { cycle: { select: { orgId: true } } },
+  })
+  if (!assignment) return null
+  const emp = await db.employee.findFirst({
+    where: { email, orgId: assignment.cycle.orgId, isActive: true },
+    select: { id: true },
+  })
+  return emp?.id ?? null
+}
 
 const SubmitReviewSchema = z.object({
   answers: z.array(z.object({
@@ -13,16 +28,18 @@ const SubmitReviewSchema = z.object({
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ assignmentId: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { assignmentId } = await params
-  const data = await getAssignmentWithQuestions(assignmentId, session.user.id)
+  const reviewerId = await getReviewerId(session.user.email, assignmentId)
+  if (!reviewerId) return NextResponse.json({ error: 'Not found' }, { status: 404 })
+  const data = await getAssignmentWithQuestions(assignmentId, reviewerId)
   if (!data) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   return NextResponse.json(data)
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ assignmentId: string }> }) {
   const session = await getServerSession(authOptions)
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  if (!session?.user?.email) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   const { assignmentId } = await params
 
   const parsed = SubmitReviewSchema.safeParse(await req.json())
@@ -30,8 +47,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ass
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
+  const reviewerId = await getReviewerId(session.user.email, assignmentId)
+  if (!reviewerId) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 })
+
   try {
-    await submitReview(assignmentId, session.user.id, parsed.data.answers)
+    await submitReview(assignmentId, reviewerId, parsed.data.answers)
     return NextResponse.json({ ok: true })
   } catch (e) {
     const msg = e instanceof Error ? e.message : 'Submission failed'
