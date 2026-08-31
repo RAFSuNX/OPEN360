@@ -75,6 +75,16 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
   const [reviewLoading, setReviewLoading] = useState(false)
   const [reviewResult, setReviewResult] = useState('')
 
+  async function deactivateEmployee(id: string, name: string) {
+    if (!confirm(`Remove ${name} from the organisation? This cannot be undone easily.`)) return
+    const res = await fetch('/api/admin/employees', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id }),
+    })
+    if (res.ok) setEmployees(prev => prev.filter(e => e.id !== id))
+  }
+
   async function refresh() {
     try {
       const res = await fetch('/api/admin/employees')
@@ -208,6 +218,9 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
                       <button onClick={() => setViewingProfile(emp.id)} style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', minHeight: '36px' }}>View</button>
                       <button onClick={() => openEdit(emp)} style={{ fontSize: '12px', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontWeight: '500', minHeight: '36px' }}>Edit</button>
                       <button onClick={() => openReview(emp)} style={{ fontSize: '12px', color: 'var(--body)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', minHeight: '36px' }}>Send review</button>
+                      {emp.id !== currentUserId && (
+                        <button onClick={() => deactivateEmployee(emp.id, emp.name)} style={{ fontSize: '12px', color: 'var(--semantic-error)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', minHeight: '36px' }}>Remove</button>
+                      )}
                     </div>
                   </td>
                 </tr>
