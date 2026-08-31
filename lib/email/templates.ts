@@ -14,14 +14,20 @@ export interface OrgBranding {
 }
 
 function emailHeader(org: OrgBranding): string {
-  const name = escHtml(org.orgName || 'OPEN360')
-  const logo = org.orgLogoUrl?.startsWith('http')
-    ? `<img src="${escHtml(org.orgLogoUrl)}" alt="${name}" style="height:36px;max-width:160px;object-fit:contain;display:block;" />`
-    : `<span style="font-size:18px;font-weight:600;color:#26251e;">${name}</span>`
+  const name = escHtml(org.orgName || '')
+  const orgBrand = org.orgLogoUrl?.startsWith('http')
+    ? `<img src="${escHtml(org.orgLogoUrl)}" alt="${name}" style="height:28px;max-width:140px;object-fit:contain;display:block;" />`
+    : name ? `<span style="font-size:14px;font-weight:600;color:#26251e;">${name}</span>` : ''
+
   return `
-    <div style="border-bottom:1px solid #e6e5e0;padding:20px 32px;background:#f7f7f4;">
-      ${logo}
-      ${org.orgTagline ? `<p style="font-size:12px;color:#807d72;margin:4px 0 0;">${escHtml(org.orgTagline)}</p>` : ''}
+    <div style="border-bottom:1px solid #e6e5e0;padding:16px 32px;background:#1c1208;display:flex;align-items:center;gap:0;">
+      <span style="font-size:14px;font-weight:800;color:white;text-transform:uppercase;letter-spacing:0.06em;white-space:nowrap;">
+        OPEN<span style="color:#f54e00;">360</span>
+      </span>
+      ${orgBrand ? `
+        <span style="width:1px;height:18px;background:rgba(255,255,255,0.2);margin:0 14px;display:inline-block;vertical-align:middle;"></span>
+        ${orgBrand}
+      ` : ''}
     </div>
   `
 }
