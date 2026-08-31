@@ -106,6 +106,13 @@ export default async function OrgDashboardLayout({
             </svg>
             Switch
           </Link>
+          <Link href="/api/auth/signout" style={{
+            fontSize: '11px', color: 'rgba(255,255,255,0.35)', textDecoration: 'none',
+            padding: '3px 8px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)',
+            whiteSpace: 'nowrap', transition: 'color 0.15s, border-color 0.15s',
+          }}>
+            Sign out
+          </Link>
         </div>
       </nav>
 
