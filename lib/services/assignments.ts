@@ -78,12 +78,17 @@ export async function autoAssign(orgId: string, cycleId: string) {
   })
 
   for (const link of externalLinks) {
-    // Upsert external employee record so ReviewAssignment FK works
-    const ext = await db.employee.upsert({
-      where: { orgId_email: { orgId, email: link.reviewerEmail } },
-      update: { name: link.reviewerName, isExternal: true },
-      create: { orgId, name: link.reviewerName, email: link.reviewerEmail, isExternal: true },
+    // Find existing employee — never overwrite a real internal employee with isExternal=true
+    let ext = await db.employee.findFirst({
+      where: { orgId, email: link.reviewerEmail },
+      select: { id: true, isExternal: true },
     })
+    if (!ext) {
+      ext = await db.employee.create({
+        data: { orgId, name: link.reviewerName, email: link.reviewerEmail, isExternal: true },
+        select: { id: true, isExternal: true },
+      })
+    }
     // Ensure they're on the allowlist so they can log in
     await db.allowlist.upsert({
       where: { orgId_email: { orgId, email: link.reviewerEmail } },
