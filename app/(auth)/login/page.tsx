@@ -9,6 +9,7 @@ type Step = 'initial' | 'otp-sent' | 'loading'
 function LoginContent() {
   const searchParams = useSearchParams()
   const error = searchParams.get('error')
+  const next = searchParams.get('next') ?? '/'
   const [step, setStep] = useState<Step>('initial')
   const [email, setEmail] = useState('')
   const [code, setCode] = useState('')
@@ -45,10 +46,10 @@ function LoginContent() {
       email: email.trim().toLowerCase(),
       code: code.trim(),
       redirect: false,
-      callbackUrl: '/',
+      callbackUrl: next,
     })
     if (result?.ok) {
-      window.location.href = '/'
+      window.location.href = next
     } else {
       setOtpError('Invalid or expired code. Please try again.')
       setStep('otp-sent')
@@ -91,7 +92,7 @@ function LoginContent() {
 
           {/* Google */}
           <button
-            onClick={() => { setGoogleLoading(true); signIn('google', { callbackUrl: '/' }) }}
+            onClick={() => { setGoogleLoading(true); signIn('google', { callbackUrl: next }) }}
             disabled={googleLoading || step === 'loading'}
             style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', background: 'var(--canvas)', color: 'var(--ink)', border: '1px solid var(--ink)', borderRadius: '28px', padding: '13px 18px', fontSize: '15px', fontWeight: '400', cursor: 'pointer', fontFamily: 'inherit', opacity: googleLoading ? 0.65 : 1, marginBottom: '20px' }}
           >
