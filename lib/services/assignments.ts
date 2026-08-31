@@ -131,7 +131,7 @@ export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId
     db.organization.findUnique({ where: { id: orgId }, select: { slug: true } }),
   ])
   const orgSlug = orgRecord?.slug
-  const logoEmailUrl = `${appUrl}/api/logo`
+  const logoEmailUrl = orgSettings.org_logo_email ? `${appUrl}/api/logo` : ''
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
 
   const tasks = filtered.map(a => async () => {
@@ -166,7 +166,7 @@ export async function sendResultsEmails(orgId: string, cycleId: string) {
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
   const orgSettings = await getOrgSettings(orgId)
-  const logoEmailUrl = `${appUrl}/api/logo`
+  const logoEmailUrl = orgSettings.org_logo_email ? `${appUrl}/api/logo` : ''
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
 
   const tasks = reviewees.map(r => () => {
