@@ -84,9 +84,9 @@ export async function deleteAssignment(orgId: string, id: string) {
   return db.reviewAssignment.delete({ where: { id } })
 }
 
-export async function sendCycleEmails(orgId: string, cycleId: string) {
+export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId?: string) {
   const assignments = await db.reviewAssignment.findMany({
-    where: { cycleId, submitted: false },
+    where: { cycleId, submitted: false, ...(revieweeId ? { revieweeId } : {}) },
     include: {
       reviewer: { select: { name: true, email: true } },
       reviewee: { select: { name: true } },

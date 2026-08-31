@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   if (!auth.ok) return auth.response
   const { orgId, email } = auth
 
-  const { cycleId, action } = await req.json()
+  const { cycleId, action, employeeId } = await req.json()
   if (!cycleId || !action) return NextResponse.json({ error: 'cycleId and action are required' }, { status: 400 })
 
   if (action === 'auto-assign') {
@@ -41,6 +41,19 @@ export async function POST(req: NextRequest) {
     const sent = await sendCycleEmails(orgId, cycleId)
     void writeAudit({ orgId, actorEmail: email, action: 'cycle.activate', target: cycleId })
     return NextResponse.json({ activated: true, emailsSent: sent })
+  }
+
+  if (action === 'send-employee') {
+    if (!employeeId) return NextResponse.json({ error: 'employeeId required' }, { status: 400 })
+    // Snapshot questions if not done yet, activate cycle so reviewers can submit
+    const cycle = await getCycle(orgId, cycleId)
+    if (cycle?.status === CycleStatus.DRAFT) {
+      await snapshotTemplateForCycle(orgId, cycleId)
+      await updateCycleStatus(orgId, cycleId, CycleStatus.ACTIVE)
+    }
+    const sent = await sendCycleEmails(orgId, cycleId, employeeId)
+    void writeAudit({ orgId, actorEmail: email, action: 'cycle.send_employee', target: employeeId })
+    return NextResponse.json({ sent })
   }
 
   if (action === 'close') {

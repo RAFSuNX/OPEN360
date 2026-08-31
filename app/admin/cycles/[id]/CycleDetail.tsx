@@ -142,6 +142,23 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }
     } finally { setLoading(false) }
   }
 
+  const [sendingEmployeeId, setSendingEmployeeId] = useState<string | null>(null)
+
+  async function sendForEmployee(employeeId: string, employeeName: string) {
+    setSendingEmployeeId(employeeId)
+    try {
+      const res = await fetch('/api/admin/assignments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ cycleId: cycle.id, action: 'send-employee', employeeId }),
+      })
+      const data = await res.json()
+      if (!res.ok) { toast(data.error ?? 'Failed to send', 'error'); return }
+      toast(`${data.sent} invite email${data.sent !== 1 ? 's' : ''} sent to ${employeeName}'s reviewers`, 'success')
+      setCycle(c => ({ ...c, status: CycleStatus.ACTIVE }))
+    } finally { setSendingEmployeeId(null) }
+  }
+
   async function sendReminderToAssignment(assignmentId: string, reviewerEmail: string) {
     setRemindingId(assignmentId)
     try {
@@ -268,9 +285,21 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, orgSlug }
           const relLabel: Record<string, string> = { SELF: 'Self', MANAGER: 'Manager', PEER: 'Peers', DIRECT_REPORT: 'Direct Reports' }
           return (
             <div key={revieweeId} className="card" style={{ padding: '16px 20px' }}>
-              <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid var(--hairline)' }}>
-                <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>{reviewee.name}</p>
-                <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '2px 0 0', fontFamily: "'JetBrains Mono', monospace" }}>{reviewee.email}</p>
+              <div style={{ marginBottom: '12px', paddingBottom: '10px', borderBottom: '1px solid var(--hairline)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--ink)', margin: 0 }}>{reviewee.name}</p>
+                  <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '2px 0 0', fontFamily: "'JetBrains Mono', monospace" }}>{reviewee.email}</p>
+                </div>
+                {cycle.status !== 'CLOSED' && (
+                  <button
+                    onClick={() => sendForEmployee(revieweeId, reviewee.name)}
+                    disabled={sendingEmployeeId === revieweeId}
+                    className="btn-secondary"
+                    style={{ fontSize: '12px', padding: '6px 14px' }}
+                  >
+                    {sendingEmployeeId === revieweeId ? 'Sending...' : 'Send Invites'}
+                  </button>
+                )}
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {relOrder.filter(rel => byRel[rel]?.length).map(rel => (
