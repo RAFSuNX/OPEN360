@@ -149,6 +149,7 @@ model ReviewAssignment {
   relationship Relationship
   submitted    Boolean      @default(false)
   submittedAt  DateTime?    @map("submitted_at")
+  emailSent    Boolean      @default(false) @map("email_sent")
 
   cycle    ReviewCycle @relation(fields: [cycleId], references: [id])
   reviewee Employee    @relation("AssignmentReviewee", fields: [revieweeId], references: [id])

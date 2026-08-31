@@ -104,7 +104,7 @@ export async function deleteAssignment(orgId: string, id: string) {
 
 export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId?: string) {
   const assignments = await db.reviewAssignment.findMany({
-    where: { cycleId, submitted: false, ...(revieweeId ? { revieweeId } : {}) },
+    where: { cycleId, submitted: false, ...(revieweeId ? { revieweeId } : { emailSent: false }) },
     include: {
       reviewer: { select: { name: true, email: true } },
       reviewee: { select: { name: true } },
@@ -120,7 +120,7 @@ export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId
   const logoEmailUrl = `${appUrl}/api/logo`
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
 
-  const tasks = filtered.map(a => () => {
+  const tasks = filtered.map(a => async () => {
     const { subject, html } = buildReviewInviteEmail({
       reviewerName: a.reviewer.name,
       revieweeName: a.reviewee.name,
@@ -129,7 +129,8 @@ export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId
       assignmentId: a.id,
       org,
     })
-    return sendEmail({ to: a.reviewer.email, subject, html })
+    await sendEmail({ to: a.reviewer.email, subject, html })
+    await db.reviewAssignment.update({ where: { id: a.id }, data: { emailSent: true } })
   })
 
   return sendConcurrent(tasks)
