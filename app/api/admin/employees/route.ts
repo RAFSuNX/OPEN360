@@ -9,24 +9,24 @@ import { writeAudit } from '@/lib/audit'
 const CreateEmployeeSchema = z.object({
   name: z.string().min(1).max(200),
   email: z.string().email().max(300),
-  employeeId: z.string().max(100).optional(),
-  department: z.string().max(200).optional(),
-  role: z.string().max(200).optional(),
-  managerId: z.string().uuid().optional(),
+  employeeId: z.string().max(100).nullish(),
+  department: z.string().max(200).nullish(),
+  role: z.string().max(200).nullish(),
+  managerId: z.string().nullish(),
 })
 
 const UpdateEmployeeSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
   name: z.string().min(1).max(200).optional(),
-  employeeId: z.string().max(100).optional(),
-  department: z.string().max(200).optional(),
-  role: z.string().max(200).optional(),
-  managerId: z.string().uuid().optional(),
+  employeeId: z.string().max(100).nullish(),
+  department: z.string().max(200).nullish(),
+  role: z.string().max(200).nullish(),
+  managerId: z.string().nullish(),
   isAdmin: z.boolean().optional(),
 })
 
 const DeleteEmployeeSchema = z.object({
-  id: z.string().uuid(),
+  id: z.string(),
 })
 
 export async function GET() {
