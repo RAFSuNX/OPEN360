@@ -14,7 +14,10 @@ export class EmployeeExistsError extends Error {
 export async function listEmployees(orgId: string) {
   return db.employee.findMany({
     where: { orgId, isActive: true, isExternal: false },
-    include: { manager: { select: { id: true, name: true } } },
+    include: {
+      manager: { select: { id: true, name: true } },
+      externalReviewLinks: { select: { reviewerName: true, reviewerEmail: true, relationship: true } },
+    },
     orderBy: { name: 'asc' },
   })
 }

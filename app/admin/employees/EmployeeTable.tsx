@@ -4,11 +4,13 @@ import { EmployeeForm } from '@/components/admin/EmployeeForm'
 import { CsvImport } from '@/components/admin/CsvImport'
 import { EmployeeProfileModal } from '@/components/EmployeeProfileModal'
 
+interface ExternalLink { reviewerName: string; reviewerEmail: string; relationship: string }
 interface Employee {
   id: string; name: string; email: string
   employeeId: string | null; department: string | null
   role: string | null; manager: { id: string; name: string } | null
   isAdmin: boolean
+  externalReviewLinks: ExternalLink[]
 }
 
 const inputStyle = {
@@ -170,7 +172,7 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
         <div style={{ overflowX: 'auto' as const }}>
           <table className="data-table">
             <thead>
-              <tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Manager</th><th></th></tr>
+              <tr><th>ID</th><th>Name</th><th>Email</th><th>Department</th><th>Role</th><th>Manager / External Reviewers</th><th></th></tr>
             </thead>
             <tbody>
               {employees.map(emp => (
@@ -183,7 +185,21 @@ export function EmployeeTable({ initialEmployees, currentUserId }: { initialEmpl
                   <td style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '12px' }}>{emp.email}</td>
                   <td>{emp.department ?? '-'}</td>
                   <td>{emp.role ?? '-'}</td>
-                  <td>{emp.manager?.name ?? '-'}</td>
+                  <td>
+                    <div style={{ fontSize: '13px', color: 'var(--ink)' }}>{emp.manager?.name ?? '-'}</div>
+                    {emp.externalReviewLinks.length > 0 && (
+                      <div style={{ marginTop: '4px', display: 'flex', flexDirection: 'column' as const, gap: '2px' }}>
+                        {emp.externalReviewLinks.map(l => (
+                          <span key={l.reviewerEmail} style={{ fontSize: '11px', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ fontSize: '9px', fontWeight: '700', color: 'var(--primary)', textTransform: 'uppercase' as const, letterSpacing: '0.05em' }}>
+                              ext {l.relationship.replace('_', ' ').toLowerCase()}
+                            </span>
+                            {l.reviewerName}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
                   <td>
                     <div style={{ display: 'flex', gap: '10px' }}>
                       <button onClick={() => setViewingProfile(emp.id)} style={{ fontSize: '12px', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', minHeight: '36px' }}>View</button>
