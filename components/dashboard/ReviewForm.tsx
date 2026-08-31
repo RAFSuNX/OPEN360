@@ -35,7 +35,10 @@ function ProgressRing({ value, max }: { value: number; max: number }) {
 export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, questions, orgSlug }: Props) {
   const router = useRouter()
   const { toast } = useToast()
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const storageKey = `review-draft-${assignmentId}`
+  const [answers, setAnswers] = useState<Record<string, string>>(() => {
+    try { return JSON.parse(localStorage.getItem(storageKey) ?? '{}') } catch { return {} }
+  })
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -43,7 +46,11 @@ export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, que
   const formRef = useRef<HTMLFormElement>(null)
 
   function setAnswer(questionId: string, value: string) {
-    setAnswers(prev => ({ ...prev, [questionId]: value }))
+    setAnswers(prev => {
+      const next = { ...prev, [questionId]: value }
+      try { localStorage.setItem(storageKey, JSON.stringify(next)) } catch { /* quota */ }
+      return next
+    })
     setJustSelected(questionId)
     setTimeout(() => setJustSelected(null), 250)
   }
@@ -76,6 +83,7 @@ export default function ReviewForm({ assignmentId, revieweeName, cycleTitle, que
         setError(data.error ?? 'Submission failed')
         return
       }
+      try { localStorage.removeItem(storageKey) } catch { /* quota */ }
       setSubmitted(true)
       toast('Review submitted successfully', 'success')
       setTimeout(() => router.push(`/org/${orgSlug}/dashboard`), 1800)
