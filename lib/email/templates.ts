@@ -46,10 +46,13 @@ export function buildReviewInviteEmail(params: {
   cycleTitle: string
   appUrl: string
   assignmentId: string
+  orgSlug?: string
   org?: OrgBranding
 }): EmailContent {
-  const { reviewerName, revieweeName, cycleTitle, appUrl, assignmentId, org = {} } = params
-  const url = `${appUrl}/dashboard/review/${assignmentId}`
+  const { reviewerName, revieweeName, cycleTitle, appUrl, assignmentId, orgSlug, org = {} } = params
+  const url = orgSlug
+    ? `${appUrl}/org/${orgSlug}/dashboard/review/${assignmentId}`
+    : `${appUrl}/dashboard/review/${assignmentId}`
   return {
     subject: `Review request: ${revieweeName} - ${cycleTitle}`,
     html: emailWrapper(`

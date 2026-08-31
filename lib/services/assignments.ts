@@ -116,7 +116,11 @@ export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId
   const filtered = assignments.filter(a => a.cycle.orgId === orgId)
 
   const appUrl = process.env.NEXTAUTH_URL ?? 'http://localhost:3000'
-  const orgSettings = await getOrgSettings(orgId)
+  const [orgSettings, orgRecord] = await Promise.all([
+    getOrgSettings(orgId),
+    db.organization.findUnique({ where: { id: orgId }, select: { slug: true } }),
+  ])
+  const orgSlug = orgRecord?.slug
   const logoEmailUrl = `${appUrl}/api/logo`
   const org = { orgName: orgSettings.org_name, orgLogoUrl: logoEmailUrl, orgTagline: orgSettings.org_tagline }
 
@@ -127,6 +131,7 @@ export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId
       cycleTitle: a.cycle.title,
       appUrl,
       assignmentId: a.id,
+      orgSlug,
       org,
     })
     await sendEmail({ to: a.reviewer.email, subject, html })
