@@ -118,7 +118,7 @@ export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId
     include: {
       reviewer: { select: { name: true, email: true } },
       reviewee: { select: { name: true } },
-      cycle: { select: { title: true, orgId: true } },
+      cycle: { select: { title: true, orgId: true, endDate: true } },
     },
   })
 
@@ -139,6 +139,7 @@ export async function sendCycleEmails(orgId: string, cycleId: string, revieweeId
       reviewerName: a.reviewer.name,
       revieweeName: a.reviewee.name,
       cycleTitle: a.cycle.title,
+      endDate: new Date(a.cycle.endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }),
       appUrl,
       assignmentId: a.id,
       orgSlug,

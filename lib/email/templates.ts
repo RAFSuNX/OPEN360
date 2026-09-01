@@ -52,12 +52,13 @@ export function buildReviewInviteEmail(params: {
   reviewerName: string
   revieweeName: string
   cycleTitle: string
+  endDate?: string
   appUrl: string
   assignmentId: string
   orgSlug?: string
   org?: OrgBranding
 }): EmailContent {
-  const { reviewerName, revieweeName, cycleTitle, appUrl, assignmentId, orgSlug, org = {} } = params
+  const { reviewerName, revieweeName, cycleTitle, endDate, appUrl, assignmentId, orgSlug, org = {} } = params
   const url = orgSlug
     ? `${appUrl}/org/${orgSlug}/dashboard/review/${assignmentId}`
     : `${appUrl}/dashboard/review/${assignmentId}`
@@ -66,6 +67,7 @@ export function buildReviewInviteEmail(params: {
     html: emailWrapper(`
       <p style="margin:0 0 16px;">Hi <strong>${escHtml(reviewerName)}</strong>,</p>
       <p style="margin:0 0 16px;">You have been asked to provide feedback for <strong>${escHtml(revieweeName)}</strong> as part of <strong>${escHtml(cycleTitle)}</strong>.</p>
+      ${endDate ? `<p style="margin:0 0 16px;color:#c0392b;font-weight:500;">Please complete your review by <strong>${escHtml(endDate)}</strong>.</p>` : ''}
       <p style="margin:0 0 24px;color:#5a5852;">Your responses are completely anonymous - no one will know what you wrote.</p>
       <a href="${escHtml(url)}" style="display:inline-block;background:#f54e00;color:#ffffff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:500;font-size:14px;">Complete your review</a>
       <p style="margin:20px 0 0;font-size:12px;color:#a09c92;">Or copy: ${escHtml(url)}</p>
