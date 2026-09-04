@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/lib/date'
 import { getOrgContext } from '@/lib/org-context'
 import { db } from '@/lib/db'
 import Link from 'next/link'
@@ -148,7 +149,7 @@ export default async function OrgDashboardPage({
                         {daysLeft <= 0 ? 'Overdue' : daysLeft === 1 ? 'Due tomorrow' : `${daysLeft}d left`}
                       </p>
                       <p style={{ fontSize: '12px', fontFamily: "'JetBrains Mono', monospace", color: 'var(--body)', margin: 0 }}>
-                        {new Date(a.cycle.endDate).toLocaleDateString()}
+                        {formatDate(a.cycle.endDate)}
                       </p>
                     </div>
                   </div>
@@ -177,7 +178,7 @@ export default async function OrgDashboardPage({
                     <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--ink)', margin: 0 }}>{c.title}</p>
                   </div>
                   <p style={{ fontSize: '12px', fontFamily: "'JetBrains Mono', monospace", color: 'var(--muted)', margin: 0 }}>
-                    {new Date(c.endDate).toLocaleDateString()}
+                    {formatDate(c.endDate)}
                   </p>
                 </div>
               </Link>

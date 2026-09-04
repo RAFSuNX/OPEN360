@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/lib/date'
 import { requireOrgAdmin } from '@/lib/org-context'
 import { db } from '@/lib/db'
 import { getCycle } from '@/lib/services/cycles'
@@ -61,7 +62,7 @@ export default async function OrgAdminCycleResultsPage({
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
           {cycle.status === 'ACTIVE' ? 'In progress' : cycle.status === 'CLOSED' ? 'Closed' : 'Draft'} ·{' '}
-          Ends {new Date(cycle.endDate).toLocaleDateString()}
+          Ends {formatDate(cycle.endDate)}
         </p>
       </div>
 

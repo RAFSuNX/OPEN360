@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/lib/date'
 'use client'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -104,7 +105,7 @@ export function CycleList({ initialCycles, templates, orgSlug }: { initialCycles
             <div>
               <p style={{ fontSize: '14px', fontWeight: '500', color: 'var(--ink)', margin: '0 0 3px' }}>{cycle.title}</p>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>
-                {new Date(cycle.startDate).toLocaleDateString()} - {new Date(cycle.endDate).toLocaleDateString()}
+                {formatDate(cycle.startDate)} - {formatDate(cycle.endDate)}
               </p>
             </div>
             <span style={{ ...statusStyles[cycle.status], fontSize: '11px', fontWeight: '600', letterSpacing: '0.5px', padding: '3px 10px', borderRadius: '9999px', flexShrink: 0 }}>

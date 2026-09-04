@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/lib/date'
 import { requireOrgAdmin } from '@/lib/org-context'
 import { listCycles } from '@/lib/services/cycles'
 import { db } from '@/lib/db'
@@ -64,7 +65,7 @@ export default async function OrgAdminResultsPage({
                       {cycle.title}
                     </p>
                     <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, fontFamily: "'JetBrains Mono', monospace" }}>
-                      {cycle.revieweeCount} employee{cycle.revieweeCount !== 1 ? 's' : ''} · {new Date(cycle.endDate).toLocaleDateString()}
+                      {cycle.revieweeCount} employee{cycle.revieweeCount !== 1 ? 's' : ''} · {formatDate(cycle.endDate)}
                     </p>
                   </div>
                   <div style={{ width: '160px', flexShrink: 0 }}>

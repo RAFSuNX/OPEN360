@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/lib/date'
 'use client'
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -219,7 +220,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, employees
           <div>
             <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: '0 0 4px' }}>{cycle.title}</h1>
             <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
-              Ends {new Date(cycle.endDate).toLocaleDateString()}
+              Ends {formatDate(cycle.endDate)}
             </p>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

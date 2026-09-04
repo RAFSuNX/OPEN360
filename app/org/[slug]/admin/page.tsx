@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/lib/date'
 import { requireOrgAdmin } from '@/lib/org-context'
 import { db } from '@/lib/db'
 import Link from 'next/link'
@@ -147,7 +148,7 @@ export default async function OrgAdminPage({
                 borderBottom: i < recentAudit.length - 1 ? '1px solid var(--hairline)' : 'none',
               }}>
                 <span style={{ fontSize: '11px', color: 'var(--muted)', fontFamily: "'JetBrains Mono', monospace", whiteSpace: 'nowrap' as const, flexShrink: 0 }}>
-                  {new Date(log.createdAt).toLocaleDateString()}
+                  {formatDate(log.createdAt)}
                 </span>
                 <span style={{
                   fontSize: '11px', fontFamily: "'JetBrains Mono', monospace",

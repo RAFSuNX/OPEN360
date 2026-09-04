@@ -1,3 +1,4 @@
+import { formatDate, formatDateTime } from '@/lib/date'
 import { requireOrgAdmin } from '@/lib/org-context'
 import { getOrgSettings } from '@/lib/org'
 import { getAuditLogs } from '@/lib/audit'
@@ -59,7 +60,7 @@ export default async function OrgSettingsPage({
                   {auditLogs.map((log, i) => (
                     <tr key={log.id} style={{ borderBottom: i < auditLogs.length - 1 ? '1px solid var(--hairline)' : 'none' }}>
                       <td style={{ padding: '10px 16px', color: 'var(--muted)', whiteSpace: 'nowrap', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px' }}>
-                        {new Date(log.createdAt).toLocaleString()}
+                        {formatDateTime(log.createdAt)}
                       </td>
                       <td style={{ padding: '10px 16px', color: 'var(--body)', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px' }}>
                         {log.actorEmail}
