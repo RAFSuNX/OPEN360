@@ -5,6 +5,7 @@ import { getCycle } from '@/lib/services/cycles'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import AdminResultsEmployeeList from '@/components/admin/AdminResultsEmployeeList'
+import ExportAllButton from '@/components/admin/ExportAllButton'
 
 export default async function OrgAdminCycleResultsPage({
   params,
@@ -57,13 +58,20 @@ export default async function OrgAdminCycleResultsPage({
 
       <div style={{ marginBottom: '32px' }}>
         <p className="section-label" style={{ marginBottom: '8px' }}>Results</p>
-        <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: '0 0 4px' }}>
-          {cycle.title}
-        </h1>
-        <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
-          {cycle.status === 'ACTIVE' ? 'In progress' : cycle.status === 'CLOSED' ? 'Closed' : 'Draft'} ·{' '}
-          Ends {formatDate(cycle.endDate)}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' as const }}>
+          <div>
+            <h1 style={{ fontSize: '26px', fontWeight: '400', color: 'var(--ink)', letterSpacing: '-0.3px', margin: '0 0 4px' }}>
+              {cycle.title}
+            </h1>
+            <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>
+              {cycle.status === 'ACTIVE' ? 'In progress' : cycle.status === 'CLOSED' ? 'Closed' : 'Draft'} ·{' '}
+              Ends {formatDate(cycle.endDate)}
+            </p>
+          </div>
+          {employeesWithStats.length > 0 && (
+            <ExportAllButton cycleId={cycleId} />
+          )}
+        </div>
       </div>
 
       {employeesWithStats.length === 0 ? (
