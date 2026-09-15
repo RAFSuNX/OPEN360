@@ -11,7 +11,6 @@ concurrency:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: rafsunx/open360
-  DOCKER_HOST: tcp://localhost:2375
 
 jobs:
   build:
