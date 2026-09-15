@@ -99,6 +99,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ closed: true, emailsSent: sent })
   }
 
+  if (action === 'close-silent') {
+    await updateCycleStatus(orgId, cycleId, CycleStatus.CLOSED)
+    void writeAudit({ orgId, actorEmail: email, action: 'cycle.close', target: cycleId })
+    return NextResponse.json({ closed: true, emailsSent: 0 })
+  }
+
   return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
 }
 

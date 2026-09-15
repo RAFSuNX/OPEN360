@@ -141,6 +141,7 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, employees
       if (action === 'auto-assign') { toast(`Assigned ${data.assigned} reviewer pairs.`, 'success'); await refreshAssignments() }
       else if (action === 'activate') { toast(`Cycle activated. ${data.emailsSent} invite emails sent.`, 'success'); setCycle(c => ({ ...c, status: CycleStatus.ACTIVE })) }
       else if (action === 'close') { toast(`Cycle closed. ${data.emailsSent} result emails sent.`, 'success'); setCycle(c => ({ ...c, status: CycleStatus.CLOSED })) }
+      else if (action === 'close-silent') { toast('Cycle closed. No emails sent.', 'success'); setCycle(c => ({ ...c, status: CycleStatus.CLOSED })) }
       else if (action === 're-open') { toast('Cycle re-opened. Pending reviewers can now submit.', 'success'); setCycle(c => ({ ...c, status: CycleStatus.ACTIVE })) }
     } finally { setLoading(false) }
   }
@@ -251,7 +252,10 @@ export function CycleDetail({ cycle: initialCycle, initialAssignments, employees
           </>
         )}
         {cycle.status === 'ACTIVE' && (
-          <button onClick={() => doAction('close')} disabled={loading} className="btn-primary">Close Cycle + Notify</button>
+          <>
+            <button onClick={() => doAction('close-silent')} disabled={loading} className="btn-secondary">Close Cycle</button>
+            <button onClick={() => doAction('close')} disabled={loading} className="btn-primary">Close Cycle + Notify</button>
+          </>
         )}
         {cycle.status === 'CLOSED' && pendingCount > 0 && (
           <button onClick={() => doAction('re-open')} disabled={loading} className="btn-secondary">

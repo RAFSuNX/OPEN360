@@ -71,7 +71,9 @@ export default function MyResults({ results, cycleTitle, employeeName }: Props) 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {REL_ORDER.map(rel => {
           const section = results[rel]
+          // Skip entirely if no section, or no responses AND reason is "No responses yet"
           if (!section) return null
+          if (!section.visible && section.reason === 'No responses yet.') return null
 
           return (
             <div key={rel} className="card">
